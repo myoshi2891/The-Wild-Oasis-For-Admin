@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
@@ -21,8 +20,6 @@ import StarRating from "./StarRating";
 // 	);
 // }
 
-
-// REACT 18
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
 	<React.StrictMode>
@@ -41,11 +38,3 @@ root.render(
 		<Test /> */}
 	</React.StrictMode>
 );
-
-// REACT 17
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-//   document.getElementById('root')
-// );
