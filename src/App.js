@@ -162,118 +162,93 @@ function NavBar({ children }) {
 	);
 }
 
-function Logo() {
 	return (
-		<div className="logo">
-			<span role="img">🍿</span>
-			<h1>usePopcorn</h1>
+		<div>
+			<div className="tabs">
+				<Tab num={0} activeTab={activeTab} onClick={setActiveTab} />
+				<Tab num={1} activeTab={activeTab} onClick={setActiveTab} />
+				<Tab num={2} activeTab={activeTab} onClick={setActiveTab} />
+				<Tab num={3} activeTab={activeTab} onClick={setActiveTab} />
+			</div>
+
+			{activeTab <= 2 ? (
+				<TabContent
+					item={content.at(activeTab)}
+					key={content.at(activeTab).summary}
+				/>
+			) : (
+				<DifferentContent />
+			)}
 		</div>
 	);
 }
 
 function Search({ query, setQuery }) {
+
 	return (
-		<input
-			className="search"
-			type="text"
-			placeholder="Search movies..."
-			value={query}
-			onChange={(e) => setQuery(e.target.value)}
-		/>
+		<button
+			className={activeTab === num ? "tab active" : "tab"}
+			onClick={() => onClick(num)}
+		>
+			Tab {num + 1}
+		</button>
 	);
 }
 
-function NumResults({ movies }) {
+function TabContent({ item }) {
+	const [showDetails, setShowDetails] = useState(true);
+	const [likes, setLikes] = useState(0);
+
+	function handleInc() {
+		setLikes(likes + 1);
+	}
+
+	function handleTripleInc() {
+		setLikes((likes) => likes + 1);
+		setLikes((likes) => likes + 1);
+		setLikes((likes) => likes + 1);
+	}
+
+	function handleUndo() {
+		setShowDetails(true);
+		setLikes(0);
+	}
+
+	function handleUndoLater() {
+		setTimeout(handleUndo, 2000);
+	}
+
 	return (
-		<p className="num-results">
-			Found <strong>{movies.length}</strong> results
-		</p>
-	);
-}
+		<div className="tab-content">
+			<h4>{item.summary}</h4>
+			{showDetails && <p>{item.details}</p>}
 
-function Main({ children }) {
-	return <main className="main">{children}</main>;
-}
+			<div className="tab-actions">
+				<button onClick={() => setShowDetails((h) => !h)}>
+					{showDetails ? "Hide" : "Show"} details
+				</button>
 
-function Box({ children }) {
-	const [isOpen, setIsOpen] = useState(true);
-
-	return (
-		<div className="box">
-			<button
-				className="btn-toggle"
-				onClick={() => setIsOpen((open) => !open)}
-			>
-				{isOpen ? "–" : "+"}
-			</button>
-			{isOpen && children}
-		</div>
-	);
-}
-
-function MovieList({ movies }) {
-	return (
-		<ul className="list">
-			{movies?.map((movie) => (
-				<Movie movie={movie} key={movie.imdbID} />
-			))}
-		</ul>
-	);
-}
-
-function Movie({ movie }) {
-	return (
-		<li key={movie.imdbID}>
-			<img src={movie.Poster} alt={`${movie.Title} poster`} />
-			<h3>{movie.Title}</h3>
-			<div>
-				<p>
-					<span>🗓</span>
-					<span>{movie.Year}</span>
-				</p>
+				<div className="hearts-counter">
+					<span>{likes} ❤️</span>
+					<button onClick={handleInc}>+</button>
+					<button onClick={handleTripleInc}>+++</button>
+				</div>
 			</div>
-		</li>
-	);
-}
 
-function WatchedSummary({ watched }) {
-	const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
-	const avgUserRating = average(watched.map((movie) => movie.userRating));
-	const avgRuntime = average(watched.map((movie) => movie.runtime));
-
-	return (
-		<div className="summary">
-			<h2>Movies you watched</h2>
-			<div>
-				<p>
-					<span>#️⃣</span>
-					<span>{watched.length} movies</span>
-				</p>
-				<p>
-					<span>⭐️</span>
-					<span>{avgImdbRating}</span>
-				</p>
-				<p>
-					<span>🌟</span>
-					<span>{avgUserRating}</span>
-				</p>
-				<p>
-					<span>⏳</span>
-					<span>{avgRuntime} min</span>
-				</p>
+			<div className="tab-undo">
+				<button onClick={handleUndo}>Undo</button>
+				<button onClick={handleUndoLater}>Undo in 2s</button>
 			</div>
 		</div>
 	);
 }
 
-function WatchedMovieList({ watched }) {
-	return (
-		<ul className="list">
-			{watched.map((movie) => (
-				<WatchedMovie movie={movie} key={movie.imdbID} />
-			))}
-		</ul>
-	);
+function DifferentContent() {
+  return (
+    <div className="tab-content">
+      <h4>I'm a DIFFERENT tab, so I reset state 💣💥</h4>
+    </div>
+  );
 }
 
 function WatchedMovie({ movie }) {
