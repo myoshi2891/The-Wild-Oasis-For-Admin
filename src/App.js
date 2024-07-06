@@ -49,7 +49,7 @@ const average = (arr) =>
 const KEY = process.env.REACT_APP_KEY;
 
 export default function App() {
-	const [query, setQuery] = useState("inception");
+	const [query, setQuery] = useState("");
 	const [movies, setMovies] = useState([]);
 	const [watched, setWatched] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +80,7 @@ export default function App() {
 				try {
 					setIsLoading(true);
 					setError("");
+
 					const res = await fetch(
 						`https://www.omdbapi.com/?s=${query}&apikey=${KEY}`,
 						{ signal: controller.signal }
@@ -110,6 +111,8 @@ export default function App() {
 				setError("");
 				return;
 			}
+
+			handleCloseMovie();
 			fetchMovies();
 
 			return function () {
@@ -127,15 +130,6 @@ export default function App() {
 			</NavBar>
 
 			<Main>
-				{/* <Box element={<MovieList movies={movies} />} />
-				<Box
-					element={
-						<>
-							<WatchedSummary watched={watched} />
-							<WatchedMovieList watched={watched} />
-						</>
-					}
-				/> */}
 				<Box>
 					{/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
 					{isLoading && <Loader />}
@@ -307,6 +301,23 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
 		onAddWatched(newWastchedMovie);
 		onCloseMovie();
 	}
+
+	useEffect(
+		function () {
+			function callback(e) {
+				if (e.code === "Escape") {
+					onCloseMovie();
+				}
+			}
+
+			document.addEventListener("keydown", callback);
+
+			return function () {
+				document.removeEventListener("keydown", callback);
+			};
+		},
+		[onCloseMovie]
+	);
 
 	useEffect(
 		function () {
