@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
+import { useKey } from "./useKey";
 import { useLocalStorageState } from "./useLocalStorageState";
 import { useMovies } from "./useMovies";
 
@@ -106,27 +107,11 @@ function Logo() {
 function Search({ query, setQuery }) {
 	const inputEl = useRef(null);
 
-	useEffect(
-		function () {
-			function callback(e) {
-				if (document.activeElement === inputEl.current) return;
-				if (e.code === "Enter") {
-					inputEl.current.focus();
-					setQuery("");
-				}
-			}
-			document.addEventListener("keydown", callback);
-
-			return () => document.addEventListener("keydown", callback);
-		},
-		[setQuery]
-	);
-
-	// useEffect(function () {
-	// 	const el = document.querySelector(".search");
-	// 	console.log(el);
-	// 	el.focus();
-	// }, []);
+	useKey("Enter", function () {
+		if (document.activeElement === inputEl.current) return;
+		inputEl.current.focus();
+		setQuery("");
+	});
 
 	return (
 		<input
@@ -229,23 +214,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
 		Genre: genre,
 	} = movie;
 
-	// if (imdbRating > 8) [isTop, setIsTop] = useState(true);
-	// if (imdbRating > 8) return <p>Greatest ever!</p>;
-	// const [isTop, setIsTop] = useState(imdbRating > 8);
-	// console.log(isTop);
-
-	// useEffect(
-	// 	function () {
-	// 		setIsTop(imdbRating > 8);
-	// 	},
-	// 	[imdbRating]
-	// );
-
-	// const isTop = imdbRating > 8;
-	// console.log(isTop);
-
-	// const [avgRating, setAvgRating] = useState(0);
-
 	function handleAdd() {
 		const newWastchedMovie = {
 			imdbID: selectedId,
@@ -260,27 +228,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
 
 		onAddWatched(newWastchedMovie);
 		onCloseMovie();
-
-		// setAvgRating(Number(imdbRating));
-		// setAvgRating((avgRating) => (avgRating + userRating) / 2);
 	}
 
-	useEffect(
-		function () {
-			function callback(e) {
-				if (e.code === "Escape") {
-					onCloseMovie();
-				}
-			}
-
-			document.addEventListener("keydown", callback);
-
-			return function () {
-				document.removeEventListener("keydown", callback);
-			};
-		},
-		[onCloseMovie]
-	);
+	useKey("Escape", onCloseMovie);
 
 	useEffect(
 		function () {
