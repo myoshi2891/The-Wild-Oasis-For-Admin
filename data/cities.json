@@ -47,54 +47,6 @@
         "lat": "41.07452425564099",
         "lng": "-7.139194957783085"
       }
-    },
-    {
-      "id": "32b4",
-      "cityName": "Castillon",
-      "country": "France",
-      "emoji": "🇫🇷",
-      "date": "2024-07-14T01:40:03.775Z",
-      "notes": "test",
-      "position": {
-        "lat": "43.83241793212624",
-        "lng": "7.447719598629431"
-      }
-    },
-    {
-      "id": "f39b",
-      "cityName": "Rieupeyroux",
-      "country": "France",
-      "emoji": "🇫🇷",
-      "date": "2024-07-14T01:43:21.671Z",
-      "notes": "aws",
-      "position": {
-        "lat": "44.322079523028215",
-        "lng": "2.21893844961564"
-      }
-    },
-    {
-      "id": "4ba1",
-      "cityName": "Uncastillo",
-      "country": "Spain",
-      "emoji": "🇪🇸",
-      "date": "2024-07-14T01:44:02.051Z",
-      "notes": "test",
-      "position": {
-        "lat": "42.37106238961544",
-        "lng": "-1.2090368557805142"
-      }
-    },
-    {
-      "id": "93c2",
-      "cityName": "El Borma",
-      "country": "Algeria",
-      "emoji": "🇩🇿",
-      "date": "2024-07-14T01:47:04.074Z",
-      "notes": "www",
-      "position": {
-        "lat": "30.355284524536874",
-        "lng": "7.2015069290341245"
-      }
     }
   ]
 }
