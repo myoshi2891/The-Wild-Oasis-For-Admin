@@ -13,8 +13,8 @@ import Form from "./components/Form";
 import { CitiesProvider } from "./contexts/CitiesContext";
 	/* eslint-disable */
 import { AuthProvider, useAuth } from "./contexts/FakeAuthContext";
-	/* eslint-enable */
-
+import ProtectedRoute from "./pages/ProtectedRoute";
+/* eslint-enable */
 
 function App() {
 	return (
@@ -26,7 +26,14 @@ function App() {
 						<Route path="product" element={<Product />} />
 						<Route path="pricing" element={<Pricing />} />
 						<Route path="login" element={<Login />} />
-						<Route path="app" element={<AppLayout />}>
+						<Route
+							path="app"
+							element={
+								<ProtectedRoute>
+									<AppLayout />
+								</ProtectedRoute>
+							}
+						>
 							<Route
 								index
 								element={<Navigate replace to="cities" />}
