@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import clickSound from "./ClickSound.m4a";
 
 function Calculator({ workouts, allowSound }) {
@@ -8,15 +8,6 @@ function Calculator({ workouts, allowSound }) {
 	const [durationBreak, setDurationBreak] = useState(5);
 
 	const [duration, setDuration] = useState(0);
-
-	// const playSound = useCallback(
-	// 	function () {
-	// 		if (!allowSound) return;
-	// 		const sound = new Audio(clickSound);
-	// 		sound.play();
-	// 	},
-	// 	[allowSound]
-	// );
 
 	/* eslint-disable  */
 	useEffect(
@@ -37,6 +28,13 @@ function Calculator({ workouts, allowSound }) {
 			playSound();
 		},
 		[duration, allowSound]
+	);
+
+	useEffect(
+		function () {
+			document.title = `Your ${number}-exercise workout`;
+		},
+		[number]
 	);
 	/* eslint-enable */
 
@@ -105,10 +103,6 @@ function Calculator({ workouts, allowSound }) {
 						value={durationBreak}
 						onChange={(e) => {
 							setDurationBreak(e.target.value);
-							// setDuration(
-							// 	(number * sets * speed) / 60 +
-							// 		(sets - 1) * e.target.value
-							// );
 						}}
 					/>
 					<span>{durationBreak} minutes/break</span>
