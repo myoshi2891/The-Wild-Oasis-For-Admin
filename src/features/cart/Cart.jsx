@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+/* eslint-disable */
 
 const fakeCart = [
   {

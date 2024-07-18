@@ -1,5 +1,5 @@
 // Test ID: IIDSAT
-
+/* eslint-disable */
 import {
   calcMinutesLeft,
   formatCurrency,
@@ -42,45 +42,53 @@ const order = {
 };
 
 function Order() {
-  // Everyone can search for all orders, so for privacy reasons we're gonna gonna exclude names or address, these are only for the restaurant staff
-  const {
-    id,
-    status,
-    priority,
-    priorityPrice,
-    orderPrice,
-    estimatedDelivery,
-    cart,
-  } = order;
-  const deliveryIn = calcMinutesLeft(estimatedDelivery);
+	// Everyone can search for all orders, so for privacy reasons we're gonna gonna exclude names or address, these are only for the restaurant staff
 
-  return (
-    <div>
-      <div>
-        <h2>Status</h2>
+	const {
+		id,
+		status,
+		priority,
+		priorityPrice,
+		orderPrice,
+		estimatedDelivery,
+		cart,
+	} = order;
+	const deliveryIn = calcMinutesLeft(estimatedDelivery);
 
-        <div>
-          {priority && <span>Priority</span>}
-          <span>{status} order</span>
-        </div>
-      </div>
+	return (
+		<div>
+			<div>
+				<h2>Status</h2>
 
-      <div>
-        <p>
-          {deliveryIn >= 0
-            ? `Only ${calcMinutesLeft(estimatedDelivery)} minutes left 😃`
-            : "Order should have arrived"}
-        </p>
-        <p>(Estimated delivery: {formatDate(estimatedDelivery)})</p>
-      </div>
+				<div>
+					{priority && <span>Priority</span>}
+					<span>{status} order</span>
+				</div>
+			</div>
 
-      <div>
-        <p>Price pizza: {formatCurrency(orderPrice)}</p>
-        {priority && <p>Price priority: {formatCurrency(priorityPrice)}</p>}
-        <p>To pay on delivery: {formatCurrency(orderPrice + priorityPrice)}</p>
-      </div>
-    </div>
-  );
+			<div>
+				<p>
+					{deliveryIn >= 0
+						? `Only ${calcMinutesLeft(
+								estimatedDelivery
+						  )} minutes left 😃`
+						: "Order should have arrived"}
+				</p>
+				<p>(Estimated delivery: {formatDate(estimatedDelivery)})</p>
+			</div>
+
+			<div>
+				<p>Price pizza: {formatCurrency(orderPrice)}</p>
+				{priority && (
+					<p>Price priority: {formatCurrency(priorityPrice)}</p>
+				)}
+				<p>
+					To pay on delivery:{" "}
+					{formatCurrency(orderPrice + priorityPrice)}
+				</p>
+			</div>
+		</div>
+	);
 }
 
 export default Order;
