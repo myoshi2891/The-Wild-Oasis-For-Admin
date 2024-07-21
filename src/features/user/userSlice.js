@@ -22,7 +22,7 @@ import { createSlice } from "@reduxjs/toolkit";
 // }
 
 const initialState = {
-  username: "John Doe2",
+  username: "",
 };
 
 const userSlice = createSlice({

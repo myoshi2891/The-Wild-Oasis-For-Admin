@@ -20,9 +20,9 @@ function Button({ children, disabled, to, type }) {
     );
 
   return (
-    <div disabled={disabled} className={styles[type]}>
+    <button disabled={disabled} className={styles[type]}>
       {children}
-    </div>
+    </button>
   );
 }
 
