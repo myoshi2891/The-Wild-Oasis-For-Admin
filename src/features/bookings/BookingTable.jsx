@@ -7,7 +7,7 @@ import Spinner from "../../ui/Spinner";
 import { useBookings } from "./useBookings";
 
 function BookingTable() {
-	const { bookings, isLoading } = useBookings();
+	const { bookings = [], isLoading } = useBookings();
 
   if (isLoading) return <Spinner />;
 
