@@ -7,58 +7,58 @@ import Table from "../../ui/Table";
 import { formatCurrency } from "../../utils/helpers";
 import { formatDistanceFromNow } from "../../utils/helpers";
 import Menus from "../../ui/Menus";
-import { HiEye } from "react-icons/hi2";
+import { HiArrowDownOnSquare, HiEye } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 
 const Cabin = styled.div`
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: var(--color-grey-600);
-  font-family: "Sono";
+	font-size: 1.6rem;
+	font-weight: 600;
+	color: var(--color-grey-600);
+	font-family: "Sono";
 `;
 
 const Stacked = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
 
-  & span:first-child {
-    font-weight: 500;
-  }
+	& span:first-child {
+		font-weight: 500;
+	}
 
-  & span:last-child {
-    color: var(--color-grey-500);
-    font-size: 1.2rem;
-  }
+	& span:last-child {
+		color: var(--color-grey-500);
+		font-size: 1.2rem;
+	}
 `;
 
 const Amount = styled.div`
-  font-family: "Sono";
-  font-weight: 500;
+	font-family: "Sono";
+	font-weight: 500;
 `;
 
 function BookingRow({
-  booking: {
-    id: bookingId,
-    created_at,
-    startDate,
-    endDate,
-    numNights,
-    numGuests,
-    totalPrice,
-    status,
-    guests: { fullName: guestName, email },
-    cabins: { name: cabinName },
-  },
+	booking: {
+		id: bookingId,
+		created_at,
+		startDate,
+		endDate,
+		numNights,
+		numGuests,
+		totalPrice,
+		status,
+		guests: { fullName: guestName, email },
+		cabins: { name: cabinName },
+	},
 }) {
-  const navigate = useNavigate();
-  const statusToTagName = {
-    unconfirmed: "blue",
-    "checked-in": "green",
-    "checked-out": "silver",
-  };
+	const navigate = useNavigate();
+	const statusToTagName = {
+		unconfirmed: "blue",
+		"checked-in": "green",
+		"checked-out": "silver",
+	};
 
-  return (
+	return (
 		<Table.Row>
 			<Cabin>{cabinName}</Cabin>
 
@@ -93,10 +93,18 @@ function BookingRow({
 					>
 						See details
 					</Menus.Button>
+					{status === "unconfirmed" && (
+						<Menus.Button
+							icon={<HiArrowDownOnSquare />}
+							onClick={() => navigate(`/checkin/${bookingId}`)}
+						>
+							Check in
+						</Menus.Button>
+					)}
 				</Menus.List>
 			</Menus.Menu>
 		</Table.Row>
-  );
+	);
 }
 
 export default BookingRow;
