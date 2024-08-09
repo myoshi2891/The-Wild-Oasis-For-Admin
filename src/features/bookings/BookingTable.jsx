@@ -11,7 +11,6 @@ function BookingTable() {
 	const { bookings, isLoading, count } = useBookings();
 
 	if (isLoading) return <Spinner />;
-
 	if (!bookings.length) return <Empty resourceName="bookings" />;
 
 	return (
@@ -25,14 +24,12 @@ function BookingTable() {
 					<div>Amount</div>
 					<div></div>
 				</Table.Header>
-
 				<Table.Body
 					data={bookings}
 					render={(booking) => (
 						<BookingRow key={booking.id} booking={booking} />
 					)}
 				/>
-
 				<Table.Footer>
 					<Pagination count={count} />
 				</Table.Footer>
