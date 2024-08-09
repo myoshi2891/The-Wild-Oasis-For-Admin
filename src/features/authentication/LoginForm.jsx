@@ -4,14 +4,11 @@ import Form from "../../ui/Form";
 import Input from "../../ui/Input";
 import SpinnerMini from "../../ui/SpinnerMini";
 import FormRowVertical from "../../ui/FormRowVertical";
-import { login } from "../../services/apiAuth";
 import { useLogin } from "./useLogin";
 
 function LoginForm() {
-	const [email, setEmail] = useState("john@example.com");
-	const [password, setPassword] = useState(
-		import.meta.env.VITE_SUPABASE_USER_PASSWORD
-	);
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
 	const { login, isLoading } = useLogin();
 
 	function handleSubmit(e) {
@@ -34,7 +31,6 @@ function LoginForm() {
 				<Input
 					type="email"
 					id="email"
-					// This makes this form better for password managers
 					autoComplete="username"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
