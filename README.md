@@ -1,262 +1,189 @@
-# The Wild Oasis システム概要
+# The Wild Oasis - 概要
 
-## 概要
-
-**関連ソースファイル**
-* src/App.jsx
-* src/main.jsx
-* package.json
-* src/ui/ErrorFallback.jsx
-* src/services/
-* src/features/
-* src/hooks/
-* src/context/
-* src/utils/
-* src/styles/
+## 関連ソースファイル
+* __.gitignore__
+* __package-lock.json__
+* __package.json__
+* __src/App.jsx__
+* __src/features/bookings/BookingDataBox.jsx__
+* __src/features/check-in-out/CheckoutButton.jsx__
+* __src/features/check-in-out/TodayActivity.jsx__
+* __src/features/check-in-out/TodayItem.jsx__
+* __src/features/check-in-out/useTodayActivity.js__
+* __src/main.jsx__
+* __src/ui/ErrorFallback.jsx__
 
 ## 目的と範囲
 
-The Wild Oasisは、ホテルの内部スタッフがキャビン、予約、ゲスト、日常業務を管理するためのReactベースのホテル管理アプリケーションです。この概要では、アプリケーションのアーキテクチャ、コア技術、システム構成についての高レベルな理解を提供します。
+The Wild Oasisは、ホテルスタッフが客室、予約、ゲスト、および日々の業務を管理するために設計されたReactベースのホテル管理アプリケーションです。この概要では、アプリケーションのアーキテクチャ、コア技術、およびシステム構成について高レベルの理解を提供します。
 
-このドキュメントでは、全体的なシステム構造と主要コンポーネントをカバーします。特定のサブシステムの詳細情報については、以下を参照してください：
+このドキュメントでは、全体的なシステム構造と主要コンポーネントについて説明します。特定のサブシステムに関する詳細情報については、以下を参照してください:
 
-* 認証フロー: **認証システム**
-* ビジネス機能の実装: **コア機能**
-* UIコンポーネントのアーキテクチャ: **UIシステム & コンポーネント**
-* バックエンド統合パターン: **API統合**
+* 認証フロー: __Authentication System__
+* ビジネス機能の実装: __Core Features__
+* UIコンポーネントアーキテクチャ: __UI System & Components__
+* バックエンド統合パターン: __API Integration__
 
 ## アプリケーションアーキテクチャ
 
-The Wild Oasisは、フロントエンドプレゼンテーション、ステート管理、バックエンドサービス間の明確な関心の分離を持つ、モダンなReactシングルページアプリケーションアーキテクチャに従います。
+The Wild Oasisは、フロントエンドプレゼンテーション、状態管理、バックエンドサービス間で明確な関心の分離を持つモダンなReactシングルページアプリケーションアーキテクチャに従っています。
 
-## システム構成図
+### 高レベルシステム構造
 
 ```mermaid
 graph TB
-    User[ユーザー] --> Router[React Router]
-    Router --> Auth{認証確認}
-    Auth -->|認証済み| Protected[保護されたルート]
-    Auth -->|未認証| Login[ログインページ]
+    User[ユーザー<br/>ホテルスタッフ]
     
-    Protected --> Dashboard[ダッシュボード]
-    Protected --> Cabins[キャビン管理]
-    Protected --> Bookings[予約管理]
-    Protected --> Checkin[チェックイン/アウト]
-    Protected --> Users[ユーザー管理]
-    Protected --> Settings[設定]
-    Protected --> Account[アカウント]
-    
-    Dashboard --> ReactQuery[React Query]
-    Cabins --> ReactQuery
-    Bookings --> ReactQuery
-    Checkin --> ReactQuery
-    Users --> ReactQuery
-    Settings --> ReactQuery
-    Account --> ReactQuery
-    
-    ReactQuery --> Supabase[Supabase Backend]
-    ReactQuery --> Cache[キャッシュ管理]
-    
-    subgraph "UI層"
-        StyledComponents[Styled Components]
-        Forms[React Hook Form]
-        Charts[Recharts]
-        Toast[React Hot Toast]
+    subgraph Frontend["フロントエンド層"]
+        Router[React Router<br/>ルーティング]
+        UI[UIコンポーネント<br/>styled-components]
+        Features[機能モジュール<br/>ビジネスロジック]
     end
     
-    Dashboard -.-> StyledComponents
-    Cabins -.-> Forms
-    Bookings -.-> Charts
-    All -.-> Toast
+    subgraph State["状態管理層"]
+        RQ[React Query<br/>サーバー状態]
+        Forms[React Hook Form<br/>フォーム状態]
+    end
+    
+    subgraph Backend["バックエンド層"]
+        Supabase[Supabase<br/>BaaS]
+        DB["(PostgreSQL<br/>データベース)"]
+        Auth[認証<br/>サービス]
+    end
+    
+    User --> Router
+    Router --> UI
+    UI --> Features
+    Features --> RQ
+    Features --> Forms
+    RQ --> Supabase
+    Supabase --> DB
+    Supabase --> Auth
+    
+    style Frontend fill:#e1f5ff
+    style State fill:#fff4e1
+    style Backend fill:#f0e1ff
 ```
 
-## 高レベルシステム構造
-
-```
-src/
-├── App.jsx                 # アプリケーションのエントリーポイント
-├── main.jsx               # Reactアプリのブートストラップ
-├── features/              # ビジネス機能別コンポーネント
-│   ├── dashboard/
-│   ├── cabins/
-│   ├── bookings/
-│   ├── check-in-out/
-│   ├── users/
-│   └── settings/
-├── ui/                    # 再利用可能なUIコンポーネント
-├── services/              # API層とビジネスロジック
-├── hooks/                 # カスタムReactフック
-├── context/               # React Context API
-├── utils/                 # ユーティリティ関数
-└── styles/               # グローバルスタイル
-```
-
-**ソース:** `src/App.jsx (1-95)`, `package.json (12-25)`
+出典: __src/App.jsx1-95__ __package.json12-25__
 
 ## コア技術スタック
 
-| 技術 | 用途 | バージョン |
-|------|------|----------|
+| 技術 | 目的 | バージョン |
+|------|------|------------|
 | React | フロントエンドフレームワーク | ^18.2.0 |
 | React Router DOM | クライアントサイドルーティング | ^6.25.1 |
-| @tanstack/react-query | ステート管理 & キャッシング | ^4.36.1 |
+| @tanstack/react-query | 状態管理とキャッシング | ^4.36.1 |
 | @supabase/supabase-js | Backend-as-a-Service | ^2.44.4 |
 | styled-components | CSS-in-JSスタイリング | ^6.1.12 |
 | react-hook-form | フォーム管理 | ^7.52.1 |
 | recharts | データ可視化 | ^2.12.7 |
 | Vite | ビルドツール & 開発サーバー | ^4.5.5 |
 
-**ソース:** `package.json (12-25)`, `package.json (27-39)`
+出典: __package.json12-25__ __package.json27-39__
 
 ## アプリケーションエントリーポイントとルーティング構造
 
-```jsx
-// main.jsx - アプリケーションブートストラップ
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { ErrorBoundary } from "react-error-boundary";
-import App from "./App.jsx";
-import ErrorFallback from "./ui/ErrorFallback.jsx";
-import GlobalStyles from "./styles/GlobalStyles.js";
-
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <ErrorBoundary fallback={<ErrorFallback />}>
-      <GlobalStyles />
-      <App />
-    </ErrorBoundary>
-  </React.StrictMode>,
-);
+```mermaid
+graph TD
+    Entry[main.jsx<br/>エントリーポイント]
+    
+    subgraph App["App.jsx"]
+        Router[BrowserRouter]
+        RQProvider[QueryClientProvider]
+        Routes[ルート定義]
+    end
+    
+    subgraph Protected["保護されたルート"]
+        Dashboard["/dashboard"]
+        Bookings["/bookings"]
+        Cabins["/cabins"]
+        Users["/users"]
+        Settings["/settings"]
+        Account["/account"]
+    end
+    
+    Public["/login<br/>公開ルート"]
+    
+    Entry --> Router
+    Router --> RQProvider
+    RQProvider --> Routes
+    Routes --> Protected
+    Routes --> Public
+    
+    Protected -.認証が必要.-> Auth{ProtectedRoute}
+    Auth -->|認証済み| Protected
+    Auth -->|未認証| Public
+    
+    style Entry fill:#4CAF50
+    style Protected fill:#2196F3
+    style Public fill:#FF9800
 ```
 
-```jsx
-// App.jsx - ルーティング設定
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+出典: __src/main.jsx1-17__ __src/App.jsx30-68__
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 0,
-    },
-  },
-});
+アプリケーションは、`ProtectedRoute`コンポーネントを通じて認証を必要とする保護されたルーティング戦略を実装しており、ログインページのみが未認証ユーザーにアクセス可能です。ルートルート(`/`)は自動的に`/dashboard`にリダイレクトされます。
 
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<Navigate replace to="dashboard" />} />
-            <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
-            <Route path="cabins" element={<ProtectedRoute><Cabins /></ProtectedRoute>} />
-            <Route path="users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-            <Route path="settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-          </Route>
-          <Route path="login" element={<Login />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
-}
-```
+## 状態管理とデータフロー
 
-**ソース:** `src/main.jsx (1-17)`, `src/App.jsx (30-68)`
-
-アプリケーションは保護されたルーティング戦略を実装しており、ほとんどのルートは`ProtectedRoute`コンポーネントを通じた認証が必要で、未認証ユーザーはログインページのみアクセス可能です。ルートパス(`/`)は自動的に`/dashboard`にリダイレクトされます。
-
-## ステート管理とデータフロー
-
-アプリケーションはReact Query (`@tanstack/react-query`)を主要なステート管理ソリューションとして使用し、サーバーステートの同期、キャッシング、バックグラウンド更新を提供します。データフローは以下のパターンに従います：
+アプリケーションは、React Query(`@tanstack/react-query`)を主要な状態管理ソリューションとして使用し、サーバー状態の同期、キャッシング、バックグラウンド更新を提供します。データフローは以下のパターンに従います:
 
 ```mermaid
-graph LR
-    Component[Reactコンポーネント] --> Hook[カスタムフック]
-    Hook --> ReactQuery[React Query]
-    ReactQuery --> API[Supabase API]
-    API --> Database[(データベース)]
+sequenceDiagram
+    participant UI as UIコンポーネント
+    participant RQ as React Query
+    participant Cache as クエリキャッシュ
+    participant API as Supabase API
+    participant DB as データベース
     
-    ReactQuery --> Cache[キャッシュ]
-    Cache --> Component
+    UI->>RQ: データリクエスト<br/>(useQuery)
+    RQ->>Cache: キャッシュ確認
     
-    ReactQuery --> Background[バックグラウンド更新]
-    Background --> Component
+    alt キャッシュヒット
+        Cache-->>RQ: キャッシュデータ返却
+        RQ-->>UI: データ表示
+        RQ->>API: バックグラウンド再検証
+    else キャッシュミス
+        RQ->>API: APIリクエスト
+        API->>DB: クエリ実行
+        DB-->>API: データ返却
+        API-->>RQ: レスポンス
+        RQ->>Cache: キャッシュ更新
+        RQ-->>UI: データ表示
+    end
+    
+    Note over RQ,Cache: staleTime: 0<br/>常に新鮮なデータを取得
 ```
 
-**ソース:** `src/App.jsx (21-28)`, `package.json (13-14)`
+出典: __src/App.jsx21-28__ __package.json13-14__
 
-React Queryクライアントは`staleTime`を0に設定して構成されており、新鮮なデータフェッチを保証し、クエリステートのデバッグ用の開発ツールを含んでいます。
+React Queryクライアントは`staleTime`を0に設定しており、常に新鮮なデータを取得し、クエリ状態のデバッグ用の開発ツールを含んでいます。
 
 ## コア機能エリア
 
-アプリケーションは5つの主要なビジネスドメインに整理されています：
+アプリケーションは5つの主要なビジネスドメインを中心に構成されています:
 
 | 機能 | ルート | 目的 |
-|------|---------|------|
+|------|--------|------|
 | ダッシュボード | `/dashboard` | 分析と今日のアクティビティ概要 |
-| キャビン管理 | `/cabins` | ホテルキャビンのCRUD操作 |
+| 客室管理 | `/cabins` | ホテル客室のCRUD操作 |
 | 予約管理 | `/bookings`, `/bookings/:id` | 予約ライフサイクル管理 |
-| チェックイン/アウト | `/checkin/:bookingId` | ゲストの到着と出発プロセス |
+| チェックイン/チェックアウト | `/checkin/:bookingId` | ゲストの到着と出発プロセス |
 | ユーザー管理 | `/users` | スタッフアカウント管理 |
-| 設定 | `/settings` | アプリケーション構成 |
-| アカウント | `/account` | 現在のユーザープロファイル管理 |
+| 設定 | `/settings` | アプリケーション設定 |
+| アカウント | `/account` | 現在のユーザープロフィール管理 |
 
-**ソース:** `src/App.jsx (46-63)`
+出典: __src/App.jsx46-63__
 
 ## エラーハンドリングと開発ツール
 
-アプリケーションはReact Error Boundaryを通じて包括的なエラーハンドリングを実装し、デバッグ用の開発ツールを提供します：
+アプリケーションは、React Error Boundaryを通じた包括的なエラーハンドリングを実装し、デバッグ用の開発ツールを提供します:
 
-### エラーハンドリング機能
 * **Error Boundary**: `ErrorFallback`コンポーネントを介してユーザーフレンドリーなエラーメッセージをキャッチして表示
-* **React Query DevTools**: キャッシュステートとクエリパフォーマンスを検査するための開発環境で利用可能
-* **Hot Toast Notifications**: `react-hot-toast`を介したアクションとエラーのユーザーフィードバック
-* **Global Styles**: styled-componentsによる一貫したテーマ設定
+* **React Query DevTools**: キャッシュ状態とクエリパフォーマンスを検査するために開発環境で利用可能
+* **Hot Toast通知**: `react-hot-toast`を介したアクションとエラーのユーザーフィードバック
+* **グローバルスタイル**: styled-componentsを通じた一貫したテーマ設定
 
-```mermaid
-graph TD
-    Error[エラー発生] --> Boundary[Error Boundary]
-    Boundary --> Fallback[ErrorFallback表示]
-    Fallback --> Reset[ホームページへリセット]
-    
-    Action[ユーザーアクション] --> Success{成功？}
-    Success -->|はい| Toast1[成功トースト]
-    Success -->|いいえ| Toast2[エラートースト]
-    
-    DevMode[開発モード] --> DevTools[React Query DevTools]
-    DevTools --> Cache[キャッシュ検査]
-    DevTools --> Performance[パフォーマンス分析]
-```
+出典: __src/main.jsx9-14__ __src/App.jsx34-89__ __src/ui/ErrorFallback.jsx36-51__
 
-**ソース:** `src/main.jsx (9-14)`, `src/App.jsx (34-89)`, `src/ui/ErrorFallback.jsx (36-51)`
-
-エラーバウンダリは、ユーザーがエラーに遭遇した際に自動的にホームページにリセットし、優雅な回復メカニズムを提供します。
-
-## システムの特徴
-
-### セキュリティ
-- 認証ベースのルート保護
-- Supabaseによる安全なバックエンド接続
-- セッション管理とトークンハンドリング
-
-### パフォーマンス
-- React Queryによる効率的なデータキャッシング
-- Viteによる高速な開発環境
-- コンポーネントベースの遅延ローディング
-
-### 開発者体験
-- TypeScriptサポート準備
-- Hot Module Replacement
-- 包括的なエラーハンドリング
-- 開発ツールの統合
-
-### ユーザーエクスペリエンス
-- レスポンシブデザイン
-- リアルタイムデータ更新
-- 直感的なナビゲーション
-- 適切なローディング状態管理
+エラーバウンダリは、ユーザーがエラーに遭遇したときに自動的にホームページにリセットし、優雅な回復メカニズムを提供します。
