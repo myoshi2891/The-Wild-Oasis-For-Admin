@@ -1,6 +1,7 @@
 # The Wild Oasis - 概要
 
 ## 関連ソースファイル
+
 * __.gitignore__
 * __package-lock.json__
 * __package.json__
@@ -70,7 +71,7 @@ graph TB
 ## コア技術スタック
 
 | 技術 | 目的 | バージョン |
-|------|------|------------|
+| ------ | ------ | ------------ |
 | React | フロントエンドフレームワーク | ^18.2.0 |
 | React Router DOM | クライアントサイドルーティング | ^6.25.1 |
 | @tanstack/react-query | 状態管理とキャッシング | ^4.36.1 |
@@ -164,7 +165,7 @@ React Queryクライアントは`staleTime`を0に設定しており、常に新
 アプリケーションは5つの主要なビジネスドメインを中心に構成されています:
 
 | 機能 | ルート | 目的 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | ダッシュボード | `/dashboard` | 分析と今日のアクティビティ概要 |
 | 客室管理 | `/cabins` | ホテル客室のCRUD操作 |
 | 予約管理 | `/bookings`, `/bookings/:id` | 予約ライフサイクル管理 |
@@ -179,11 +180,34 @@ React Queryクライアントは`staleTime`を0に設定しており、常に新
 
 アプリケーションは、React Error Boundaryを通じた包括的なエラーハンドリングを実装し、デバッグ用の開発ツールを提供します:
 
-* **Error Boundary**: `ErrorFallback`コンポーネントを介してユーザーフレンドリーなエラーメッセージをキャッチして表示
-* **React Query DevTools**: キャッシュ状態とクエリパフォーマンスを検査するために開発環境で利用可能
-* **Hot Toast通知**: `react-hot-toast`を介したアクションとエラーのユーザーフィードバック
-* **グローバルスタイル**: styled-componentsを通じた一貫したテーマ設定
+* __Error Boundary__: `ErrorFallback`コンポーネントを介してユーザーフレンドリーなエラーメッセージをキャッチして表示
+* __React Query DevTools__: キャッシュ状態とクエリパフォーマンスを検査するために開発環境で利用可能
+* __Hot Toast通知__: `react-hot-toast`を介したアクションとエラーのユーザーフィードバック
+* __グローバルスタイル__: styled-componentsを通じた一貫したテーマ設定
 
 出典: __src/main.jsx9-14__ __src/App.jsx34-89__ __src/ui/ErrorFallback.jsx36-51__
 
 エラーバウンダリは、ユーザーがエラーに遭遇したときに自動的にホームページにリセットし、優雅な回復メカニズムを提供します。
+
+## AI開発環境
+
+このプロジェクトはAI仕様駆動開発（SDD）に対応しています。
+
+### 設定ファイル
+
+| ファイル / ディレクトリ | 対象ツール | 用途 |
+| ------------------------ | ----------- | ------ |
+| `CLAUDE.md` | Claude Code | プロジェクト永続メモリ |
+| `.claude/steering/` | Claude Code | チーム横断コンテキスト（プロダクト / 技術） |
+| `.claude/agents/` | Claude Code | サブエージェント定義（レビュー / テスト） |
+| `GEMINI.md` | Antigravity | グローバル永続メモリ |
+| `.agent/rules/` | Antigravity | プロジェクトルール（常時 / ファイルマッチ） |
+| `.agent/workflows/` | Antigravity | ワークフロー（`/review`, `/deploy`） |
+
+### 仕様書
+
+| ファイル | 用途 |
+| --------- | ------ |
+| `docs/spec.md` | プロダクト仕様書 |
+| `docs/design.md` | 技術設計書 |
+| `docs/tasks.md` | タスク追跡 |
