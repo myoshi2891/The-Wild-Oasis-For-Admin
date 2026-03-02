@@ -24,7 +24,7 @@ model: sonnet
 ## テストファイル配置
 
 - コンポーネントと同じディレクトリに `__tests__/` フォルダを作成
-- ファイル名: `ComponentName.test.jsx`
+- ファイル名: 実装ファイルと同じ拡張子を使用する（例: `ComponentName.test.[js|jsx|ts|tsx]`）。実装とテストで言語や環境の齟齬を防ぐため。
 
 ## テスト構造
 
