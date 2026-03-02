@@ -187,3 +187,26 @@ React Queryクライアントは`staleTime`を0に設定しており、常に新
 出典: __src/main.jsx9-14__ __src/App.jsx34-89__ __src/ui/ErrorFallback.jsx36-51__
 
 エラーバウンダリは、ユーザーがエラーに遭遇したときに自動的にホームページにリセットし、優雅な回復メカニズムを提供します。
+
+## AI開発環境
+
+このプロジェクトはAI仕様駆動開発（SDD）に対応しています。
+
+### 設定ファイル
+
+| ファイル / ディレクトリ | 対象ツール | 用途 |
+|------------------------|-----------|------|
+| `CLAUDE.md` | Claude Code | プロジェクト永続メモリ |
+| `.claude/steering/` | Claude Code | チーム横断コンテキスト（プロダクト / 技術） |
+| `.claude/agents/` | Claude Code | サブエージェント定義（レビュー / テスト） |
+| `GEMINI.md` | Antigravity | グローバル永続メモリ |
+| `.agent/rules/` | Antigravity | プロジェクトルール（常時 / ファイルマッチ） |
+| `.agent/workflows/` | Antigravity | ワークフロー（`/review`, `/deploy`） |
+
+### 仕様書
+
+| ファイル | 用途 |
+|---------|------|
+| `docs/spec.md` | プロダクト仕様書 |
+| `docs/design.md` | 技術設計書 |
+| `docs/tasks.md` | タスク追跡 |
