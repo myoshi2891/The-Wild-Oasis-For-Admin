@@ -46,4 +46,4 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 - Supabase のテーブルスキーマを直接変更しない
 - `node_modules/` 配下のファイルを変更しない
 - styled-components のグローバルスタイルは `src/styles/GlobalStyles.js` に集約
-- React Query のキャッシュ設定（staleTime: 0）を変更しない
+- React Query のキャッシュ設定（staleTime）は原則0をデフォルトとする。ただし、パフォーマンス改善等の正当な理由・測定結果・責任所在（オーナー）をドキュメント/PRに明記した上での変更は許可する。
