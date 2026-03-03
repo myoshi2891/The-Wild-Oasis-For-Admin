@@ -108,7 +108,8 @@ describe("Domain Types", () => {
 	});
 
 	it("CreateCabinFormData が File | FileList | string の image フィールドを持つ", () => {
-		const formData: CreateCabinFormData = {
+		// string case
+		const withString: CreateCabinFormData = {
 			name: "New Cabin",
 			maxCapacity: 4,
 			regularPrice: 300,
@@ -116,8 +117,13 @@ describe("Domain Types", () => {
 			description: "A new cabin",
 			image: "https://example.com/image.jpg",
 		};
+		expect(withString.name).toBe("New Cabin");
+		expect(typeof withString.image).toBe("string");
 
-		expect(formData.name).toBe("New Cabin");
+		// File case
+		const file = new File(["data"], "cabin.jpg", { type: "image/jpeg" });
+		const withFile: CreateCabinFormData = { ...withString, image: file };
+		expect(withFile.image).toBeInstanceOf(File);
 	});
 });
 

@@ -16,16 +16,25 @@ interface CreateCabinFormProps {
 	onCloseModal?: () => void;
 }
 
-function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabinFormProps) {
+function CreateCabinForm({ cabinToEdit, onCloseModal }: CreateCabinFormProps) {
 	const { isCreating, createCabin } = useCreateCabin();
 	const { isEditing, editCabin } = useEditCabin();
 
-	const { id: editId, ...editValues } = cabinToEdit;
+	const editId = cabinToEdit?.id;
 	const isEditSession = Boolean(editId);
 
 	const { register, handleSubmit, reset, getValues, formState } =
 		useForm<CreateCabinFormData>({
-			defaultValues: isEditSession ? editValues : {},
+			defaultValues: isEditSession && cabinToEdit
+				? {
+						name: cabinToEdit.name,
+						maxCapacity: cabinToEdit.maxCapacity,
+						regularPrice: cabinToEdit.regularPrice,
+						discount: cabinToEdit.discount,
+						description: cabinToEdit.description,
+						image: cabinToEdit.image,
+					}
+				: {},
 		});
 	const { errors } = formState;
 
@@ -45,7 +54,7 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 
 		if (isEditSession)
 			editCabin(
-				{ newCabinData: { ...data, image } as CreateEditCabinData, id: editId },
+				{ newCabinData: { ...data, image } as CreateEditCabinData, id: editId! },
 				{
 					onSuccess: () => {
 						reset();
@@ -117,7 +126,7 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 						valueAsNumber: true,
 						min: {
 							value: 1,
-							message: "Capacity should be at least 1",
+							message: "Price should be at least 1",
 						},
 					})}
 				/>

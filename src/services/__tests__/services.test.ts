@@ -113,7 +113,7 @@ describe("apiCabins", () => {
 		});
 
 		const { deleteCabin } = await import("../apiCabins");
-		await expect(deleteCabin(1)).rejects.toThrow("Cabins could not be deleted");
+		await expect(deleteCabin(1)).rejects.toThrow("Cabin could not be deleted");
 	});
 });
 

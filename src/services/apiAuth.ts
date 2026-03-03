@@ -32,7 +32,8 @@ export async function login({ email, password }: LoginFormData) {
 }
 
 export async function getCurrentUser() {
-	const { data: session } = await supabase.auth.getSession();
+	const { data: session, error: sessionError } = await supabase.auth.getSession();
+	if (sessionError) throw new Error(sessionError.message);
 	if (!session.session) return null;
 	const { data, error } = await supabase.auth.getUser();
 
@@ -90,13 +91,22 @@ export async function updateCurrentUser({
 
 	if (storageError) throw new Error(storageError.message);
 
-	const { data: updatedUser, error: error2 } = await supabase.auth.updateUser(
-		{
-			data: {
-				avatar: `${supabaseUrl}/storage/v1/object/public/avatars/${fileName}`,
-			},
-		}
-	);
-	if (error2) throw new Error(error2.message);
-	return updatedUser;
+	try {
+		const { data: updatedUser, error: error2 } = await supabase.auth.updateUser(
+			{
+				data: {
+					avatar: `${supabaseUrl}/storage/v1/object/public/avatars/${fileName}`,
+				},
+			}
+		);
+		if (error2) throw error2;
+		return updatedUser;
+	} catch (err) {
+		// Clean up uploaded avatar on failure
+		const { error: removeError } = await supabase.storage
+			.from("avatars")
+			.remove([fileName]);
+		if (removeError) console.warn("Failed to clean up avatar:", removeError);
+		throw err instanceof Error ? err : new Error(String(err));
+	}
 }

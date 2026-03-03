@@ -115,11 +115,7 @@ function Toggle({ id }: { id: string }) {
 
 	function handleClick(e: MouseEvent<HTMLButtonElement>) {
 		e.stopPropagation();
-		const rect = (
-			e.target as HTMLElement
-		)
-			.closest("button")!
-			.getBoundingClientRect();
+		const rect = e.currentTarget.getBoundingClientRect();
 		setPosition({
 			x: window.innerWidth - rect.width - rect.x,
 			y: rect.y + rect.height + 8,

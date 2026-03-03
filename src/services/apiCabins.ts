@@ -12,6 +12,12 @@ export async function getCabins(): Promise<Cabin[]> {
 	return data;
 }
 
+/**
+ * API-level cabin data for create/edit operations.
+ * Note: image is narrowed to File | string (not FileList).
+ * CreateCabinFormData.image may be File | FileList | string from the form;
+ * the form's onSubmit extracts FileList[0] before passing to this interface.
+ */
 export interface CreateEditCabinData {
 	name: string;
 	maxCapacity: number;
@@ -88,7 +94,7 @@ export async function deleteCabin(id: number): Promise<null> {
 
 	if (error) {
 		console.error(error);
-		throw new Error("Cabins could not be deleted.");
+		throw new Error("Cabin could not be deleted.");
 	}
 	return data;
 }
