@@ -3,6 +3,7 @@ import {
 	createContext,
 	useContext,
 	useState,
+	type MouseEvent as ReactMouseEvent,
 	type ReactElement,
 	type ReactNode,
 } from "react";
@@ -65,6 +66,13 @@ interface ModalContextType {
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
+function useModalContext(): ModalContextType {
+	const context = useContext(ModalContext);
+	if (!context)
+		throw new Error("Modal compound components must be used within a <Modal>");
+	return context;
+}
+
 function Modal({ children }: { children: ReactNode }) {
 	const [openName, setOpenName] = useState("");
 	const close = () => setOpenName("");
@@ -81,14 +89,14 @@ function Open({
 	children,
 	opens: opensWindowName,
 }: {
-	children: ReactElement<{ onClick?: () => void }>;
+	children: ReactElement<{ onClick?: (e: ReactMouseEvent) => void }>;
 	opens: string;
 }) {
-	const { open } = useContext(ModalContext)!;
+	const { open } = useModalContext();
 
 	return cloneElement(children, {
-		onClick: () => {
-			children.props.onClick?.();
+		onClick: (e: ReactMouseEvent) => {
+			children.props.onClick?.(e);
 			open(opensWindowName);
 		},
 	});
@@ -101,7 +109,7 @@ function Window({
 	children: ReactElement<{ onCloseModal?: () => void }>;
 	name: string;
 }) {
-	const { openName, close } = useContext(ModalContext)!;
+	const { openName, close } = useModalContext();
 
 	const ref = useOutsideClick<HTMLDivElement>(close);
 	if (name !== openName) return null;

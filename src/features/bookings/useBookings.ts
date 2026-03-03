@@ -19,7 +19,7 @@ export function useBookings() {
 	const allowedFields = [
 		"startDate",
 		"endDate",
-		"createdAt",
+		"created_at",
 		"totalPrice",
 		"status",
 	];

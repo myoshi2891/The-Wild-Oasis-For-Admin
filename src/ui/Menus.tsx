@@ -86,6 +86,13 @@ interface MenusContextType {
 
 const MenusContext = createContext<MenusContextType | undefined>(undefined);
 
+function useMenusContext(): MenusContextType {
+	const context = useContext(MenusContext);
+	if (!context)
+		throw new Error("Menus compound components must be used within a <Menus>");
+	return context;
+}
+
 function Menus({ children }: { children: ReactNode }) {
 	const [openId, setOpenId] = useState("");
 	const [position, setPosition] = useState<Position | null>(null);
@@ -103,7 +110,8 @@ function Menus({ children }: { children: ReactNode }) {
 }
 
 function Toggle({ id }: { id: string }) {
-	const { openId, close, open, setPosition } = useContext(MenusContext)!;
+	const { openId, close, open, setPosition } = useMenusContext();
+	const isOpen = openId === id;
 
 	function handleClick(e: MouseEvent<HTMLButtonElement>) {
 		e.stopPropagation();
@@ -121,20 +129,25 @@ function Toggle({ id }: { id: string }) {
 	}
 
 	return (
-		<StyledToggle onClick={handleClick} aria-label="Open menu">
+		<StyledToggle
+			onClick={handleClick}
+			aria-label="Open menu"
+			aria-haspopup="true"
+			aria-expanded={isOpen}
+		>
 			<HiEllipsisVertical aria-hidden="true" />
 		</StyledToggle>
 	);
 }
 
 function List({ id, children }: { id: string; children: ReactNode }) {
-	const { openId, position, close } = useContext(MenusContext)!;
+	const { openId, position, close } = useMenusContext();
 	const ref = useOutsideClick<HTMLUListElement>(close, false);
 
-	if (openId !== id) return null;
+	if (openId !== id || !position) return null;
 
 	return createPortal(
-		<StyledList $position={position!} ref={ref}>
+		<StyledList $position={position} ref={ref}>
 			{children}
 		</StyledList>,
 		document.body
@@ -150,7 +163,7 @@ function MenuButton({
 	icon: ReactNode;
 	onClick?: () => void;
 }) {
-	const { close } = useContext(MenusContext)!;
+	const { close } = useMenusContext();
 
 	function handleClick() {
 		onClick?.();
