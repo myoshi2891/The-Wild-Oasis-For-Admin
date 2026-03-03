@@ -107,7 +107,7 @@ describe("Domain Types", () => {
 		expect(booking.guests.fullName).toBe("John Doe");
 	});
 
-	it("CreateCabinFormData が FileList | string の image フィールドを持つ", () => {
+	it("CreateCabinFormData が File | string の image フィールドを持つ", () => {
 		const formData: CreateCabinFormData = {
 			name: "New Cabin",
 			maxCapacity: 4,
