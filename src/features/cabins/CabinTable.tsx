@@ -1,3 +1,4 @@
+import type { Cabin } from "../../types/domain";
 import Spinner from "../../ui/Spinner";
 import CabinRow from "./CabinRow";
 import { useCabins } from "./useCabins";
@@ -11,16 +12,16 @@ function CabinTable() {
 	const [searchParams] = useSearchParams();
 
 	if (isLoading) return <Spinner />;
-	if (!cabins.length) return <Empty resourceName="cabins" />;
+	if (!cabins?.length) return <Empty resourceName="cabins" />;
 
 	const filterValue = searchParams.get("discount") || "all";
 
 	let filteredCabins;
 	if (filterValue === "all") filteredCabins = cabins;
 	if (filterValue === "no-discount")
-		filteredCabins = cabins.filter((cabin) => cabin.discount === 0);
+		filteredCabins = cabins!.filter((cabin) => cabin.discount === 0);
 	if (filterValue === "with-discount")
-		filteredCabins = cabins.filter((cabin) => cabin.discount > 0);
+		filteredCabins = cabins!.filter((cabin) => cabin.discount > 0);
 
 	const sortBy = searchParams.get("sortBy") || "startDate-asc";
 	const [field, direction] = sortBy.split("-");
@@ -29,11 +30,13 @@ function CabinTable() {
 	// 	(a, b) => (a[field] - b[field]) * modifier
 	// );
 
-	const sortedCabins = filteredCabins?.sort((a, b) => {
-		if (typeof a[field] === "string") {
-			return a[field].localeCompare(b[field]) * modifier;
+	const sortedCabins = filteredCabins?.sort((a: Cabin, b: Cabin) => {
+		const aVal = a[field as keyof Cabin];
+		const bVal = b[field as keyof Cabin];
+		if (typeof aVal === "string" && typeof bVal === "string") {
+			return aVal.localeCompare(bVal) * modifier;
 		} else {
-			return (a[field] - b[field]) * modifier;
+			return ((aVal as number) - (bVal as number)) * modifier;
 		}
 	});
 
@@ -50,7 +53,7 @@ function CabinTable() {
 				</Table.Header>
 
 				<Table.Body
-					data={sortedCabins}
+					data={sortedCabins ?? []}
 					render={(cabin) => (
 						<CabinRow cabin={cabin} key={cabin.id} />
 					)}

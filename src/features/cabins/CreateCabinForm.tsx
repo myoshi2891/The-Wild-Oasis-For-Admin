@@ -1,3 +1,6 @@
+import type { Cabin } from "../../types/domain";
+import type { CreateEditCabinData } from "../../services/apiCabins";
+import type { FieldValues } from "react-hook-form";
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
 import Button from "../../ui/Button";
@@ -9,7 +12,12 @@ import { useForm } from "react-hook-form";
 import { useCreateCabin } from "./useCreateCabin";
 import { useEditCabin } from "./useEditCabin";
 
-function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
+interface CreateCabinFormProps {
+	cabinToEdit?: Cabin;
+	onCloseModal?: () => void;
+}
+
+function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabinFormProps) {
 	const { isCreating, createCabin } = useCreateCabin();
 	const { isEditing, editCabin } = useEditCabin();
 
@@ -23,15 +31,15 @@ function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
 
 	const isWorking = isCreating || isEditing;
 
-	function onSubmit(data) {
+	function onSubmit(data: FieldValues) {
 		const image =
 			typeof data.image === "string" ? data.image : data.image[0];
 
 		if (isEditSession)
 			editCabin(
-				{ newCabinData: { ...data, image }, id: editId },
+				{ newCabinData: { ...data, image } as CreateEditCabinData, id: editId },
 				{
-					onSuccess: (data) => {
+					onSuccess: () => {
 						reset();
 						onCloseModal?.();
 					},
@@ -39,16 +47,17 @@ function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
 			);
 		else
 			createCabin(
-				{ ...data, image: image },
+				{ ...data, image: image } as CreateEditCabinData,
 				{
-					onSuccess: (data) => {
+					onSuccess: () => {
 						reset();
 					},
 				}
 			);
 	}
 
-	function onError(errors) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	function onError(errors: FieldValues) {
 		// console.log(errors);
 	}
 
@@ -124,7 +133,6 @@ function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
 				error={errors?.description?.message}
 			>
 				<Textarea
-					type="number"
 					id="description"
 					disabled={isWorking}
 					defaultValue=""
