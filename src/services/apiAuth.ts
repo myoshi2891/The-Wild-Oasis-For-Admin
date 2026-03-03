@@ -1,6 +1,13 @@
 import supabase, { supabaseUrl } from "./supabase";
+import type { UpdateUserData } from "../types/domain";
 
-export async function signup({ fullName, email, password }) {
+interface SignupParams {
+	fullName: string;
+	email: string;
+	password: string;
+}
+
+export async function signup({ fullName, email, password }: SignupParams) {
 	const { data, error } = await supabase.auth.signUp({
 		email,
 		password,
@@ -16,8 +23,13 @@ export async function signup({ fullName, email, password }) {
 	return data;
 }
 
-export async function login({ email, password }) {
-	let { data, error } = await supabase.auth.signInWithPassword({
+interface LoginParams {
+	email: string;
+	password: string;
+}
+
+export async function login({ email, password }: LoginParams) {
+	const { data, error } = await supabase.auth.signInWithPassword({
 		email,
 		password,
 	});
@@ -35,16 +47,21 @@ export async function getCurrentUser() {
 	return data?.user;
 }
 
-export async function logout() {
+export async function logout(): Promise<void> {
 	const { error } = await supabase.auth.signOut();
 	if (error) throw new Error(error.message);
 }
 
-export async function updateCurrentUser({ password, fullName, avatar }) {
-	let updateData;
+export async function updateCurrentUser({
+	password,
+	fullName,
+	avatar,
+}: UpdateUserData) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let updateData: Record<string, any> | undefined;
 	if (password) updateData = { password };
 	if (fullName) updateData = { data: { fullName } };
-	const { data, error } = await supabase.auth.updateUser(updateData);
+	const { data, error } = await supabase.auth.updateUser(updateData!);
 
 	if (error) throw new Error(error.message);
 	if (!avatar) return data;

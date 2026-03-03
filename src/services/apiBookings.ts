@@ -1,8 +1,32 @@
 import { PAGE_SIZE } from "../utils/constants";
 import { getToday } from "../utils/helpers";
 import supabase from "./supabase";
+import type { Filter, SortBy } from "../types/common";
+import type {
+	Booking,
+	BookingAfterDate,
+	BookingWithDetails,
+	BookingWithGuestInfo,
+	BookingWithSummary,
+	StayAfterDate,
+} from "../types/domain";
 
-export async function getBookings({ filter, sortBy, page }) {
+interface GetBookingsParams {
+	filter: Filter | null;
+	sortBy: SortBy;
+	page: number;
+}
+
+interface GetBookingsResult {
+	data: BookingWithSummary[];
+	count: number;
+}
+
+export async function getBookings({
+	filter,
+	sortBy,
+	page,
+}: GetBookingsParams): Promise<GetBookingsResult> {
 	let query = supabase
 		.from("bookings")
 		.select(
@@ -11,7 +35,11 @@ export async function getBookings({ filter, sortBy, page }) {
 		);
 
 	if (filter)
-		query = query[filter.method || "eq"](filter.field, filter.value);
+		query = query[filter.method || "eq"](
+			filter.field,
+			filter.value
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		) as any;
 
 	if (page) {
 		const from = (page - 1) * PAGE_SIZE;
@@ -30,10 +58,10 @@ export async function getBookings({ filter, sortBy, page }) {
 		console.error(error);
 		throw new Error("Bookings could not be loaded");
 	}
-	return { data, count };
+	return { data: data as unknown as BookingWithSummary[], count: count ?? 0 };
 }
 
-export async function getBooking(id) {
+export async function getBooking(id: number): Promise<BookingWithDetails> {
 	const { data, error } = await supabase
 		.from("bookings")
 		.select("*, cabins(*), guests(*)")
@@ -45,11 +73,13 @@ export async function getBooking(id) {
 		throw new Error("Booking not found");
 	}
 
-	return data;
+	return data as unknown as BookingWithDetails;
 }
 
 // Returns all BOOKINGS that are were created after the given date. Useful to get bookings created in the last 30 days, for example.
-export async function getBookingsAfterDate(date) {
+export async function getBookingsAfterDate(
+	date: string
+): Promise<BookingAfterDate[]> {
 	const { data, error } = await supabase
 		.from("bookings")
 		.select("created_at, totalPrice, extrasPrice")
@@ -61,14 +91,15 @@ export async function getBookingsAfterDate(date) {
 		throw new Error("Bookings could not get loaded");
 	}
 
-	return data;
+	return data as BookingAfterDate[];
 }
 
 // Returns all STAYS that are were created after the given date
-export async function getStaysAfterDate(date) {
+export async function getStaysAfterDate(
+	date: string
+): Promise<StayAfterDate[]> {
 	const { data, error } = await supabase
 		.from("bookings")
-		// .select('*')
 		.select("*, guests(fullName)")
 		.gte("startDate", date)
 		.lte("startDate", getToday());
@@ -78,11 +109,13 @@ export async function getStaysAfterDate(date) {
 		throw new Error("Bookings could not get loaded");
 	}
 
-	return data;
+	return data as unknown as StayAfterDate[];
 }
 
 // Activity means that there is a check in or a check out today
-export async function getStaysTodayActivity() {
+export async function getStaysTodayActivity(): Promise<
+	BookingWithGuestInfo[]
+> {
 	const { data, error } = await supabase
 		.from("bookings")
 		.select("*, guests(fullName, nationality, countryFlag)")
@@ -99,10 +132,13 @@ export async function getStaysTodayActivity() {
 		console.error(error);
 		throw new Error("Bookings could not get loaded");
 	}
-	return data;
+	return data as unknown as BookingWithGuestInfo[];
 }
 
-export async function updateBooking(id, obj) {
+export async function updateBooking(
+	id: number,
+	obj: Partial<Booking>
+): Promise<Booking> {
 	const { data, error } = await supabase
 		.from("bookings")
 		.update(obj)
@@ -114,10 +150,10 @@ export async function updateBooking(id, obj) {
 		console.error(error);
 		throw new Error("Booking could not be updated");
 	}
-	return data;
+	return data as Booking;
 }
 
-export async function deleteBooking(id) {
+export async function deleteBooking(id: number): Promise<null> {
 	// REMEMBER RLS POLICIES
 	const { data, error } = await supabase
 		.from("bookings")
