@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import styled from "styled-components";
 import { useUser } from "../features/authentication/useUser";
 import Spinner from "./Spinner";
@@ -12,7 +13,11 @@ const FullPage = styled.div`
 	justify-content: center;
 `;
 
-function ProtectedRoute({ children }) {
+interface ProtectedRouteProps {
+	children: ReactNode;
+}
+
+function ProtectedRoute({ children }: ProtectedRouteProps) {
 	const navigate = useNavigate();
 
 	const { isLoading, isAuthenticated } = useUser();
