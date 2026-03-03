@@ -82,7 +82,7 @@ export async function updateCurrentUser({
 		if (!user) throw new Error("User not authenticated");
 		fileUserId = user.id;
 	}
-	const fileName = `avatar-${fileUserId}-${Math.random()}`;
+	const fileName = `avatar-${fileUserId}-${crypto.randomUUID()}`;
 
 	const { error: storageError } = await supabase.storage
 		.from("avatars")

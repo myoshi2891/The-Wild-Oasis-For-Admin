@@ -5,7 +5,10 @@ import { getBooking } from "../../services/apiBookings";
 export function useBooking() {
 	const { bookingId } = useParams();
 	const numericBookingId = Number(bookingId);
-	const isValidId = Boolean(bookingId) && !Number.isNaN(numericBookingId);
+	const isValidId =
+		Boolean(bookingId) &&
+		Number.isInteger(numericBookingId) &&
+		numericBookingId > 0;
 
 	const {
 		isLoading,

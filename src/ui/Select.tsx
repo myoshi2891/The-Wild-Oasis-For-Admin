@@ -14,10 +14,10 @@ interface SelectProps
 	options: SelectOption[];
 	value: string;
 	onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-	$type?: string;
+	$type?: "white" | "default";
 }
 
-const StyledSelect = styled.select<{ $type?: string }>`
+const StyledSelect = styled.select<{ $type?: "white" | "default" }>`
   font-size: 1.4rem;
   padding: 0.8rem 1.2rem;
   border: 1px solid

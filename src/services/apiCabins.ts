@@ -32,7 +32,7 @@ export async function createEditCabin(
 	const imageName =
 		typeof newCabin.image === "string"
 			? ""
-			: `${Math.random()}-${newCabin.image.name}`.replace(/\//g, "");
+			: `${crypto.randomUUID()}-${newCabin.image.name}`.replace(/\//g, "");
 
 	const imagePath = hasImagePath
 		? (newCabin.image as string)
@@ -54,7 +54,9 @@ export async function createEditCabin(
 
 	if (error) {
 		console.error(error);
-		throw new Error("Cabin could not be created.");
+		throw new Error(
+			id ? "Cabin could not be updated." : "Cabin could not be created."
+		);
 	}
 
 	if (hasImagePath) return data as Cabin;

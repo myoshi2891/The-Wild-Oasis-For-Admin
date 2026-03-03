@@ -35,7 +35,7 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 		let image: File | string;
 		if (typeof data.image === "string") {
 			image = data.image;
-		} else if (data.image instanceof FileList) {
+		} else if (data.image instanceof FileList && data.image.length > 0) {
 			image = data.image[0];
 		} else if (data.image instanceof File) {
 			image = data.image;
