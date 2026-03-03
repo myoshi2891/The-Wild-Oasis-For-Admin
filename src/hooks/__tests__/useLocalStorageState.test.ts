@@ -34,4 +34,14 @@ describe("useLocalStorageState", () => {
 		expect(result.current[0]).toBe("updated");
 		expect(JSON.parse(localStorage.getItem("testKey")!)).toBe("updated");
 	});
+
+	it("不正な JSON があるとデフォルト値にフォールバックする", () => {
+		localStorage.setItem("testKey", "invalid json");
+		const { result } = renderHook(() =>
+			useLocalStorageState<boolean>(false, "testKey")
+		);
+		expect(result.current[0]).toBe(false);
+		// After effect, localStorage should be overwritten with the default
+		expect(JSON.parse(localStorage.getItem("testKey")!)).toBe(false);
+	});
 });

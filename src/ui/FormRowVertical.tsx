@@ -1,10 +1,10 @@
-import type { ReactElement } from "react";
+import { isValidElement, type ReactNode } from "react";
 import styled from "styled-components";
 
 interface FormRowVerticalProps {
 	label?: string;
 	error?: string;
-	children: ReactElement<{ id?: string }>;
+	children: ReactNode;
 }
 
 const StyledFormRow = styled.div`
@@ -24,13 +24,16 @@ const Error = styled.span`
 `;
 
 function FormRowVertical({ label, error, children }: FormRowVerticalProps) {
-  return (
-    <StyledFormRow>
-      {label && <Label htmlFor={children.props.id}>{label}</Label>}
-      {children}
-      {error && <Error>{error}</Error>}
-    </StyledFormRow>
-  );
+	const htmlFor =
+		isValidElement<{ id?: string }>(children) ? children.props.id : undefined;
+
+	return (
+		<StyledFormRow>
+			{label && <Label htmlFor={htmlFor}>{label}</Label>}
+			{children}
+			{error && <Error>{error}</Error>}
+		</StyledFormRow>
+	);
 }
 
 export default FormRowVertical;

@@ -30,15 +30,18 @@ function CabinTable() {
 	// 	(a, b) => (a[field] - b[field]) * modifier
 	// );
 
-	const sortedCabins = filteredCabins?.sort((a: Cabin, b: Cabin) => {
-		const aVal = a[field as keyof Cabin];
-		const bVal = b[field as keyof Cabin];
-		if (typeof aVal === "string" && typeof bVal === "string") {
-			return aVal.localeCompare(bVal) * modifier;
-		} else {
-			return ((aVal as number) - (bVal as number)) * modifier;
-		}
-	});
+	const sortedCabins = filteredCabins
+		? [...filteredCabins].sort((a: Cabin, b: Cabin) => {
+				const aVal = a[field as keyof Cabin];
+				const bVal = b[field as keyof Cabin];
+				if (typeof aVal === "string" && typeof bVal === "string") {
+					return aVal.localeCompare(bVal) * modifier;
+				}
+				return (
+					((Number(aVal) || 0) - (Number(bVal) || 0)) * modifier
+				);
+			})
+		: [];
 
 	return (
 		<Menus>

@@ -81,38 +81,38 @@ function Open({
 	children,
 	opens: opensWindowName,
 }: {
-	children: ReactElement;
+	children: ReactElement<{ onClick?: () => void }>;
 	opens: string;
 }) {
 	const { open } = useContext(ModalContext)!;
 
 	return cloneElement(children, {
 		onClick: () => open(opensWindowName),
-	} as Record<string, unknown>);
+	});
 }
 
 function Window({
 	children,
 	name,
 }: {
-	children: ReactElement;
+	children: ReactElement<{ onCloseModal?: () => void }>;
 	name: string;
 }) {
 	const { openName, close } = useContext(ModalContext)!;
 
-	const ref = useOutsideClick(close);
+	const ref = useOutsideClick<HTMLDivElement>(close);
 	if (name !== openName) return null;
 
 	return createPortal(
 		<Overlay>
 			<StyledModal ref={ref}>
-				<CloseButton onClick={close}>
-					<HiXMark />
+				<CloseButton onClick={close} aria-label="Close">
+					<HiXMark aria-hidden="true" />
 				</CloseButton>
 				<div>
 					{cloneElement(children, {
 						onCloseModal: close,
-					} as Record<string, unknown>)}
+					})}
 				</div>
 			</StyledModal>
 		</Overlay>,

@@ -1,6 +1,5 @@
-import type { Cabin } from "../../types/domain";
+import type { Cabin, CreateCabinFormData } from "../../types/domain";
 import type { CreateEditCabinData } from "../../services/apiCabins";
-import type { FieldValues } from "react-hook-form";
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
 import Button from "../../ui/Button";
@@ -24,16 +23,19 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 	const { id: editId, ...editValues } = cabinToEdit;
 	const isEditSession = Boolean(editId);
 
-	const { register, handleSubmit, reset, getValues, formState } = useForm({
-		defaultValues: isEditSession ? editValues : {},
-	});
+	const { register, handleSubmit, reset, getValues, formState } =
+		useForm<CreateCabinFormData>({
+			defaultValues: isEditSession ? editValues : {},
+		});
 	const { errors } = formState;
 
 	const isWorking = isCreating || isEditing;
 
-	function onSubmit(data: FieldValues) {
+	function onSubmit(data: CreateCabinFormData) {
 		const image =
-			typeof data.image === "string" ? data.image : data.image[0];
+			typeof data.image === "string"
+				? data.image
+				: (data.image as unknown as FileList)?.[0];
 
 		if (isEditSession)
 			editCabin(
@@ -57,14 +59,14 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	function onError(errors: FieldValues) {
+	function onError(_errors: Record<string, unknown>) {
 		// console.log(errors);
 	}
 
 	return (
 		<Form
 			onSubmit={handleSubmit(onSubmit, onError)}
-			type={onCloseModal ? "modal" : "regular"}
+			$type={onCloseModal ? "modal" : "regular"}
 		>
 			<FormRow label="Cabin name" error={errors?.name?.message}>
 				<Input
@@ -87,6 +89,7 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 					disabled={isWorking}
 					{...register("maxCapacity", {
 						required: "This field is required",
+						valueAsNumber: true,
 						min: {
 							value: 1,
 							message: "Capacity should be at least 1",
@@ -105,6 +108,7 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 					disabled={isWorking}
 					{...register("regularPrice", {
 						required: "This field is required",
+						valueAsNumber: true,
 						min: {
 							value: 1,
 							message: "Capacity should be at least 1",
@@ -121,6 +125,7 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 					defaultValue={0}
 					{...register("discount", {
 						required: "This field is required",
+						valueAsNumber: true,
 						validate: (value) =>
 							value <= getValues().regularPrice ||
 							"Discount should be less than regular price.",

@@ -1,7 +1,9 @@
 import styled from "styled-components";
 
+type TagType = "green" | "blue" | "silver";
+
 interface TagProps {
-	type: string;
+	$type: TagType;
 }
 
 const Tag = styled.span<TagProps>`
@@ -13,8 +15,9 @@ const Tag = styled.span<TagProps>`
   border-radius: 100px;
 
   /* Make these dynamic, based on the received prop */
-  color: var(--color-${(props) => props.type}-700);
-  background-color: var(--color-${(props) => props.type}-100);
+  color: var(--color-${(props) => props.$type}-700);
+  background-color: var(--color-${(props) => props.$type}-100);
 `;
 
 export default Tag;
+export type { TagType };

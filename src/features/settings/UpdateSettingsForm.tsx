@@ -5,6 +5,7 @@ import Input from "../../ui/Input";
 import Spinner from "../../ui/Spinner";
 import { useSettings } from "./useSettings";
 import { useUpdateSetting } from "./useUpdateSetting";
+import type { SettingsUpdate } from "../../types/domain";
 
 function UpdateSettingsForm() {
 	const {
@@ -21,10 +22,13 @@ function UpdateSettingsForm() {
 
 	if (isLoading) return <Spinner />;
 
-	function handleUpdate(e: FocusEvent<HTMLInputElement>, field: string) {
+	function handleUpdate(
+		e: FocusEvent<HTMLInputElement>,
+		field: keyof SettingsUpdate
+	) {
 		const { value } = e.target;
 		if (!value) return;
-		updateSetting({ [field]: value });
+		updateSetting({ [field]: Number(value) });
 	}
 
 	return (

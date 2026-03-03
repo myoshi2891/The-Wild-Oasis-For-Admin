@@ -11,6 +11,7 @@ export function useBooking() {
 	} = useQuery({
 		queryKey: ["booking", bookingId],
 		queryFn: () => getBooking(Number(bookingId)),
+		enabled: Boolean(bookingId) && !Number.isNaN(Number(bookingId)),
 		retry: false,
 	});
 

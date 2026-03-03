@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, ComponentPropsWithoutRef } from "react";
 import styled from "styled-components";
 
 interface SelectOption {
@@ -6,12 +6,15 @@ interface SelectOption {
 	label: string;
 }
 
-interface SelectProps {
+interface SelectProps
+	extends Omit<
+		ComponentPropsWithoutRef<"select">,
+		"value" | "onChange"
+	> {
 	options: SelectOption[];
 	value: string;
 	onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
 	type?: string;
-	[key: string]: unknown;
 }
 
 const StyledSelect = styled.select<{ type?: string }>`

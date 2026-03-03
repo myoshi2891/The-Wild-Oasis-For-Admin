@@ -40,15 +40,15 @@ interface Position {
 	y: number;
 }
 
-const StyledList = styled.ul<{ position: Position }>`
+const StyledList = styled.ul<{ $position: Position }>`
 	position: fixed;
 
 	background-color: var(--color-grey-0);
 	box-shadow: var(--shadow-md);
 	border-radius: var(--border-radius-md);
 
-	right: ${(props) => props.position.x}px;
-	top: ${(props) => props.position.y}px;
+	right: ${(props) => props.$position.x}px;
+	top: ${(props) => props.$position.y}px;
 `;
 
 const StyledButton = styled.button`
@@ -129,12 +129,12 @@ function Toggle({ id }: { id: string }) {
 
 function List({ id, children }: { id: string; children: ReactNode }) {
 	const { openId, position, close } = useContext(MenusContext)!;
-	const ref = useOutsideClick(close, false);
+	const ref = useOutsideClick<HTMLUListElement>(close, false);
 
 	if (openId !== id) return null;
 
 	return createPortal(
-		<StyledList position={position!} ref={ref}>
+		<StyledList $position={position!} ref={ref}>
 			{children}
 		</StyledList>,
 		document.body

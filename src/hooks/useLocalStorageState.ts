@@ -5,13 +5,21 @@ export function useLocalStorageState<T>(
 	key: string
 ): [T, Dispatch<SetStateAction<T>>] {
 	const [value, setValue] = useState<T>(function () {
-		const storedValue = localStorage.getItem(key);
-		return storedValue ? (JSON.parse(storedValue) as T) : initialState;
+		try {
+			const storedValue = localStorage.getItem(key);
+			return storedValue ? (JSON.parse(storedValue) as T) : initialState;
+		} catch {
+			return initialState;
+		}
 	});
 
 	useEffect(
 		function () {
-			localStorage.setItem(key, JSON.stringify(value));
+			try {
+				localStorage.setItem(key, JSON.stringify(value));
+			} catch (err) {
+				console.warn(`Failed to write to localStorage key "${key}":`, err);
+			}
 		},
 		[value, key]
 	);
