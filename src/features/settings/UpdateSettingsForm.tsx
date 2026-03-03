@@ -1,3 +1,4 @@
+import type { FocusEvent } from "react";
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
@@ -20,7 +21,7 @@ function UpdateSettingsForm() {
 
 	if (isLoading) return <Spinner />;
 
-	function handleUpdate(e, field) {
+	function handleUpdate(e: FocusEvent<HTMLInputElement>, field: string) {
 		const { value } = e.target;
 		if (!value) return;
 		updateSetting({ [field]: value });

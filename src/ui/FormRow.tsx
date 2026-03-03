@@ -1,10 +1,10 @@
-import type { ReactElement } from "react";
+import { isValidElement, type ReactNode } from "react";
 import styled from "styled-components";
 
 interface FormRowProps {
 	label?: string;
 	error?: string;
-	children: ReactElement<{ id?: string }>;
+	children: ReactNode;
 }
 
 const StyledFormRow = styled.div`
@@ -44,9 +44,13 @@ const Error = styled.span`
 `;
 
 function FormRow({ label, error, children }: FormRowProps) {
+	const childId = isValidElement<{ id?: string }>(children)
+		? children.props.id
+		: undefined;
+
 	return (
 		<StyledFormRow>
-			{label && <Label htmlFor={children.props.id}>{label}</Label>}
+			{label && <Label htmlFor={childId}>{label}</Label>}
 			{children}
 			{error && <Error>{error}</Error>}
 		</StyledFormRow>
@@ -54,3 +58,4 @@ function FormRow({ label, error, children }: FormRowProps) {
 }
 
 export default FormRow;
+

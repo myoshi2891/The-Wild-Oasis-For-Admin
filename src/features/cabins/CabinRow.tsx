@@ -1,5 +1,5 @@
 import styled from "styled-components";
-
+import type { Cabin } from "../../types/domain";
 import CreateCabinForm from "./CreateCabinForm";
 import { useDeleteCabin } from "./useDeleteCabin";
 import { formatCurrency } from "../../utils/helpers";
@@ -38,7 +38,7 @@ const Discount = styled.div`
 	color: var(--color-green-700);
 `;
 
-function CabinRow({ cabin }) {
+function CabinRow({ cabin }: { cabin: Cabin }) {
 	const { isDeleting, deleteCabin } = useDeleteCabin();
 	const { isCreating, createCabin } = useCreateCabin();
 
@@ -77,12 +77,11 @@ function CabinRow({ cabin }) {
 			<div>
 				<Modal>
 					<Menus.Menu>
-						<Menus.Toggle id={cabinId} />
-						<Menus.List id={cabinId}>
+						<Menus.Toggle id={String(cabinId)} />
+						<Menus.List id={String(cabinId)}>
 							<Menus.Button
 								icon={<HiSquare2Stack />}
 								onClick={handleDuplicate}
-								disabled={isCreating}
 							>
 								Duplicate
 							</Menus.Button>
@@ -103,7 +102,7 @@ function CabinRow({ cabin }) {
 						</Modal.Window>
 						<Modal.Window name="delete">
 							<ConfirmDelete
-								resorceName="cabins"
+								resourceName="cabins"
 								disabled={isDeleting}
 								onConfirm={() => deleteCabin(cabinId)}
 							/>

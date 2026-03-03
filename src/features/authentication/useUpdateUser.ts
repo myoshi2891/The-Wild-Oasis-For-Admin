@@ -7,12 +7,12 @@ export function useUpdateUser() {
 
 	const { mutate: updateUser, isLoading: isUpdating } = useMutation({
 		mutationFn: updateCurrentUser,
-		onSuccess: ({ user }) => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		onSuccess: (data: any) => {
 			toast.success("User account successfully updated.");
-			queryClient.setQueryData(["user"], user);
-			// queryClient.invalidateQueries({ queryKey: ["user"] });
+			queryClient.setQueryData(["user"], data?.user);
 		},
-		onError: (err) => toast.error(err.message),
+		onError: (err: Error) => toast.error(err.message),
 	});
 	return { isUpdating, updateUser };
 }
