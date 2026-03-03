@@ -1,11 +1,17 @@
+import type { ChangeEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import Select from "./Select";
+import type { SelectOption } from "./Select";
 
-function SortBy({ options }) {
+interface SortByProps {
+	options: SelectOption[];
+}
+
+function SortBy({ options }: SortByProps) {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const sortBy = searchParams.get("sortBy") || "";
 
-	function handleChange(e) {
+	function handleChange(e: ChangeEvent<HTMLSelectElement>) {
 		searchParams.set("sortBy", e.target.value);
 		setSearchParams(searchParams);
 	}

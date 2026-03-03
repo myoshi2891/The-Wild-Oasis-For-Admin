@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import styled from "styled-components";
 
 const StyledTable = styled.div`
@@ -10,7 +10,7 @@ const StyledTable = styled.div`
 	overflow: hidden;
 `;
 
-const CommonRow = styled.div`
+const CommonRow = styled.div<{ columns: string }>`
 	display: grid;
 	grid-template-columns: ${(props) => props.columns};
 	column-gap: 2.4rem;
@@ -60,9 +60,19 @@ const Empty = styled.p`
 	margin: 2.4rem;
 `;
 
-const TableContext = createContext();
+interface TableContextType {
+	columns: string;
+}
 
-function Table({ columns, children }) {
+const TableContext = createContext<TableContextType | undefined>(undefined);
+
+function Table({
+	columns,
+	children,
+}: {
+	columns: string;
+	children: ReactNode;
+}) {
 	return (
 		<TableContext.Provider value={{ columns }}>
 			<StyledTable role="table">{children}</StyledTable>
@@ -70,16 +80,16 @@ function Table({ columns, children }) {
 	);
 }
 
-function Header({ children }) {
-	const { columns } = useContext(TableContext);
+function Header({ children }: { children: ReactNode }) {
+	const { columns } = useContext(TableContext)!;
 	return (
 		<StyledHeader role="row" columns={columns} as="header">
 			{children}
 		</StyledHeader>
 	);
 }
-function Row({ children }) {
-	const { columns } = useContext(TableContext);
+function Row({ children }: { children: ReactNode }) {
+	const { columns } = useContext(TableContext)!;
 	return (
 		<StyledRow role="row" columns={columns}>
 			{children}
@@ -87,7 +97,8 @@ function Row({ children }) {
 	);
 }
 
-function Body({ data, render }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Body<T>({ data, render }: { data: T[]; render: (item: T) => ReactNode }) {
 	if (!data.length) return <Empty>No data to show as the moment...</Empty>;
 	return <StyledBody>{data.map(render)}</StyledBody>;
 }
