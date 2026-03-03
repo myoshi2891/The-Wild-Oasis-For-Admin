@@ -5,7 +5,7 @@ interface ButtonProps {
 	variation?: "primary" | "secondary" | "danger";
 }
 
-const sizes: Record<string, RuleSet<object>> = {
+const sizes: Record<NonNullable<ButtonProps["size"]>, RuleSet<object>> = {
   small: css`
     font-size: 1.2rem;
     padding: 0.4rem 0.8rem;
@@ -25,7 +25,7 @@ const sizes: Record<string, RuleSet<object>> = {
   `,
 };
 
-const variations: Record<string, RuleSet<object>> = {
+const variations: Record<NonNullable<ButtonProps["variation"]>, RuleSet<object>> = {
   primary: css`
     color: var(--color-brand-50);
     background-color: var(--color-brand-600);
@@ -61,10 +61,5 @@ const Button = styled.button<ButtonProps>`
 	${(props) => sizes[props.size || "medium"]}
 	${(props) => variations[props.variation || "primary"]}
 `;
-
-Button.defaultProps = {
-	variation: "primary",
-	size: "medium",
-};
 
 export default Button;

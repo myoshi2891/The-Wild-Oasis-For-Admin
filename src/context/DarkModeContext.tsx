@@ -15,8 +15,13 @@ interface DarkModeProviderProps {
 }
 
 function DarkModeProvider({ children }: DarkModeProviderProps) {
+	const prefersDark =
+		typeof window !== "undefined" && typeof window.matchMedia === "function"
+			? window.matchMedia("(prefers-color-scheme: dark)").matches
+			: false;
+
 	const [isDarkMode, setIsDarkMode] = useLocalStorageState<boolean>(
-		window.matchMedia("(prefers-color-scheme: dark)").matches,
+		prefersDark,
 		"isDarkMode"
 	);
 

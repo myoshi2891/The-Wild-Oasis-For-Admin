@@ -15,8 +15,10 @@ export function useBookings() {
 			: { field: "status", value: filterValue };
 
 	const sortByRaw = searchParams.get("sortBy") || "startDate-desc";
-	const [field, direction] = sortByRaw.split("-");
-	const sortBy: SortBy = { field, direction: direction as "asc" | "desc" };
+	const [field, rawDirection] = sortByRaw.split("-");
+	const direction: "asc" | "desc" =
+		rawDirection === "asc" || rawDirection === "desc" ? rawDirection : "desc";
+	const sortBy: SortBy = { field, direction };
 
 	const page = !searchParams.get("page")
 		? 1

@@ -2,11 +2,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateBooking } from "../../services/apiBookings";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import type { Booking } from "../../types/domain";
+
+interface BreakfastInput {
+	hasBreakfast: boolean;
+	extrasPrice: number;
+	totalPrice: number;
+}
 
 interface CheckinParams {
 	bookingId: number;
-	breakfast?: Partial<Booking>;
+	breakfast?: BreakfastInput;
 }
 
 export function useCheckin() {
@@ -15,14 +20,14 @@ export function useCheckin() {
 	const { mutate: checkin, isLoading: isCheckingIn } = useMutation({
 		mutationFn: ({ bookingId, breakfast }: CheckinParams) =>
 			updateBooking(bookingId, {
+				...breakfast,
 				status: "checked-in",
 				isPaid: true,
-				...breakfast,
 			}),
 
 		onSuccess: (data) => {
 			toast.success(`Booking #${data.id} successfully checked in`);
-			queryClient.invalidateQueries();
+			queryClient.invalidateQueries({ queryKey: ["bookings"] });
 			navigate("/");
 		},
 

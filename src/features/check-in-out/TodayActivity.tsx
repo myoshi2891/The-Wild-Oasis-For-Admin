@@ -44,7 +44,7 @@ function TodayActivity() {
 	const { activities, isLoading } = useTodayActivity();
 	return (
 		<StyledToday>
-			<Row type="horizontal">
+			<Row $type="horizontal">
 				<Heading as="h2">Today's Activity</Heading>
 			</Row>
 			{!isLoading ? (

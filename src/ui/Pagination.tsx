@@ -65,11 +65,13 @@ interface PaginationProps {
 
 function Pagination({ count }: PaginationProps) {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const currentPage = !searchParams.get("page")
-		? 1
-		: Number(searchParams.get("page"));
 
 	const pageCount = Math.ceil(count / PAGE_SIZE);
+
+	const rawPage = Number(searchParams.get("page"));
+	const currentPage = Number.isNaN(rawPage)
+		? 1
+		: Math.max(1, Math.min(rawPage || 1, pageCount));
 
 	function nextPage() {
 		const next = currentPage === pageCount ? currentPage : currentPage + 1;

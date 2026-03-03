@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { renderHook } from "@testing-library/react";
 import React from "react";
 import { DarkModeProvider, useDarkMode } from "../DarkModeContext";
+
+const originalMatchMedia = window.matchMedia;
 
 beforeAll(() => {
 	Object.defineProperty(window, "matchMedia", {
@@ -17,6 +19,10 @@ beforeAll(() => {
 			dispatchEvent: vi.fn(),
 		})),
 	});
+});
+
+afterAll(() => {
+	window.matchMedia = originalMatchMedia;
 });
 
 describe("DarkModeContext", () => {

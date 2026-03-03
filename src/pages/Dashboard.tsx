@@ -6,7 +6,7 @@ import Row from "../ui/Row";
 function Dashboard() {
 	return (
 		<>
-			<Row type="horizontal">
+			<Row $type="horizontal">
 				<Heading as="h1">Dashboard</Heading>
 				<DashboardFilter />
 			</Row>

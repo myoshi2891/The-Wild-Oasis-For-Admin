@@ -97,7 +97,6 @@ function Row({ children }: { children: ReactNode }) {
 	);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Body<T>({ data, render }: { data: T[]; render: (item: T) => ReactNode }) {
 	if (!data.length) return <Empty>No data to show as the moment...</Empty>;
 	return <StyledBody>{data.map(render)}</StyledBody>;
