@@ -49,6 +49,10 @@ describe("Domain Types", () => {
 	it("BookingStatus は3つの定義済みリテラルのみ受け付ける", () => {
 		const statuses: BookingStatus[] = ["unconfirmed", "checked-in", "checked-out"];
 		expect(statuses).toHaveLength(3);
+
+		// @ts-expect-error 無効なステータスは拒否される
+		const _invalid: BookingStatus = "cancelled";
+		expect(_invalid).toBeDefined();
 	});
 
 	it("Guest 型が正しいフィールドを持つ", () => {
@@ -142,6 +146,10 @@ describe("Common Types", () => {
 		} satisfies SortBy;
 
 		expect(sortBy.direction).toBe("desc");
+
+		// @ts-expect-error 無効な direction は拒否される
+		const _invalidSort: SortBy = { field: "x", direction: "up" };
+		expect(_invalidSort).toBeDefined();
 	});
 
 	it("PaginatedResult がジェネリクスで動作する", () => {

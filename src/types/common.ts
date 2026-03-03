@@ -37,8 +37,3 @@ export interface PaginatedResult<T> {
 	count: number;
 }
 
-// ────────────────────────────────────────────
-// Supabase フィルタメソッド
-// ────────────────────────────────────────────
-
-export type FilterMethod = "eq" | "gte" | "lte" | "neq";

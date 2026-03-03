@@ -33,13 +33,20 @@ export type BookingStatus = Booking["status"];
 // リレーション付きの拡張型 (API レスポンス用)
 // ────────────────────────────────────────────
 
-/** 予約一覧で使用 — cabins.name と guests.fullName/email のみ */
+/**
+ * 予約一覧で使用 — cabins.name と guests.fullName/email のみ
+ * NOTE: プロパティ名 cabins / guests は複数形だが、Supabase の
+ * JOIN（embedding）仕様により実際には単一オブジェクトが返される。
+ */
 export interface BookingWithSummary extends Booking {
 	cabins: { name: string };
 	guests: { fullName: string; email: string };
 }
 
-/** 予約詳細で使用 — 全 cabin/guest フィールドを含む */
+/**
+ * 予約詳細で使用 — 全 cabin/guest フィールドを含む
+ * NOTE: cabins / guests は Supabase JOIN により単一オブジェクト。
+ */
 export interface BookingWithDetails extends Booking {
 	cabins: Cabin;
 	guests: Guest;
@@ -66,13 +73,19 @@ export interface StayAfterDate extends Booking {
 // フォーム入力型 (react-hook-form 用)
 // ────────────────────────────────────────────
 
+/**
+ * react-hook-form のフォーム入力型。
+ * image は File | string — フォームの FileInput から取得した File、
+ * または既存の画像 URL 文字列。onSubmit 内で image[0] を抽出してから
+ * CreateEditCabinData に渡す。
+ */
 export interface CreateCabinFormData {
 	name: string;
 	maxCapacity: number;
 	regularPrice: number;
 	discount: number;
 	description: string;
-	image: FileList | string;
+	image: File | string;
 }
 
 export interface SignupFormData {

@@ -1,13 +1,11 @@
 import supabase, { supabaseUrl } from "./supabase";
-import type { UpdateUserData } from "../types/domain";
+import type {
+	SignupFormData,
+	LoginFormData,
+	UpdateUserData,
+} from "../types/domain";
 
-interface SignupParams {
-	fullName: string;
-	email: string;
-	password: string;
-}
-
-export async function signup({ fullName, email, password }: SignupParams) {
+export async function signup({ fullName, email, password }: SignupFormData) {
 	const { data, error } = await supabase.auth.signUp({
 		email,
 		password,
@@ -23,12 +21,7 @@ export async function signup({ fullName, email, password }: SignupParams) {
 	return data;
 }
 
-interface LoginParams {
-	email: string;
-	password: string;
-}
-
-export async function login({ email, password }: LoginParams) {
+export async function login({ email, password }: LoginFormData) {
 	const { data, error } = await supabase.auth.signInWithPassword({
 		email,
 		password,
@@ -57,11 +50,19 @@ export async function updateCurrentUser({
 	fullName,
 	avatar,
 }: UpdateUserData) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let updateData: Record<string, any> | undefined;
-	if (password) updateData = { password };
-	if (fullName) updateData = { data: { fullName } };
-	const { data, error } = await supabase.auth.updateUser(updateData!);
+	// Build update payload: conditionally set password and nest fullName under data
+	const updateData: Record<string, unknown> = {};
+	if (password) updateData.password = password;
+	if (fullName)
+		updateData.data = {
+			...((updateData.data as object) ?? {}),
+			fullName,
+		};
+
+	if (Object.keys(updateData).length === 0)
+		throw new Error("No update data provided");
+
+	const { data, error } = await supabase.auth.updateUser(updateData);
 
 	if (error) throw new Error(error.message);
 	if (!avatar) return data;

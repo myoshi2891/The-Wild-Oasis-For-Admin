@@ -32,27 +32,23 @@ export async function createEditCabin(
 	const imageName =
 		typeof newCabin.image === "string"
 			? ""
-			: `${Math.random()}-${newCabin.image.name}`.replaceAll("/", "");
+			: `${Math.random()}-${newCabin.image.name}`.replace(/\//g, "");
 
 	const imagePath = hasImagePath
 		? (newCabin.image as string)
 		: `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
 
-	let query = supabase.from("cabins");
+	const query = supabase.from("cabins");
+	const payload = { ...newCabin, image: imagePath } as Record<
+		string,
+		unknown
+	>;
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let builder: any;
-
-	if (!id)
-		builder = query.insert([
-			{ ...newCabin, image: imagePath } as Record<string, unknown>,
-		]);
-
-	if (id)
-		builder = query
-			.update({ ...newCabin, image: imagePath } as Record<string, unknown>)
-			.eq("id", id)
-			.select();
+	const builder = id
+		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+		  query.update(payload as any).eq("id", id)
+		: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+		  query.insert([payload as any]);
 
 	const { data, error } = await builder.select().single();
 

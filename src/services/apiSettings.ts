@@ -20,7 +20,9 @@ export async function updateSetting(
 ): Promise<Settings | null> {
 	const { data, error } = await supabase
 		.from("settings")
-		.update(newSetting)
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		.update(newSetting as any)
+		.select("*")
 		// There is only ONE row of settings, and it has the ID=1, and so this is the updated one
 		.eq("id", 1)
 		.single();
