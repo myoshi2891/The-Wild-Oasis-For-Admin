@@ -85,7 +85,7 @@ export interface CreateCabinFormData {
 	regularPrice: number;
 	discount: number;
 	description: string;
-	image: File | string;
+	image: File | FileList | string;
 }
 
 export interface SignupFormData {

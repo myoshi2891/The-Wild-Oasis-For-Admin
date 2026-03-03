@@ -28,7 +28,9 @@ function UpdateSettingsForm() {
 	) {
 		const { value } = e.target;
 		if (!value) return;
-		updateSetting({ [field]: Number(value) });
+		const num = Number(value);
+		if (!Number.isFinite(num)) return;
+		updateSetting({ [field]: num });
 	}
 
 	return (

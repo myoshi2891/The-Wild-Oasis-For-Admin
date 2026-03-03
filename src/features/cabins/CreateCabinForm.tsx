@@ -32,10 +32,16 @@ function CreateCabinForm({ cabinToEdit = {} as Cabin, onCloseModal }: CreateCabi
 	const isWorking = isCreating || isEditing;
 
 	function onSubmit(data: CreateCabinFormData) {
-		const image =
-			typeof data.image === "string"
-				? data.image
-				: (data.image as unknown as FileList)?.[0];
+		let image: File | string;
+		if (typeof data.image === "string") {
+			image = data.image;
+		} else if (data.image instanceof FileList) {
+			image = data.image[0];
+		} else if (data.image instanceof File) {
+			image = data.image;
+		} else {
+			image = "";
+		}
 
 		if (isEditSession)
 			editCabin(

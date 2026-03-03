@@ -30,10 +30,22 @@ function CabinTable() {
 	// 	(a, b) => (a[field] - b[field]) * modifier
 	// );
 
+	const allowedSortKeys: (keyof Cabin)[] = [
+		"name",
+		"maxCapacity",
+		"regularPrice",
+		"discount",
+	];
+	const safeKey: keyof Cabin = allowedSortKeys.includes(
+		field as keyof Cabin
+	)
+		? (field as keyof Cabin)
+		: "name";
+
 	const sortedCabins = filteredCabins
 		? [...filteredCabins].sort((a: Cabin, b: Cabin) => {
-				const aVal = a[field as keyof Cabin];
-				const bVal = b[field as keyof Cabin];
+				const aVal = a[safeKey];
+				const bVal = b[safeKey];
 				if (typeof aVal === "string" && typeof bVal === "string") {
 					return aVal.localeCompare(bVal) * modifier;
 				}

@@ -68,10 +68,10 @@ function Pagination({ count }: PaginationProps) {
 
 	const pageCount = Math.ceil(count / PAGE_SIZE);
 
-	const rawPage = Number(searchParams.get("page"));
+	const rawPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
 	const currentPage = Number.isNaN(rawPage)
 		? 1
-		: Math.max(1, Math.min(rawPage || 1, pageCount));
+		: Math.max(1, Math.min(rawPage, pageCount));
 
 	function nextPage() {
 		const next = currentPage === pageCount ? currentPage : currentPage + 1;
