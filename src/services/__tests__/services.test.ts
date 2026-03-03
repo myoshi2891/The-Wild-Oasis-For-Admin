@@ -221,3 +221,218 @@ describe("apiBookings", () => {
 		expect(result.status).toBe("checked-in");
 	});
 });
+
+// ────────────────────────────────────────────
+// apiSettings — updateSetting
+// ────────────────────────────────────────────
+describe("apiSettings (updateSetting)", () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it("updateSetting が更新済み Settings を返す", async () => {
+		const updatedSettings = {
+			id: 1,
+			minBookingLength: 3,
+			maxBookingLength: 90,
+			maxGuestsPerBooking: 8,
+			breakfastPrice: 20,
+		};
+		mockFrom.mockReturnValue({
+			update: vi.fn().mockReturnValue({
+				select: vi.fn().mockReturnValue({
+					eq: vi.fn().mockReturnValue({
+						single: vi
+							.fn()
+							.mockResolvedValue({ data: updatedSettings, error: null }),
+					}),
+				}),
+			}),
+		});
+
+		const { updateSetting } = await import("../apiSettings");
+		const result = await updateSetting({ breakfastPrice: 20 });
+		expect(result).toEqual(updatedSettings);
+		expect(mockFrom).toHaveBeenCalledWith("settings");
+	});
+
+	it("updateSetting がエラー時に例外を投げる", async () => {
+		mockFrom.mockReturnValue({
+			update: vi.fn().mockReturnValue({
+				select: vi.fn().mockReturnValue({
+					eq: vi.fn().mockReturnValue({
+						single: vi.fn().mockResolvedValue({
+							data: null,
+							error: { message: "Update failed" },
+						}),
+					}),
+				}),
+			}),
+		});
+
+		const { updateSetting } = await import("../apiSettings");
+		await expect(updateSetting({ breakfastPrice: 20 })).rejects.toThrow(
+			"Settings could not be updated"
+		);
+	});
+});
+
+// ────────────────────────────────────────────
+// apiCabins — createEditCabin
+// ────────────────────────────────────────────
+describe("apiCabins (createEditCabin)", () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	const baseCabin = {
+		name: "Cabin 001",
+		maxCapacity: 4,
+		regularPrice: 250,
+		discount: 50,
+		description: "A cozy cabin",
+	};
+
+	it("既存画像URLで新規作成する場合、DB insertのみ実行する", async () => {
+		const created = { id: 1, ...baseCabin, image: "https://test.supabase.co/img.jpg" };
+		mockFrom.mockReturnValue({
+			insert: vi.fn().mockReturnValue({
+				select: vi.fn().mockReturnValue({
+					single: vi
+						.fn()
+						.mockResolvedValue({ data: created, error: null }),
+				}),
+			}),
+		});
+
+		const { createEditCabin } = await import("../apiCabins");
+		const result = await createEditCabin({
+			...baseCabin,
+			image: "https://test.supabase.co/img.jpg",
+		});
+		expect(result).toEqual(created);
+	});
+
+	it("画像アップロード失敗時にcabinを削除してエラーを投げる", async () => {
+		const created = { id: 10, ...baseCabin, image: "path" };
+		const mockFile = new File(["data"], "cabin.jpg", { type: "image/jpeg" });
+
+		mockFrom.mockReturnValue({
+			insert: vi.fn().mockReturnValue({
+				select: vi.fn().mockReturnValue({
+					single: vi
+						.fn()
+						.mockResolvedValue({ data: created, error: null }),
+				}),
+			}),
+			delete: vi.fn().mockReturnValue({
+				eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+			}),
+		});
+
+		// Mock storage upload failure
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: { message: "Upload failed" } }),
+		});
+
+		const { createEditCabin } = await import("../apiCabins");
+		await expect(
+			createEditCabin({ ...baseCabin, image: mockFile })
+		).rejects.toThrow("Cabin image could not be uploaded");
+	});
+
+	it("既存cabinを編集する", async () => {
+		const edited = { id: 5, ...baseCabin, image: "https://test.supabase.co/img.jpg" };
+		mockFrom.mockReturnValue({
+			update: vi.fn().mockReturnValue({
+				eq: vi.fn().mockReturnValue({
+					select: vi.fn().mockReturnValue({
+						single: vi
+							.fn()
+							.mockResolvedValue({ data: edited, error: null }),
+					}),
+				}),
+			}),
+		});
+
+		const { createEditCabin } = await import("../apiCabins");
+		const result = await createEditCabin(
+			{ ...baseCabin, image: "https://test.supabase.co/img.jpg" },
+			5
+		);
+		expect(result).toEqual(edited);
+	});
+});
+
+// ────────────────────────────────────────────
+// apiAuth — signup / updateCurrentUser
+// ────────────────────────────────────────────
+describe("apiAuth (signup/updateCurrentUser)", () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it("signup が正常にデータを返す", async () => {
+		const mockData = { user: { id: "1" }, session: {} };
+		mockAuth.signUp.mockResolvedValue({ data: mockData, error: null });
+
+		const { signup } = await import("../apiAuth");
+		const result = await signup({
+			fullName: "Test User",
+			email: "test@test.com",
+			password: "password123",
+			passwordConfirm: "password123",
+		});
+		expect(result).toEqual(mockData);
+	});
+
+	it("signup がエラー時に例外を投げる", async () => {
+		mockAuth.signUp.mockResolvedValue({
+			data: null,
+			error: { message: "Signup failed" },
+		});
+
+		const { signup } = await import("../apiAuth");
+		await expect(
+			signup({
+				fullName: "Test User",
+				email: "test@test.com",
+				password: "password123",
+				passwordConfirm: "password123",
+			})
+		).rejects.toThrow("Signup failed");
+	});
+
+	it("updateCurrentUser がパスワード更新を実行する", async () => {
+		const mockData = { user: { id: "1" } };
+		mockAuth.updateUser.mockResolvedValue({ data: mockData, error: null });
+
+		const { updateCurrentUser } = await import("../apiAuth");
+		const result = await updateCurrentUser({ password: "newpass123" });
+		expect(result).toEqual(mockData);
+		expect(mockAuth.updateUser).toHaveBeenCalledWith({ password: "newpass123" });
+	});
+
+	it("updateCurrentUser がデータ無しでエラーを投げる", async () => {
+		const { updateCurrentUser } = await import("../apiAuth");
+		await expect(updateCurrentUser({})).rejects.toThrow(
+			"No update data provided"
+		);
+	});
+
+	it("updateCurrentUser がアバターアップロードを含む更新を実行する", async () => {
+		const mockFile = new File(["avatar"], "avatar.jpg", { type: "image/jpeg" });
+		const firstUpdate = { user: { id: "user-1" } };
+		const secondUpdate = { user: { id: "user-1", avatar: "url" } };
+
+		mockAuth.updateUser
+			.mockResolvedValueOnce({ data: firstUpdate, error: null })
+			.mockResolvedValueOnce({ data: secondUpdate, error: null });
+
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+
+		const { updateCurrentUser } = await import("../apiAuth");
+		const result = await updateCurrentUser({
+			fullName: "Updated Name",
+			avatar: mockFile,
+		});
+		expect(result).toEqual(secondUpdate);
+		expect(mockAuth.updateUser).toHaveBeenCalledTimes(2);
+	});
+});

@@ -5,6 +5,7 @@ import type { Filter, SortBy } from "../types/common";
 import type {
 	Booking,
 	BookingAfterDate,
+	BookingUpdate,
 	BookingWithDetails,
 	BookingWithGuestInfo,
 	BookingWithSummary,
@@ -34,14 +35,25 @@ export async function getBookings({
 			{ count: "exact" }
 		);
 
-	if (filter)
-		query = query[filter.method || "eq"](
-			filter.field,
-			filter.value
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		) as any;
+	if (filter) {
+		const method = filter.method || "eq";
+		switch (method) {
+			case "gte":
+				query = query.gte(filter.field, filter.value);
+				break;
+			case "lte":
+				query = query.lte(filter.field, filter.value);
+				break;
+			case "neq":
+				query = query.neq(filter.field, filter.value);
+				break;
+			default:
+				query = query.eq(filter.field, filter.value);
+				break;
+		}
+	}
 
-	if (page) {
+	if (typeof page === "number" && page >= 1) {
 		const from = (page - 1) * PAGE_SIZE;
 		const to = from + PAGE_SIZE - 1;
 		query = query.range(from, to);
@@ -124,10 +136,6 @@ export async function getStaysTodayActivity(): Promise<
 		)
 		.order("created_at");
 
-	// Equivalent to this. But by querying this, we only download the data we actually need, otherwise we would need ALL bookings ever created
-	// (stay.status === 'unconfirmed' && isToday(new Date(stay.startDate))) ||
-	// (stay.status === 'checked-in' && isToday(new Date(stay.endDate)))
-
 	if (error) {
 		console.error(error);
 		throw new Error("Bookings could not get loaded");
@@ -137,11 +145,12 @@ export async function getStaysTodayActivity(): Promise<
 
 export async function updateBooking(
 	id: number,
-	obj: Partial<Booking>
+	obj: BookingUpdate
 ): Promise<Booking> {
 	const { data, error } = await supabase
 		.from("bookings")
-		.update(obj)
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		.update(obj as any)
 		.eq("id", id)
 		.select()
 		.single();
