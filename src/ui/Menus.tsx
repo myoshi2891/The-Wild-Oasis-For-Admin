@@ -121,8 +121,8 @@ function Toggle({ id }: { id: string }) {
 	}
 
 	return (
-		<StyledToggle onClick={handleClick}>
-			<HiEllipsisVertical />
+		<StyledToggle onClick={handleClick} aria-label="Open menu">
+			<HiEllipsisVertical aria-hidden="true" />
 		</StyledToggle>
 	);
 }

@@ -66,6 +66,13 @@ interface TableContextType {
 
 const TableContext = createContext<TableContextType | undefined>(undefined);
 
+function useTableContext(): TableContextType {
+	const context = useContext(TableContext);
+	if (!context)
+		throw new Error("Table compound components must be used within a <Table>");
+	return context;
+}
+
 function Table({
 	columns,
 	children,
@@ -81,7 +88,7 @@ function Table({
 }
 
 function Header({ children }: { children: ReactNode }) {
-	const { columns } = useContext(TableContext)!;
+	const { columns } = useTableContext();
 	return (
 		<StyledHeader role="row" columns={columns} as="header">
 			{children}
@@ -89,7 +96,7 @@ function Header({ children }: { children: ReactNode }) {
 	);
 }
 function Row({ children }: { children: ReactNode }) {
-	const { columns } = useContext(TableContext)!;
+	const { columns } = useTableContext();
 	return (
 		<StyledRow role="row" columns={columns}>
 			{children}
@@ -98,7 +105,7 @@ function Row({ children }: { children: ReactNode }) {
 }
 
 function Body<T>({ data, render }: { data: T[]; render: (item: T) => ReactNode }) {
-	if (!data.length) return <Empty>No data to show as the moment...</Empty>;
+	if (!data.length) return <Empty>No data to show at the moment...</Empty>;
 	return <StyledBody>{data.map(render)}</StyledBody>;
 }
 

@@ -87,7 +87,10 @@ function Open({
 	const { open } = useContext(ModalContext)!;
 
 	return cloneElement(children, {
-		onClick: () => open(opensWindowName),
+		onClick: () => {
+			children.props.onClick?.();
+			open(opensWindowName);
+		},
 	});
 }
 
@@ -110,9 +113,12 @@ function Window({
 					<HiXMark aria-hidden="true" />
 				</CloseButton>
 				<div>
-					{cloneElement(children, {
-						onCloseModal: close,
-					})}
+				{cloneElement(children, {
+					onCloseModal: () => {
+						children.props.onCloseModal?.();
+						close();
+					},
+				})}
 				</div>
 			</StyledModal>
 		</Overlay>,
