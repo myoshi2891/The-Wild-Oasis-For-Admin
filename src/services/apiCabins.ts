@@ -64,10 +64,15 @@ export async function createEditCabin(
 		.upload(imageName, newCabin.image as File);
 
 	if (storageError) {
-		await supabase.from("cabins").delete().eq("id", (data as Cabin).id);
+		// Only rollback (delete) for create flow — don't delete existing cabins on update
+		if (!id) {
+			await supabase.from("cabins").delete().eq("id", (data as Cabin).id);
+		}
 		console.error(storageError);
 		throw new Error(
-			"Cabin image could not be uploaded and the cabin was not created..."
+			"Cabin image could not be uploaded" +
+				(!id ? " and the cabin was not created" : "") +
+				"..."
 		);
 	}
 	return data as Cabin;

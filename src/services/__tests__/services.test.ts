@@ -34,7 +34,12 @@ vi.mock("../supabase", () => ({
 // apiSettings
 // ────────────────────────────────────────────
 describe("apiSettings", () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+	});
 
 	it("getSettings が Settings データを返す", async () => {
 		const mockSettings = {
@@ -75,7 +80,12 @@ describe("apiSettings", () => {
 // apiCabins
 // ────────────────────────────────────────────
 describe("apiCabins", () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+	});
 
 	it("getCabins が Cabin 配列を返す", async () => {
 		const mockCabins = [
@@ -111,7 +121,12 @@ describe("apiCabins", () => {
 // apiAuth
 // ────────────────────────────────────────────
 describe("apiAuth", () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+	});
 
 	it("login が正常にデータを返す", async () => {
 		const mockData = { user: { id: "1" }, session: {} };
@@ -162,7 +177,12 @@ describe("apiAuth", () => {
 // apiBookings
 // ────────────────────────────────────────────
 describe("apiBookings", () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+	});
 
 	it("getBooking が Booking 詳細を返す", async () => {
 		const mockBooking = {
@@ -226,7 +246,12 @@ describe("apiBookings", () => {
 // apiSettings — updateSetting
 // ────────────────────────────────────────────
 describe("apiSettings (updateSetting)", () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+	});
 
 	it("updateSetting が更新済み Settings を返す", async () => {
 		const updatedSettings = {
@@ -279,7 +304,12 @@ describe("apiSettings (updateSetting)", () => {
 // apiCabins — createEditCabin
 // ────────────────────────────────────────────
 describe("apiCabins (createEditCabin)", () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+	});
 
 	const baseCabin = {
 		name: "Cabin 001",
@@ -307,6 +337,8 @@ describe("apiCabins (createEditCabin)", () => {
 			image: "https://test.supabase.co/img.jpg",
 		});
 		expect(result).toEqual(created);
+		// Storage should not be called for existing image URLs
+		expect(mockStorage.from).not.toHaveBeenCalled();
 	});
 
 	it("画像アップロード失敗時にcabinを削除してエラーを投げる", async () => {
@@ -335,6 +367,13 @@ describe("apiCabins (createEditCabin)", () => {
 		await expect(
 			createEditCabin({ ...baseCabin, image: mockFile })
 		).rejects.toThrow("Cabin image could not be uploaded");
+
+		// Verify rollback: cabin should be deleted
+		expect(mockFrom).toHaveBeenCalledWith("cabins");
+		const cabinsCallResult = mockFrom.mock.results.find(
+			(_, i) => mockFrom.mock.calls[i][0] === "cabins" && i > 0
+		);
+		expect(cabinsCallResult).toBeDefined();
 	});
 
 	it("既存cabinを編集する", async () => {
@@ -364,7 +403,12 @@ describe("apiCabins (createEditCabin)", () => {
 // apiAuth — signup / updateCurrentUser
 // ────────────────────────────────────────────
 describe("apiAuth (signup/updateCurrentUser)", () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStorage.from.mockReturnValue({
+			upload: vi.fn().mockResolvedValue({ error: null }),
+		});
+	});
 
 	it("signup が正常にデータを返す", async () => {
 		const mockData = { user: { id: "1" }, session: {} };

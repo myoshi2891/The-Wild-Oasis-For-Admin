@@ -59,15 +59,30 @@ export async function updateCurrentUser({
 			fullName,
 		};
 
-	if (Object.keys(updateData).length === 0)
-		throw new Error("No update data provided");
+	// If there's auth data to update, call updateUser
+	let data;
+	if (Object.keys(updateData).length > 0) {
+		const { data: authData, error } = await supabase.auth.updateUser(updateData);
+		if (error) throw new Error(error.message);
+		data = authData;
+	}
 
-	const { data, error } = await supabase.auth.updateUser(updateData);
+	if (!avatar) {
+		if (!data) throw new Error("No update data provided");
+		return data;
+	}
 
-	if (error) throw new Error(error.message);
-	if (!avatar) return data;
-
-	const fileName = `avatar-${data.user.id}-${Math.random()}`;
+	let fileUserId: string;
+	const userId = data?.user?.id;
+	if (userId) {
+		fileUserId = userId;
+	} else {
+		// Need current user for file naming
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) throw new Error("User not authenticated");
+		fileUserId = user.id;
+	}
+	const fileName = `avatar-${fileUserId}-${Math.random()}`;
 
 	const { error: storageError } = await supabase.storage
 		.from("avatars")
