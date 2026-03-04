@@ -41,9 +41,11 @@ vi.mock("react-hot-toast", () => ({
 }));
 
 /**
- * Create a QueryClient configured for testing with stable, non-retrying behavior.
+ * Create a QueryClient preconfigured for tests.
  *
- * @returns A QueryClient configured for tests: query and mutation retries disabled, query `cacheTime` and `staleTime` set to `Infinity`, and a no-op logger.
+ * The client disables retries, sets query cacheTime to Infinity and staleTime to 0, and uses a no-op logger so tests run deterministically without noisy logs.
+ *
+ * @returns A configured QueryClient instance suitable for use in tests
  */
 export function createTestQueryClient(): QueryClient {
 	return new QueryClient({
@@ -51,7 +53,9 @@ export function createTestQueryClient(): QueryClient {
 			queries: {
 				retry: false,
 				cacheTime: Infinity,
-				staleTime: Infinity,
+				// staleTime はリポジトリルールにより 0 をデフォルトとする。
+				// 個別テストで非 0 が必要な場合は useQuery の staleTime で上書きすること。
+				staleTime: 0,
 			},
 			mutations: {
 				retry: false,
@@ -72,11 +76,12 @@ interface WrapperOptions {
 }
 
 /**
- * Creates a React test wrapper component that provides a QueryClient and a MemoryRouter.
+ * Create a React wrapper component that provides a QueryClient and MemoryRouter to its children for testing.
  *
- * @param queryClient - Optional QueryClient to use for queries; if omitted, a test QueryClient is created.
- * @param routerProps - Optional props forwarded to the underlying MemoryRouter.
- * @returns A React component that renders its children wrapped with a QueryClientProvider and a MemoryRouter configured with `routerProps`.
+ * @param options - Optional configuration for the wrapper
+ * @param options.queryClient - QueryClient instance to use; if omitted a new test QueryClient is created
+ * @param options.routerProps - Props forwarded to the MemoryRouter
+ * @returns A React component that wraps its children with a QueryClientProvider (using the provided or created client) and a MemoryRouter (using the provided router props)
  */
 function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	const client = queryClient ?? createTestQueryClient();
@@ -97,13 +102,16 @@ interface RenderWithProvidersOptions extends Omit<RenderOptions, "wrapper"> {
 }
 
 /**
- * Renders a React element wrapped with a Test QueryClientProvider and MemoryRouter.
+ * Render a React element wrapped with test QueryClient and MemoryRouter providers.
+ *
+ * Renders the provided UI using React Testing Library while supplying a QueryClient and MemoryRouter so components that use TanStack Query or react-router work in tests.
  *
  * @param ui - The React element to render.
- * @param options - Optional settings for rendering.
- * @param options.queryClient - An existing QueryClient to provide to the rendered tree. If omitted, a test QueryClient is created.
- * @param options.routerProps - Props forwarded to MemoryRouter to control initial entries or basename.
- * @returns The React Testing Library render result augmented with the `queryClient` instance used for the render.
+ * @param options - Optional rendering options.
+ *   - `queryClient`: a QueryClient instance to use for the render; if omitted a test QueryClient is created.
+ *   - `routerProps`: props forwarded to React Router's MemoryRouter.
+ *   - Any other RenderOptions are passed through to React Testing Library's `render`.
+ * @returns The RenderResult from React Testing Library augmented with the `queryClient` instance used for the render.
  */
 export function renderWithProviders(
 	ui: React.ReactElement,
@@ -128,11 +136,13 @@ interface RenderHookWithProvidersOptions<TProps>
 }
 
 /**
- * Renders a hook within test providers (QueryClientProvider and MemoryRouter).
+ * Renders a hook with QueryClientProvider and MemoryRouter wrappers for testing.
  *
- * @param hook - The hook function to render; receives `props` of type `TProps`.
- * @param options - Optional settings. May include `queryClient` to reuse an existing QueryClient, `routerProps` for MemoryRouter, and any other options forwarded to `renderHook`.
- * @returns The original `RenderHookResult` augmented with the `queryClient` instance used for the render.
+ * Renders the provided hook inside a test QueryClient and a MemoryRouter, returning the hook rendering result along with the QueryClient instance used.
+ *
+ * @param hook - The hook function to render. Accepts props of type `TProps` and returns `TResult`.
+ * @param options - Optional render options. `options.queryClient` can provide a custom QueryClient; `options.routerProps` are forwarded to MemoryRouter. Other renderHook options may be supplied.
+ * @returns The RenderHookResult for the rendered hook, augmented with the `queryClient` instance used during rendering.
  */
 export function renderHookWithProviders<TResult, TProps = undefined>(
 	hook: (props: TProps) => TResult,
