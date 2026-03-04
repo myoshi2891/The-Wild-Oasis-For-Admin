@@ -1,0 +1,86 @@
+import type { FocusEvent } from "react";
+import Form from "../../ui/Form";
+import FormRow from "../../ui/FormRow";
+import Input from "../../ui/Input";
+import Spinner from "../../ui/Spinner";
+import { useSettings } from "./useSettings";
+import { useUpdateSetting } from "./useUpdateSetting";
+import type { SettingsUpdate } from "../../types/domain";
+
+/**
+ * Renders a form allowing editing of booking-related settings.
+ *
+ * Each numeric field reflects the current setting and updates the corresponding
+ * setting when the input loses focus.
+ *
+ * @returns A JSX element containing the settings form
+ */
+function UpdateSettingsForm() {
+	const {
+		isLoading,
+		settings: {
+			minBookingLength,
+			maxBookingLength,
+			maxGuestsPerBooking,
+			breakfastPrice,
+		} = {},
+	} = useSettings();
+
+	const { isUpdating, updateSetting } = useUpdateSetting();
+
+	if (isLoading) return <Spinner />;
+
+	function handleUpdate(
+		e: FocusEvent<HTMLInputElement>,
+		field: keyof SettingsUpdate
+	) {
+		const { value } = e.target;
+		if (!value) return;
+		const num = Number(value);
+		if (!Number.isFinite(num)) return;
+		updateSetting({ [field]: num });
+	}
+
+	return (
+		<Form>
+			<FormRow label="Minimum nights/booking">
+				<Input
+					type="number"
+					defaultValue={minBookingLength}
+					id="min-nights"
+					disabled={isUpdating}
+					onBlur={(e) => handleUpdate(e, "minBookingLength")}
+				/>
+			</FormRow>
+			<FormRow label="Maximum nights/booking">
+				<Input
+					type="number"
+					defaultValue={maxBookingLength}
+					id="max-nights"
+					disabled={isUpdating}
+					onBlur={(e) => handleUpdate(e, "maxBookingLength")}
+				/>
+			</FormRow>
+			<FormRow label="Maximum guests/booking">
+				<Input
+					type="number"
+					defaultValue={maxGuestsPerBooking}
+					id="max-guests"
+					disabled={isUpdating}
+					onBlur={(e) => handleUpdate(e, "maxGuestsPerBooking")}
+				/>
+			</FormRow>
+			<FormRow label="Breakfast price">
+				<Input
+					type="number"
+					defaultValue={breakfastPrice}
+					id="breakfast-price"
+					disabled={isUpdating}
+					onBlur={(e) => handleUpdate(e, "breakfastPrice")}
+				/>
+			</FormRow>
+		</Form>
+	);
+}
+
+export default UpdateSettingsForm;
