@@ -41,6 +41,13 @@ vi.mock("react-hot-toast", () => ({
 }));
 
 // ── QueryClient factory ─────────────────────────────────────
+/**
+ * テスト用 QueryClient を生成する。
+ *
+ * - queries: retry=false, cacheTime=Infinity, staleTime=0
+ * - mutations: retry=false
+ * - logger: no-op（コンソール出力を抑制）
+ */
 export function createTestQueryClient(): QueryClient {
 	return new QueryClient({
 		defaultOptions: {
