@@ -1,20 +1,26 @@
-import { formatDistance, parseISO, differenceInDays } from "date-fns";
+import { formatDistance, parseISO, differenceInDays, isValid } from "date-fns";
 
 // We want to make this function work for both Date objects and strings (which come from Supabase)
-const toDate = (d: string | Date): Date =>
-	d instanceof Date ? d : parseISO(d);
+const toDate = (d: string | Date): Date => {
+	const date = d instanceof Date ? d : parseISO(d);
+	if (!isValid(date)) throw new Error(`Invalid date input: ${String(d)}`);
+	return date;
+};
 
 export const subtractDates = (
 	date1: string | Date,
 	date2: string | Date
 ): number => differenceInDays(toDate(date1), toDate(date2));
 
-export const formatDistanceFromNow = (dateStr: string): string =>
-	formatDistance(parseISO(dateStr), new Date(), {
+export const formatDistanceFromNow = (dateStr: string): string => {
+	const date = parseISO(dateStr);
+	if (!isValid(date)) return "";
+	return formatDistance(date, new Date(), {
 		addSuffix: true,
 	})
 		.replace("about ", "")
 		.replace(/^in\b/, "In");
+};
 
 interface GetTodayOptions {
 	end?: boolean;

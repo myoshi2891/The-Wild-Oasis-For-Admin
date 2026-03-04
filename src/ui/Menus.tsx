@@ -128,7 +128,7 @@ function Toggle({ id }: { id: string }) {
 		<StyledToggle
 			onClick={handleClick}
 			aria-label="Open menu"
-			aria-haspopup="true"
+			aria-haspopup="menu"
 			aria-expanded={isOpen}
 		>
 			<HiEllipsisVertical aria-hidden="true" />
@@ -154,21 +154,24 @@ function MenuButton({
 	children,
 	icon,
 	onClick,
+	disabled,
 }: {
 	children: ReactNode;
 	icon: ReactNode;
 	onClick?: () => void;
+	disabled?: boolean;
 }) {
 	const { close } = useMenusContext();
 
 	function handleClick() {
+		if (disabled) return;
 		onClick?.();
 		close();
 	}
 
 	return (
 		<li>
-			<StyledButton onClick={handleClick}>
+			<StyledButton onClick={handleClick} disabled={disabled}>
 				{icon}
 				<span>{children}</span>
 			</StyledButton>
