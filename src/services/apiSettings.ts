@@ -20,10 +20,16 @@ export async function getSettings(): Promise<Settings> {
 	return data;
 }
 
-// We expect a newSetting object that looks like {setting: newValue}
+/**
+ * Update the single settings row in the database.
+ *
+ * @param newSetting - An object with the setting fields to update.
+ * @returns The updated `Settings` object.
+ * @throws Error if the settings row cannot be updated.
+ */
 export async function updateSetting(
 	newSetting: SettingsUpdate
-): Promise<Settings | null> {
+): Promise<Settings> {
 	const { data, error } = await supabase
 		.from("settings")
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
