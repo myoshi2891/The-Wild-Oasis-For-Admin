@@ -47,6 +47,19 @@ const Amount = styled.div`
 	font-weight: 500;
 `;
 
+/**
+ * Render a table row showing a booking's cabin, guest, dates, status, amount, and contextual actions.
+ *
+ * @param booking - Booking object containing identifiers and display fields:
+ *   - id: booking identifier
+ *   - startDate, endDate: ISO date strings or Date-compatible values for the stay range
+ *   - numNights: number of nights for the booking
+ *   - totalPrice: numeric total price to display
+ *   - status: booking status string (e.g., "unconfirmed", "checked-in", "checked-out")
+ *   - guests: object with `fullName` and `email`
+ *   - cabins: object with `name`
+ * @returns A table row element displaying the booking's information and action menu for navigation, check-in/out, and deletion.
+ */
 function BookingRow({
 	booking: {
 		id: bookingId,

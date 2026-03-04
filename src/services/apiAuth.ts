@@ -5,6 +5,14 @@ import type {
 	UpdateUserData,
 } from "../types/domain";
 
+/**
+ * Create a new user account and attach `fullName` and an empty `avatar` to the user's metadata.
+ *
+ * @param fullName - The user's full display name
+ * @param email - The user's email address used for authentication
+ * @param password - The user's password
+ * @returns The authentication signup response data containing created user and session information
+ */
 export async function signup({ fullName, email, password }: SignupFormData) {
 	const { data, error } = await supabase.auth.signUp({
 		email,
@@ -21,6 +29,11 @@ export async function signup({ fullName, email, password }: SignupFormData) {
 	return data;
 }
 
+/**
+ * Authenticate a user with the provided email and password.
+ *
+ * @returns The authentication data returned by the provider, including session and user information.
+ */
 export async function login({ email, password }: LoginFormData) {
 	const { data, error } = await supabase.auth.signInWithPassword({
 		email,
@@ -31,6 +44,12 @@ export async function login({ email, password }: LoginFormData) {
 	return data;
 }
 
+/**
+ * Retrieves the currently authenticated user, or null if no active session exists.
+ *
+ * @returns The authenticated user object when a session exists, or `null` when there is no active session.
+ * @throws Error when retrieving the session or user from the auth service fails (error message from the provider).
+ */
 export async function getCurrentUser() {
 	const { data: session, error: sessionError } = await supabase.auth.getSession();
 	if (sessionError) throw new Error(sessionError.message);
@@ -41,11 +60,29 @@ export async function getCurrentUser() {
 	return data?.user;
 }
 
+/**
+ * Signs out the currently authenticated user.
+ *
+ * @throws An `Error` with the provider's message if the sign-out operation fails.
+ */
 export async function logout(): Promise<void> {
 	const { error } = await supabase.auth.signOut();
 	if (error) throw new Error(error.message);
 }
 
+/**
+ * Update the current authenticated user's password and profile data, and optionally upload and set an avatar image.
+ *
+ * @param password - New password to set for the user; omitted to leave password unchanged
+ * @param fullName - New display name to store in the user's profile data; omitted to leave unchanged
+ * @param avatar - Binary file to upload as the user's avatar; if provided, the file is uploaded to the "avatars" storage bucket and the user's avatar URL is updated
+ * @returns The result of the authentication update containing the updated user data
+ * @throws Error when no update data is provided and no `avatar` is present
+ * @throws Error when an authentication update fails
+ * @throws Error when the user is not authenticated but an avatar upload requires a user id
+ * @throws Error when storing the avatar file fails
+ * @throws Error when updating the user's avatar URL fails (uploaded avatar will be removed if cleanup succeeds)
+ */
 export async function updateCurrentUser({
 	password,
 	fullName,

@@ -38,6 +38,13 @@ interface ErrorFallbackProps {
 	resetErrorBoundary: () => void;
 }
 
+/**
+ * Render a full-viewport error UI that displays the provided error message and a retry button.
+ *
+ * @param error - The error whose `message` will be shown to the user.
+ * @param resetErrorBoundary - Callback invoked when the user clicks "Try again" to attempt recovery.
+ * @returns The error fallback UI as a JSX element.
+ */
 function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
 	return (
 		<>

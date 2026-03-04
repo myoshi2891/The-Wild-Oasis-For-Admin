@@ -7,6 +7,14 @@ import { useSettings } from "./useSettings";
 import { useUpdateSetting } from "./useUpdateSetting";
 import type { SettingsUpdate } from "../../types/domain";
 
+/**
+ * Renders a form allowing editing of booking-related settings.
+ *
+ * Each numeric field reflects the current setting and updates the corresponding
+ * setting when the input loses focus.
+ *
+ * @returns A JSX element containing the settings form
+ */
 function UpdateSettingsForm() {
 	const {
 		isLoading,

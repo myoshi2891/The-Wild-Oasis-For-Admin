@@ -17,6 +17,12 @@ interface ProtectedRouteProps {
 	children: ReactNode;
 }
 
+/**
+ * Restricts access to its children to authenticated users and redirects unauthenticated users to "/login".
+ *
+ * @param children - Content to render when the user is authenticated.
+ * @returns The `children` when `isAuthenticated` is true, a full-page loading spinner while `isLoading` is true, or `null` after initiating a redirect for unauthenticated users.
+ */
 function ProtectedRoute({ children }: ProtectedRouteProps) {
 	const navigate = useNavigate();
 

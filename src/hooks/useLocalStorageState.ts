@@ -1,5 +1,12 @@
 import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 
+/**
+ * Synchronizes a React state value with localStorage under the provided key.
+ *
+ * @param initialState - Fallback value used when no stored value exists or when reading/parsing fails
+ * @param key - localStorage key to read from and persist to
+ * @returns A tuple containing the current state value and a setter function to update it
+ */
 export function useLocalStorageState<T>(
 	initialState: T,
 	key: string

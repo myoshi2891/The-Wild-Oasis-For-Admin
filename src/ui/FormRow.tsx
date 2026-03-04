@@ -43,6 +43,16 @@ const Error = styled.span`
 	color: var(--color-red-700);
 `;
 
+/**
+ * Renders a form row containing an optional label, the provided children, and an optional error message.
+ *
+ * The label's `htmlFor` will be set to the child's `id` when the child is a valid React element with an `id` prop.
+ *
+ * @param label - Optional label text displayed to the left of the control
+ * @param error - Optional error text displayed to the right of the control
+ * @param children - The form control or nodes for the row; if a React element with an `id` prop, that `id` is used for the label's `htmlFor`
+ * @returns A JSX element representing the composed form row
+ */
 function FormRow({ label, error, children }: FormRowProps) {
 	const childId = isValidElement<{ id?: string }>(children)
 		? children.props.id

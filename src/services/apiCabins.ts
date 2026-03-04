@@ -1,6 +1,12 @@
 import supabase, { supabaseUrl } from "./supabase";
 import type { Cabin } from "../types/domain";
 
+/**
+ * Fetches all cabin records from the database.
+ *
+ * @returns An array of `Cabin` objects retrieved from the "cabins" table.
+ * @throws Error when the cabins cannot be loaded from the database.
+ */
 export async function getCabins(): Promise<Cabin[]> {
 	const { data, error } = await supabase.from("cabins").select("*");
 
@@ -27,6 +33,14 @@ export interface CreateEditCabinData {
 	image: File | string;
 }
 
+/**
+ * Creates a new cabin or updates an existing cabin record and ensures the cabin image is stored.
+ *
+ * @param newCabin - Cabin data for create or update. `image` may be a File to upload or a supabase public URL string to reuse.
+ * @param id - Optional cabin ID; if provided the function updates that cabin, otherwise it creates a new one.
+ * @returns The created or updated `Cabin` record.
+ * @throws Error when the database write fails, or when image upload to storage fails (on create, a failed upload triggers a rollback of the new record).
+ */
 export async function createEditCabin(
 	newCabin: CreateEditCabinData,
 	id?: number
@@ -86,6 +100,13 @@ export async function createEditCabin(
 	return data as Cabin;
 }
 
+/**
+ * Deletes the cabin record with the given id.
+ *
+ * @param id - The numeric identifier of the cabin to remove
+ * @returns `null` on successful deletion
+ * @throws Error if the cabin could not be deleted
+ */
 export async function deleteCabin(id: number): Promise<null> {
 	const { data, error } = await supabase
 		.from("cabins")

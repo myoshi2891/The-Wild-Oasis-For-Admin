@@ -4,6 +4,17 @@ import { useSearchParams } from "react-router-dom";
 import { PAGE_SIZE } from "../../utils/constants";
 import type { Filter, SortBy } from "../../types/common";
 
+/**
+ * Provides booking list state derived from URL search parameters and prefetches adjacent pages.
+ *
+ * Builds a `status` filter (null when absent or `"all"`), validates and builds `sortBy` from the `sortBy` param (defaults to `startDate-desc`), derives the current `page` (defaults to 1), queries bookings using those parameters, and prefetches the previous and next pages when available.
+ *
+ * @returns An object with the current bookings query state:
+ * - `isLoading` — whether the query is currently loading
+ * - `error` — any error returned by the query
+ * - `bookings` — array of booking items (empty array when no data)
+ * - `count` — total number of bookings matching the query
+ */
 export function useBookings() {
 	const queryClient = useQueryClient();
 	const [searchParams] = useSearchParams();

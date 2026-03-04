@@ -23,6 +23,14 @@ interface GetBookingsResult {
 	count: number;
 }
 
+/**
+ * Fetches a paginated list of bookings with summary fields, applying optional filtering and sorting.
+ *
+ * @param filter - Optional filter; `method` defaults to `"eq"`. Supported methods: `"gte"`, `"lte"`, `"neq"`, `"eq"`. Filter applies to the specified `field` and `value`.
+ * @param sortBy - Optional sort descriptor with `field` and `direction` (`"asc"` or `"desc"`); when provided results are ordered by that field.
+ * @param page - 1-based page number; invalid values default to `1`. Results are paginated using the module's `PAGE_SIZE`.
+ * @returns An object with `data` (array of booking summaries) and `count` (total number of matching rows).
+ */
 export async function getBookings({
 	filter,
 	sortBy,
@@ -73,6 +81,13 @@ export async function getBookings({
 	return { data: data as unknown as BookingWithSummary[], count: count ?? 0 };
 }
 
+/**
+ * Fetches a booking by ID including cabin and guest details.
+ *
+ * @param id - The booking's numeric identifier
+ * @returns The booking with full details, including cabins and guests
+ * @throws Error when no booking with the given id is found
+ */
 export async function getBooking(id: number): Promise<BookingWithDetails> {
 	const { data, error } = await supabase
 		.from("bookings")
@@ -143,6 +158,14 @@ export async function getStaysTodayActivity(): Promise<
 	return data as unknown as BookingWithGuestInfo[];
 }
 
+/**
+ * Update a booking by ID with the provided fields and return the updated booking.
+ *
+ * @param id - The numeric ID of the booking to update
+ * @param obj - Fields to update on the booking (conforms to `BookingUpdate`)
+ * @returns The updated booking record
+ * @throws Error if the update operation fails
+ */
 export async function updateBooking(
 	id: number,
 	obj: BookingUpdate
@@ -162,6 +185,12 @@ export async function updateBooking(
 	return data as Booking;
 }
 
+/**
+ * Delete the booking with the given id.
+ *
+ * @returns `null` on success.
+ * @throws Error when the booking could not be deleted
+ */
 export async function deleteBooking(id: number): Promise<null> {
 	// REMEMBER RLS POLICIES
 	const { data, error } = await supabase

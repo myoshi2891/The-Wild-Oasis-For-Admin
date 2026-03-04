@@ -41,6 +41,15 @@ interface FilterProps {
 	options: SelectOption[];
 }
 
+/**
+ * Renders a set of filter buttons bound to a URL search parameter.
+ *
+ * The component reads the current filter value from the URL using `filterField`. If that parameter is absent, it falls back to the first option's `value` when `options` is non-empty, otherwise an empty string. Clicking a button updates the `filterField` search parameter to the clicked option's `value`; if a `page` parameter exists it is reset to `"1"`.
+ *
+ * @param filterField - The name of the URL search parameter used to store the selected filter.
+ * @param options - Array of available options; each option's `value` is used for the URL parameter and `label` is displayed in the button.
+ * @returns The rendered filter control as a JSX element.
+ */
 function Filter({ filterField, options }: FilterProps) {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const currentFilter =

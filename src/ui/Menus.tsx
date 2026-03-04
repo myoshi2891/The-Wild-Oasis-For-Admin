@@ -86,6 +86,12 @@ interface MenusContextType {
 
 const MenusContext = createContext<MenusContextType | undefined>(undefined);
 
+/**
+ * Access the Menus compound component context.
+ *
+ * @returns The current `MenusContextType` value from the nearest `Menus` provider.
+ * @throws Error if called outside of a `Menus` provider (i.e., when the context is undefined).
+ */
 function useMenusContext(): MenusContextType {
 	const context = useContext(MenusContext);
 	if (!context)
@@ -93,6 +99,11 @@ function useMenusContext(): MenusContextType {
 	return context;
 }
 
+/**
+ * Provides menu state and control functions to descendant components via MenusContext.
+ *
+ * @returns A React element that wraps `children` with a MenusContext provider supplying `openId`, `open`, `close`, `position`, and `setPosition`.
+ */
 function Menus({ children }: { children: ReactNode }) {
 	const [openId, setOpenId] = useState("");
 	const [position, setPosition] = useState<Position | null>(null);
@@ -112,6 +123,12 @@ function Menus({ children }: { children: ReactNode }) {
 	);
 }
 
+/**
+ * Renders a toggle button that opens or closes the menu identified by the given id.
+ *
+ * @param id - The unique identifier of the menu this toggle controls
+ * @returns The button element used to control the menu's open state
+ */
 function Toggle({ id }: { id: string }) {
 	const { openId, close, open, setPosition } = useMenusContext();
 	const isOpen = openId === id;
@@ -144,6 +161,13 @@ function Toggle({ id }: { id: string }) {
 	);
 }
 
+/**
+ * Renders the popup menu list into a portal attached to document.body when its associated menu is open and positioned.
+ *
+ * @param id - Identifier of the menu this list corresponds to; the list is rendered only when the context's openId matches this `id`.
+ * @param children - Menu item nodes to be rendered inside the list.
+ * @returns The menu list element rendered into `document.body` when open and a position is available, `null` otherwise.
+ */
 function List({ id, children }: { id: string; children: ReactNode }) {
 	const { openId, position, close } = useMenusContext();
 	const ref = useOutsideClick<HTMLUListElement>(close, false);
@@ -158,6 +182,15 @@ function List({ id, children }: { id: string; children: ReactNode }) {
 	);
 }
 
+/**
+ * Renders a menu item button that executes an optional action and then closes the menu.
+ *
+ * @param children - Visible label or content for the menu item.
+ * @param icon - Icon node displayed to the left of the label.
+ * @param onClick - Optional callback invoked when the item is activated.
+ * @param disabled - If `true`, the item is inert and will not invoke `onClick` or close the menu.
+ * @returns The list item element containing the styled menu button.
+ */
 function MenuButton({
 	children,
 	icon,

@@ -34,6 +34,16 @@ interface CheckboxProps {
 	children: ReactNode;
 }
 
+/**
+ * Render a controlled checkbox input with an associated label.
+ *
+ * @param checked - Whether the checkbox is checked.
+ * @param onChange - Handler invoked when the checkbox value changes.
+ * @param disabled - If true, disables the input and prevents the label from being associated with the input.
+ * @param id - Identifier used for the input's `id` and the label's `htmlFor` when not disabled.
+ * @param children - Content rendered inside the label.
+ * @returns A JSX element containing the checkbox and its label.
+ */
 function Checkbox({ checked, onChange, disabled = false, id, children }: CheckboxProps) {
   return (
     <StyledCheckbox>

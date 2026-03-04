@@ -14,6 +14,13 @@ interface CheckinParams {
 	breakfast?: BreakfastInput;
 }
 
+/**
+ * Provides a hook to perform a booking check-in and expose the mutation trigger and its loading state.
+ *
+ * @returns An object with:
+ *  - `checkin` — a function accepting `{ bookingId, breakfast? }` to mark the booking as checked in and paid.
+ *  - `isCheckingIn` — `true` while the check-in mutation is in progress, `false` otherwise.
+ */
 export function useCheckin() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();

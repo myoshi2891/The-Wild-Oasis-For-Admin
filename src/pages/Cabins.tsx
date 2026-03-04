@@ -4,6 +4,11 @@ import CabinTable from "../features/cabins/CabinTable";
 import AddCabin from "../features/cabins/AddCabin";
 import CabinTableOperations from "../features/cabins/CabinTableOperations";
 
+/**
+ * Render the cabins management UI.
+ *
+ * @returns A JSX element containing a horizontal header row with an "All cabins" heading and table operations, followed by a row with the cabin table and an add-cabin form.
+ */
 function Cabins() {
 	return (
 		<>

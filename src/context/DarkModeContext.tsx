@@ -14,6 +14,13 @@ interface DarkModeProviderProps {
 	children: ReactNode;
 }
 
+/**
+ * Provides dark mode state and a toggle to descendant components while synchronizing the document root's CSS class.
+ *
+ * The initial preference is derived from the `prefers-color-scheme: dark` media query (when available) and persisted to local storage under the key `"isDarkMode"`. When `isDarkMode` changes, the provider adds either `dark-mode` or `light-mode` to `document.documentElement` and removes the opposite class.
+ *
+ * @returns A React context provider that supplies `{ isDarkMode, toggleDarkMode }` to its children and renders the given `children`.
+ */
 function DarkModeProvider({ children }: DarkModeProviderProps) {
 	const prefersDark =
 		typeof window !== "undefined" && typeof window.matchMedia === "function"
@@ -49,6 +56,12 @@ function DarkModeProvider({ children }: DarkModeProviderProps) {
 	);
 }
 
+/**
+ * Access the dark mode context value from the nearest DarkModeProvider.
+ *
+ * @returns The current dark mode context containing `isDarkMode` and `toggleDarkMode`.
+ * @throws Error if called outside of a DarkModeProvider.
+ */
 function useDarkMode(): DarkModeContextType {
 	const context = useContext(DarkModeContext);
 	if (context === undefined)

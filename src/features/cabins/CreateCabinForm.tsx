@@ -16,6 +16,17 @@ interface CreateCabinFormProps {
 	onCloseModal?: () => void;
 }
 
+/**
+ * Render a form for creating a new cabin or editing an existing one.
+ *
+ * When `cabinToEdit` is provided, the form is pre-populated and submitting will update that cabin;
+ * otherwise submitting will create a new cabin. Successful submissions reset the form and, for edits,
+ * optionally invoke `onCloseModal`. The form also exposes cancel behavior that invokes `onCloseModal`.
+ *
+ * @param cabinToEdit - Optional cabin whose data will populate the form for editing.
+ * @param onCloseModal - Optional callback invoked to close the surrounding modal (used on cancel and after a successful edit).
+ * @returns The JSX element representing the create/edit cabin form.
+ */
 function CreateCabinForm({ cabinToEdit, onCloseModal }: CreateCabinFormProps) {
 	const { isCreating, createCabin } = useCreateCabin();
 	const { isEditing, editCabin } = useEditCabin();
