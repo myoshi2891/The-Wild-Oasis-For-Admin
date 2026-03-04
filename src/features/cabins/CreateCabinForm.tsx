@@ -41,7 +41,7 @@ function CreateCabinForm({ cabinToEdit, onCloseModal }: CreateCabinFormProps) {
 	const isWorking = isCreating || isEditing;
 
 	function onSubmit(data: CreateCabinFormData) {
-		let image: File | string;
+		let image: File | string | undefined;
 		if (typeof data.image === "string") {
 			image = data.image;
 		} else if (data.image instanceof FileList && data.image.length > 0) {
@@ -49,12 +49,15 @@ function CreateCabinForm({ cabinToEdit, onCloseModal }: CreateCabinFormProps) {
 		} else if (data.image instanceof File) {
 			image = data.image;
 		} else {
-			image = "";
+			image = undefined;
 		}
 
-		if (isEditSession)
+		if (isEditSession) {
+			const payload = image !== undefined
+				? { ...data, image }
+				: { ...data };
 			editCabin(
-				{ newCabinData: { ...data, image } as CreateEditCabinData, id: editId! },
+				{ newCabinData: payload as CreateEditCabinData, id: editId! },
 				{
 					onSuccess: () => {
 						reset();
@@ -62,15 +65,16 @@ function CreateCabinForm({ cabinToEdit, onCloseModal }: CreateCabinFormProps) {
 					},
 				}
 			);
-		else
+		} else {
 			createCabin(
-				{ ...data, image: image } as CreateEditCabinData,
+				{ ...data, image: image ?? "" } as CreateEditCabinData,
 				{
 					onSuccess: () => {
 						reset();
 					},
 				}
 			);
+		}
 	}
 
 	function onError(_errors: Record<string, unknown>) {
