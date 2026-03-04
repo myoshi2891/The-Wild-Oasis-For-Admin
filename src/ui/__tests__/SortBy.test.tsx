@@ -2,8 +2,16 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useSearchParams } from "react-router-dom";
 import SortBy from "../SortBy";
+
+/** MemoryRouter 内の URL パラメータを可視化するヘルパー */
+function SearchParamsDisplay() {
+	const [searchParams] = useSearchParams();
+	return (
+		<div data-testid="search-params">{searchParams.toString()}</div>
+	);
+}
 
 function renderSortBy(initialEntries: string[] = ["/"]) {
 	const options = [
@@ -15,6 +23,7 @@ function renderSortBy(initialEntries: string[] = ["/"]) {
 	return render(
 		<MemoryRouter initialEntries={initialEntries}>
 			<SortBy options={options} />
+			<SearchParamsDisplay />
 		</MemoryRouter>
 	);
 }
@@ -40,6 +49,12 @@ describe("SortBy", () => {
 			"startDate-asc"
 		);
 
+		// UI 状態の検証
 		expect(screen.getByRole("combobox")).toHaveValue("startDate-asc");
+
+		// URL パラメータが実際に更新されていること
+		expect(screen.getByTestId("search-params").textContent).toContain(
+			"sortBy=startDate-asc"
+		);
 	});
 });

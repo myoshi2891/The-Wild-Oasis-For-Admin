@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { waitFor } from "@testing-library/react";
-import {
-	renderHookWithProviders,
-	createTestQueryClient,
-} from "../../../test/testUtils";
+import { renderHookWithProviders } from "../../../test/testUtils";
 
 vi.mock("../../../services/apiAuth");
 

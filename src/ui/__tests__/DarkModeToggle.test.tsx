@@ -1,11 +1,18 @@
 import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DarkModeToggle from "../DarkModeToggle";
 import { DarkModeProvider } from "../../context/DarkModeContext";
 
 describe("DarkModeToggle", () => {
+	afterEach(() => {
+		// グローバル状態のリーク防止
+		document.documentElement.classList.remove("dark-mode");
+		document.documentElement.classList.remove("light-mode");
+		localStorage.removeItem("isDarkMode");
+	});
+
 	it("ボタンが描画される", () => {
 		render(
 			<DarkModeProvider>

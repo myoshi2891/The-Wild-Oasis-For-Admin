@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "../Modal";
@@ -11,7 +11,7 @@ describe("Modal", () => {
 		render(
 			<Modal>
 				<Modal.Open opens="test-modal">
-					<button>Open Modal</button>
+					<button type="button">Open Modal</button>
 				</Modal.Open>
 				<Modal.Window name="test-modal">
 					<div>Modal Content</div>
@@ -35,7 +35,7 @@ describe("Modal", () => {
 		render(
 			<Modal>
 				<Modal.Open opens="test-modal">
-					<button>Open Modal</button>
+					<button type="button">Open Modal</button>
 				</Modal.Open>
 				<Modal.Window name="test-modal">
 					<div>Modal Content</div>
@@ -58,7 +58,7 @@ describe("Modal", () => {
 		render(
 			<Modal>
 				<Modal.Open opens="modal-a">
-					<button>Open A</button>
+					<button type="button">Open A</button>
 				</Modal.Open>
 				<Modal.Window name="modal-b">
 					<div>Wrong Modal</div>

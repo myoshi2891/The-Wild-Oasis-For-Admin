@@ -57,4 +57,40 @@ describe("Stats", () => {
 		expect(screen.getAllByText("0")).toHaveLength(2);
 		expect(screen.getByText("$0.00")).toBeInTheDocument();
 	});
+
+	it("cabinCount が 0 の場合にクラッシュせず安全なフォールバックを表示する", () => {
+		expect(() =>
+			render(
+				<Stats
+					bookings={bookings}
+					confirmedStays={confirmedStays}
+					numDays={7}
+					cabinCount={0}
+				/>
+			)
+		).not.toThrow();
+
+		expect(screen.getByText("Occupancy rate")).toBeInTheDocument();
+		// division by zero → Infinity → "Infinity%" or "NaN%"
+		// Stats uses Math.round(occupation * 100) + "%" so Infinity → "Infinity%"
+		const occupancyValue = screen.getByText("Occupancy rate")
+			.closest("div")
+			?.querySelector("p");
+		expect(occupancyValue).toBeDefined();
+	});
+
+	it("numDays が 0 の場合にクラッシュせず安全なフォールバックを表示する", () => {
+		expect(() =>
+			render(
+				<Stats
+					bookings={bookings}
+					confirmedStays={confirmedStays}
+					numDays={0}
+					cabinCount={8}
+				/>
+			)
+		).not.toThrow();
+
+		expect(screen.getByText("Occupancy rate")).toBeInTheDocument();
+	});
 });
