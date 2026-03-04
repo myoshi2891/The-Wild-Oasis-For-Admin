@@ -4,7 +4,7 @@ description: >
   テストコードを作成するエージェント。
   コンポーネントやカスタムフックに対してユニットテストを生成する。
   テスト作成を依頼された場合に使用する。
-tools: Read, Glob, Grep, Write, Bash(npm test:*)
+tools: Read, Glob, Grep, Write, Bash(bun test:*)
 model: sonnet
 ---
 
@@ -16,7 +16,7 @@ model: sonnet
 
 ## テスト方針
 
-- React Testing Library を使用
+- Vitest + React Testing Library を使用
 - ユーザー操作を模倣するテスト（ユニットテスト + インテグレーションテスト）
 - Supabase API呼び出しはモック化する
 - エッジケース（空データ、エラー状態、ローディング状態）を必ずカバー
@@ -24,11 +24,11 @@ model: sonnet
 ## テストファイル配置
 
 - コンポーネントと同じディレクトリに `__tests__/` フォルダを作成
-- ファイル名: 実装ファイルと同じ拡張子を使用する（例: `ComponentName.test.[js|jsx|ts|tsx]`）。実装とテストで言語や環境の齟齬を防ぐため。
+- ファイル名: `.test.ts`（ロジック） / `.test.tsx`（コンポーネント）
 
 ## テスト構造
 
-```jsx
+```tsx
 describe('ComponentName', () => {
   it('正常系: 主要機能が動作する', () => { ... });
   it('異常系: エラー時に適切なメッセージを表示する', () => { ... });

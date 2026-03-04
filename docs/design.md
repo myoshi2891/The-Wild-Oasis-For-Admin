@@ -183,7 +183,7 @@ sequenceDiagram
 ### テスト実行
 
 ```bash
-npm run test           # 全テスト実行
-npm run test:watch     # ウォッチモード
-npm run test:coverage  # カバレッジレポート付き実行
+bun run test           # 全テスト実行
+bun run test:watch     # ウォッチモード
+bun run test:coverage  # カバレッジレポート付き実行
 ```
