@@ -20,7 +20,13 @@ export async function getSettings(): Promise<Settings> {
 	return data;
 }
 
-// We expect a newSetting object that looks like {setting: newValue}
+/**
+ * Update the single application settings row with the provided values.
+ *
+ * @param newSetting - Object containing the settings fields to update; applied to the single settings row (id = 1).
+ * @returns The updated `Settings` object, or `null` if no row was returned.
+ * @throws Error when the settings could not be updated.
+ */
 export async function updateSetting(
 	newSetting: SettingsUpdate
 ): Promise<Settings | null> {
