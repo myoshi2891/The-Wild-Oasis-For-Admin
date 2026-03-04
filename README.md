@@ -3,16 +3,15 @@
 ## 関連ソースファイル
 
 * __.gitignore__
-* __package-lock.json__
 * __package.json__
-* __src/App.jsx__
-* __src/features/bookings/BookingDataBox.jsx__
-* __src/features/check-in-out/CheckoutButton.jsx__
-* __src/features/check-in-out/TodayActivity.jsx__
-* __src/features/check-in-out/TodayItem.jsx__
-* __src/features/check-in-out/useTodayActivity.js__
-* __src/main.jsx__
-* __src/ui/ErrorFallback.jsx__
+* __src/App.tsx__
+* __src/features/bookings/BookingDataBox.tsx__
+* __src/features/check-in-out/CheckoutButton.tsx__
+* __src/features/check-in-out/TodayActivity.tsx__
+* __src/features/check-in-out/TodayItem.tsx__
+* __src/features/check-in-out/useTodayActivity.ts__
+* __src/main.tsx__
+* __src/ui/ErrorFallback.tsx__
 
 ## 目的と範囲
 
@@ -66,30 +65,32 @@ graph TB
     style Backend fill:#f0e1ff
 ```
 
-出典: __src/App.jsx1-95__ __package.json12-25__
+出典: __src/App.tsx:1-95__ __package.json:16-29__
 
 ## コア技術スタック
 
 | 技術 | 目的 | バージョン |
 | ------ | ------ | ------------ |
 | React | フロントエンドフレームワーク | ^18.2.0 |
-| React Router DOM | クライアントサイドルーティング | ^6.25.1 |
+| TypeScript | 静的型検査 | ^5.9.3 |
+| React Router DOM | クライアントサイドルーティング | ^6.30.3 |
 | @tanstack/react-query | 状態管理とキャッシング | ^4.36.1 |
-| @supabase/supabase-js | Backend-as-a-Service | ^2.44.4 |
+| @supabase/supabase-js | Backend-as-a-Service | ^2.81.1 |
 | styled-components | CSS-in-JSスタイリング | ^6.1.12 |
 | react-hook-form | フォーム管理 | ^7.52.1 |
 | recharts | データ可視化 | ^2.12.7 |
-| Vite | ビルドツール & 開発サーバー | ^4.5.5 |
+| Vite | ビルドツール & 開発サーバー | ^7.2.4 |
+| Vitest | ユニットテスト | ^4.0.18 |
 
-出典: __package.json12-25__ __package.json27-39__
+出典: __package.json:16-29__ __package.json:31-49__
 
 ## アプリケーションエントリーポイントとルーティング構造
 
 ```mermaid
 graph TD
-    Entry[main.jsx<br/>エントリーポイント]
+    Entry[main.tsx<br/>エントリーポイント]
     
-    subgraph App["App.jsx"]
+    subgraph App["App.tsx"]
         Router[BrowserRouter]
         RQProvider[QueryClientProvider]
         Routes[ルート定義]
@@ -121,7 +122,7 @@ graph TD
     style Public fill:#FF9800
 ```
 
-出典: __src/main.jsx1-17__ __src/App.jsx30-68__
+出典: __src/main.tsx:1-17__ __src/App.tsx:30-68__
 
 アプリケーションは、`ProtectedRoute`コンポーネントを通じて認証を必要とする保護されたルーティング戦略を実装しており、ログインページのみが未認証ユーザーにアクセス可能です。ルートルート(`/`)は自動的に`/dashboard`にリダイレクトされます。
 
@@ -156,7 +157,7 @@ sequenceDiagram
     Note over RQ,Cache: staleTime: 0<br/>常に新鮮なデータを取得
 ```
 
-出典: __src/App.jsx21-28__ __package.json13-14__
+出典: __src/App.tsx:21-28__ __package.json:16-17__
 
 React Queryクライアントは`staleTime`を0に設定しており、常に新鮮なデータを取得し、クエリ状態のデバッグ用の開発ツールを含んでいます。
 
@@ -174,7 +175,7 @@ React Queryクライアントは`staleTime`を0に設定しており、常に新
 | 設定 | `/settings` | アプリケーション設定 |
 | アカウント | `/account` | 現在のユーザープロフィール管理 |
 
-出典: __src/App.jsx46-63__
+出典: __src/App.tsx:46-63__
 
 ## エラーハンドリングと開発ツール
 
@@ -185,7 +186,7 @@ React Queryクライアントは`staleTime`を0に設定しており、常に新
 * __Hot Toast通知__: `react-hot-toast`を介したアクションとエラーのユーザーフィードバック
 * __グローバルスタイル__: styled-componentsを通じた一貫したテーマ設定
 
-出典: __src/main.jsx9-14__ __src/App.jsx34-89__ __src/ui/ErrorFallback.jsx36-51__
+出典: __src/main.tsx:9-14__ __src/App.tsx:34-89__ __src/ui/ErrorFallback.tsx:36-51__
 
 エラーバウンダリは、ユーザーがエラーに遭遇したときに自動的にホームページにリセットし、優雅な回復メカニズムを提供します。
 

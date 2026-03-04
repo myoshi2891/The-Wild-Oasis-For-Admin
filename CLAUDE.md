@@ -7,15 +7,18 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 
 ## 🛠 Build & Test Commands
 
-- Dev: `npm run dev`
-- Build: `npm run build`
-- Lint: `npm run lint`
-- Preview: `npm run preview`
+- Package Manager: `bun` (lockfile: `bun.lock`)
+- Dev: `bun run dev`
+- Build: `bun run build`
+- Lint: `bun run lint`
+- Test: `bun run test`
+- Typecheck: `bun run typecheck`
+- Preview: `bun run preview`
 
 ## 📐 Code Style
 
 - ES Modules (`"type": "module"`)
-- React 18 + JSX（`.jsx` 拡張子を使用）
+- React 18 + TypeScript（`.tsx` / `.ts` 拡張子を使用）
 - styled-components による CSS-in-JS スタイリング
 - コンポーネントは1ファイル1コンポーネント
 - カスタムフックは `use` プレフィックス必須
@@ -24,15 +27,17 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 
 ## 🏗 Architecture
 
-- エントリーポイント: `src/main.jsx`
-- ルーティング: `src/App.jsx` (React Router DOM)
+- エントリーポイント: `src/main.tsx`
+- ルーティング: `src/App.tsx` (React Router DOM v6)
 - 機能モジュール: `src/features/` (bookings, cabins, check-in-out, dashboard, authentication, settings)
 - UIコンポーネント: `src/ui/`
 - ページ: `src/pages/`
 - APIサービス: `src/services/` (Supabase クライアント)
 - カスタムフック: `src/hooks/`
 - ユーティリティ: `src/utils/`
-- 状態管理: React Query (`@tanstack/react-query`)
+- 型定義: `src/types/` (domain, supabase, common)
+- テスト基盤: `src/test/` (Vitest セットアップ)
+- 状態管理: React Query (@tanstack/react-query v4)
 - コンテキスト: `src/context/` (DarkModeContext)
 
 ## 🔗 Imports
@@ -45,5 +50,5 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 - `.env` をコミットしない（Supabase キー含む）
 - Supabase のテーブルスキーマを直接変更しない
 - `node_modules/` 配下のファイルを変更しない
-- styled-components のグローバルスタイルは `src/styles/GlobalStyles.js` に集約
+- styled-components のグローバルスタイルは `src/styles/GlobalStyles.ts` に集約
 - React Query のキャッシュ設定（staleTime）は原則0をデフォルトとする。ただし、パフォーマンス改善等の正当な理由・測定結果・責任所在（オーナー）をドキュメント/PRに明記した上での変更は許可する。
