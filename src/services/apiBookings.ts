@@ -103,7 +103,12 @@ export async function getBooking(id: number): Promise<BookingWithDetails> {
 	return data as unknown as BookingWithDetails;
 }
 
-// Returns all BOOKINGS that were created after the given date. Useful to get bookings created in the last 30 days, for example.
+/**
+ * Fetches bookings created on or after the given date up through the end of today.
+ *
+ * @param date - The lower bound for `created_at` (inclusive), e.g., an ISO date string.
+ * @returns An array of records containing `created_at`, `totalPrice`, and `extrasPrice` for each matching booking.
+ */
 export async function getBookingsAfterDate(
 	date: string
 ): Promise<BookingAfterDate[]> {
@@ -121,7 +126,12 @@ export async function getBookingsAfterDate(
 	return data as BookingAfterDate[];
 }
 
-// Returns all STAYS that were created after the given date
+/**
+ * Fetches stays whose start date is on or after the specified date and up through today.
+ *
+ * @param date - The lower-bound start date (ISO date string) used to filter stays
+ * @returns An array of `StayAfterDate` objects matching the date range
+ */
 export async function getStaysAfterDate(
 	date: string
 ): Promise<StayAfterDate[]> {
@@ -139,7 +149,11 @@ export async function getStaysAfterDate(
 	return data as unknown as StayAfterDate[];
 }
 
-// Activity means that there is a check in or a check out today
+/**
+ * Fetches bookings that have activity today (a check-in or a check-out) and includes guest information.
+ *
+ * @returns An array of bookings occurring today with each booking including guest `fullName`, `nationality`, and `countryFlag`
+ */
 export async function getStaysTodayActivity(): Promise<
 	BookingWithGuestInfo[]
 > {
