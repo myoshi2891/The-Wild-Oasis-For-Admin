@@ -53,11 +53,11 @@ export async function getBookings({
 		}
 	}
 
-	if (typeof page === "number" && page >= 1) {
-		const from = (page - 1) * PAGE_SIZE;
-		const to = from + PAGE_SIZE - 1;
-		query = query.range(from, to);
-	}
+	const safePage =
+		typeof page === "number" && Number.isInteger(page) && page >= 1 ? page : 1;
+	const from = (safePage - 1) * PAGE_SIZE;
+	const to = from + PAGE_SIZE - 1;
+	query = query.range(from, to);
 
 	if (sortBy)
 		query = query.order(sortBy.field, {
