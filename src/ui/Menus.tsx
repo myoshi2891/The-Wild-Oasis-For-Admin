@@ -126,6 +126,7 @@ function Toggle({ id }: { id: string }) {
 
 	return (
 		<StyledToggle
+			type="button"
 			onClick={handleClick}
 			aria-label="Open menu"
 			aria-haspopup="menu"
@@ -171,7 +172,7 @@ function MenuButton({
 
 	return (
 		<li>
-			<StyledButton onClick={handleClick} disabled={disabled}>
+			<StyledButton type="button" onClick={handleClick} disabled={disabled}>
 				{icon}
 				<span>{children}</span>
 			</StyledButton>
