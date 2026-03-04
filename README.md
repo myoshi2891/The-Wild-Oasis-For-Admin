@@ -65,7 +65,7 @@ graph TB
     style Backend fill:#f0e1ff
 ```
 
-出典: __src/App.tsx1-95__ __package.json16-29__
+出典: __src/App.tsx:1-95__ __package.json:16-29__
 
 ## コア技術スタック
 
@@ -82,7 +82,7 @@ graph TB
 | Vite | ビルドツール & 開発サーバー | ^7.2.4 |
 | Vitest | ユニットテスト | ^4.0.18 |
 
-出典: __package.json16-29__ __package.json31-49__
+出典: __package.json:16-29__ __package.json:31-49__
 
 ## アプリケーションエントリーポイントとルーティング構造
 
@@ -122,7 +122,7 @@ graph TD
     style Public fill:#FF9800
 ```
 
-出典: __src/main.tsx1-17__ __src/App.tsx30-68__
+出典: __src/main.tsx:1-17__ __src/App.tsx:30-68__
 
 アプリケーションは、`ProtectedRoute`コンポーネントを通じて認証を必要とする保護されたルーティング戦略を実装しており、ログインページのみが未認証ユーザーにアクセス可能です。ルートルート(`/`)は自動的に`/dashboard`にリダイレクトされます。
 
@@ -157,7 +157,7 @@ sequenceDiagram
     Note over RQ,Cache: staleTime: 0<br/>常に新鮮なデータを取得
 ```
 
-出典: __src/App.tsx21-28__ __package.json16-17__
+出典: __src/App.tsx:21-28__ __package.json:16-17__
 
 React Queryクライアントは`staleTime`を0に設定しており、常に新鮮なデータを取得し、クエリ状態のデバッグ用の開発ツールを含んでいます。
 
@@ -175,7 +175,7 @@ React Queryクライアントは`staleTime`を0に設定しており、常に新
 | 設定 | `/settings` | アプリケーション設定 |
 | アカウント | `/account` | 現在のユーザープロフィール管理 |
 
-出典: __src/App.tsx46-63__
+出典: __src/App.tsx:46-63__
 
 ## エラーハンドリングと開発ツール
 
@@ -186,7 +186,7 @@ React Queryクライアントは`staleTime`を0に設定しており、常に新
 * __Hot Toast通知__: `react-hot-toast`を介したアクションとエラーのユーザーフィードバック
 * __グローバルスタイル__: styled-componentsを通じた一貫したテーマ設定
 
-出典: __src/main.tsx9-14__ __src/App.tsx34-89__ __src/ui/ErrorFallback.tsx36-51__
+出典: __src/main.tsx:9-14__ __src/App.tsx:34-89__ __src/ui/ErrorFallback.tsx:36-51__
 
 エラーバウンダリは、ユーザーがエラーに遭遇したときに自動的にホームページにリセットし、優雅な回復メカニズムを提供します。
 
