@@ -1,15 +1,15 @@
 ---
 activation: fileMatch
-pattern: "**/*.{jsx,js}"
+pattern: "src/**/*.{tsx,jsx}"
 ---
 
-# React / JavaScript Coding Standards
+# React / TypeScript Coding Standards
 
 ## コンポーネント設計
 
 - 関数コンポーネント + Hooks のみ使用（class コンポーネント禁止）
 - 1ファイル1コンポーネント（default export）
-- ファイル名は PascalCase（例: `BookingTable.jsx`）
+- ファイル名は PascalCase（例: `BookingTable.tsx`）
 - プレゼンテーション / コンテナの分離を意識する
 
 ## Hooks ルール
@@ -42,5 +42,5 @@ pattern: "**/*.{jsx,js}"
 
 - `var` の使用（`const` / `let` を使う）
 - `==` の使用（`===` を使う）— 意図的な型変換を除く
-- `any` 型の使用（将来の TS 移行を見据えて）
+- `any` 型の使用（TypeScript strict モードで強制）
 - `console.log()` の本番コードへの残留
