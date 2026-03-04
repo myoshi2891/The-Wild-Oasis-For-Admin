@@ -1,6 +1,12 @@
 import supabase from "./supabase";
 import type { Settings, SettingsUpdate } from "../types/domain";
 
+/**
+ * Load the single settings row from the database.
+ *
+ * @returns The retrieved `Settings` object.
+ * @throws Error if the settings row cannot be loaded.
+ */
 export async function getSettings(): Promise<Settings> {
 	const { data, error } = await supabase
 		.from("settings")

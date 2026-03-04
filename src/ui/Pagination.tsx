@@ -63,6 +63,14 @@ interface PaginationProps {
 	count: number;
 }
 
+/**
+ * Render a pagination control showing the current result range and Previous/Next buttons.
+ *
+ * Updates the URL's `page` query parameter when navigating; returns `null` when there is only one page.
+ *
+ * @param count - Total number of results across all pages.
+ * @returns A JSX element containing the pagination UI, or `null` if pagination is not required.
+ */
 function Pagination({ count }: PaginationProps) {
 	const [searchParams, setSearchParams] = useSearchParams();
 

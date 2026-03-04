@@ -27,6 +27,14 @@ interface DataItemProps {
 	children: ReactNode;
 }
 
+/**
+ * Render a horizontal data row displaying an icon, a label, and accompanying content.
+ *
+ * @param icon - Visual element shown to the left of the label (e.g., an SVG or React icon).
+ * @param label - Text displayed next to the icon.
+ * @param children - Content displayed to the right of the label (detail or value).
+ * @returns The styled data item element containing the icon, label, and children.
+ */
 function DataItem({ icon, label, children }: DataItemProps) {
   return (
     <StyledDataItem>

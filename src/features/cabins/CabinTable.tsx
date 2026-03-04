@@ -7,6 +7,16 @@ import Menus from "../../ui/Menus";
 import { useSearchParams } from "react-router-dom";
 import Empty from "../../ui/Empty";
 
+/**
+ * Render a cabins table whose filtering and sorting are driven by URL query parameters.
+ *
+ * Reads the "discount" query parameter to filter cabins ("all", "no-discount", "with-discount")
+ * and the "sortBy" parameter in the form "field-direction" (e.g., "name-asc") to sort by one of:
+ * "name", "maxCapacity", "regularPrice", or "discount" (direction is "asc" or "desc").
+ * While data is loading a Spinner is rendered; when there are no cabins an Empty view is rendered.
+ *
+ * @returns A JSX element containing the cabins table, or a Spinner/Empty view depending on state.
+ */
 function CabinTable() {
 	const { isLoading, cabins } = useCabins();
 	const [searchParams] = useSearchParams();

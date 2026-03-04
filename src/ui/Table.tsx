@@ -66,6 +66,12 @@ interface TableContextType {
 
 const TableContext = createContext<TableContextType | undefined>(undefined);
 
+/**
+ * Retrieves the current Table context for Table compound components.
+ *
+ * @returns The current table context containing the `columns` value.
+ * @throws Error if called outside of a `<Table>` provider.
+ */
 function useTableContext(): TableContextType {
 	const context = useContext(TableContext);
 	if (!context)
@@ -73,6 +79,12 @@ function useTableContext(): TableContextType {
 	return context;
 }
 
+/**
+ * Provides table layout context and renders a styled table wrapper for its children.
+ *
+ * @param columns - A CSS `grid-template-columns` string that defines column widths for rows (e.g., `"1fr 2fr 100px"`).
+ * @returns A React element that supplies the table context and renders `children` inside the styled table.
+ */
 function Table({
 	columns,
 	children,
@@ -87,6 +99,12 @@ function Table({
 	);
 }
 
+/**
+ * Renders a table header row using the current table's column template from context.
+ *
+ * @param children - Content to render inside the header row
+ * @returns The header row element configured with the table's column layout
+ */
 function Header({ children }: { children: ReactNode }) {
 	const { columns } = useTableContext();
 	return (
@@ -95,6 +113,11 @@ function Header({ children }: { children: ReactNode }) {
 		</StyledHeader>
 	);
 }
+/**
+ * Renders a table row that applies the current table column layout from context.
+ *
+ * @returns A `row` element (`StyledRow`) with the context's grid columns applied and the given children rendered inside.
+ */
 function Row({ children }: { children: ReactNode }) {
 	const { columns } = useTableContext();
 	return (
@@ -104,6 +127,13 @@ function Row({ children }: { children: ReactNode }) {
 	);
 }
 
+/**
+ * Renders a table body from an array of items or shows an empty placeholder when no items exist.
+ *
+ * @param data - Array of items to render as rows.
+ * @param render - Function that maps each item to a React node to be rendered inside the body.
+ * @returns The body element containing the rendered rows, or an `Empty` placeholder when `data` is empty.
+ */
 function Body<T>({ data, render }: { data: T[]; render: (item: T) => ReactNode }) {
 	if (!data.length) return <Empty>No data to show at the moment...</Empty>;
 	return <StyledBody>{data.map(render)}</StyledBody>;

@@ -27,6 +27,15 @@ interface ConfirmDeleteProps {
 	onCloseModal?: () => void;
 }
 
+/**
+ * Displays a confirmation dialog for permanently deleting a named resource.
+ *
+ * @param resourceName - The human-readable name of the resource shown in the heading and message.
+ * @param onConfirm - Callback invoked when the "Delete" button is clicked.
+ * @param disabled - If true, disables both "Cancel" and "Delete" buttons.
+ * @param onCloseModal - Optional callback invoked when the "Cancel" button is clicked.
+ * @returns The confirmation dialog UI as a JSX element.
+ */
 function ConfirmDelete({ resourceName, onConfirm, disabled, onCloseModal }: ConfirmDeleteProps) {
 	return (
 		<StyledConfirmDelete>

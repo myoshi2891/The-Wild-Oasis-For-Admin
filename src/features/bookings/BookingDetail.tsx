@@ -25,6 +25,15 @@ const HeadingGroup = styled.div`
 	align-items: center;
 `;
 
+/**
+ * Render a detailed view of a single booking including status and contextual actions.
+ *
+ * Displays a loading spinner while the booking is being fetched and an empty state if no booking is available.
+ * Shows the booking ID, a status tag, booking details, and action controls: check in (when unconfirmed), check out (when checked-in), delete (with confirmation), and back navigation.
+ * Action controls are disabled while their respective operations are in progress; after deletion the view navigates back.
+ *
+ * @returns A React element presenting the booking details, status tag, and contextual action controls
+ */
 function BookingDetail() {
 	const { booking, isLoading } = useBooking();
 	const { checkout, isCheckingOut } = useCheckout();

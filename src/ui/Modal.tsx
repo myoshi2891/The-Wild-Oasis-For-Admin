@@ -66,6 +66,12 @@ interface ModalContextType {
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
+/**
+ * Retrieves the current modal context for Modal compound components.
+ *
+ * @returns The `ModalContextType` object with `openName`, `open`, and `close`.
+ * @throws Error if called outside of a `<Modal>` provider (no context available).
+ */
 function useModalContext(): ModalContextType {
 	const context = useContext(ModalContext);
 	if (!context)
@@ -73,6 +79,15 @@ function useModalContext(): ModalContextType {
 	return context;
 }
 
+/**
+ * Supplies modal state and control functions to nested modal compound components.
+ *
+ * The provider exposes `openName`, `open(name)`, and `close()` via context so descendant
+ * components (e.g., `Modal.Open` and `Modal.Window`) can coordinate which modal window is shown.
+ *
+ * @param children - React nodes that consume the modal context
+ * @returns A React element that provides modal context to its children
+ */
 function Modal({ children }: { children: ReactNode }) {
 	const [openName, setOpenName] = useState("");
 	const close = () => setOpenName("");
@@ -85,6 +100,13 @@ function Modal({ children }: { children: ReactNode }) {
 	);
 }
 
+/**
+ * Wraps a clickable React element so activating it opens the specified modal window.
+ *
+ * @param children - The element to clone and augment; its existing `onClick` (if any) is preserved.
+ * @param opens - The name of the modal window to open when the element is clicked.
+ * @returns The provided element cloned with its `onClick` handler enhanced to call the original handler (if present) and then open the modal named by `opens`.
+ */
 function Open({
 	children,
 	opens: opensWindowName,
@@ -102,6 +124,17 @@ function Open({
 	});
 }
 
+/**
+ * Renders a named modal window as a portal when its name matches the current open modal.
+ *
+ * The provided `children` element is cloned and receives an `onCloseModal` prop that calls
+ * the child's original `onCloseModal` (if present) and then closes the modal. The modal
+ * also includes a close button and will close when clicking outside its content.
+ *
+ * @param children - Modal content element that may accept an `onCloseModal` callback; it will be cloned with an injected `onCloseModal` that closes the modal after invoking the original.
+ * @param name - Identifier for this modal window; the modal is rendered only when this equals the context's open name.
+ * @returns A portal containing the modal when `name` equals the current open modal name, `null` otherwise.
+ */
 function Window({
 	children,
 	name,

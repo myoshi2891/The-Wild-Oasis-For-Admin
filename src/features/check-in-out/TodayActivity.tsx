@@ -40,6 +40,14 @@ const NoActivity = styled.p`
 	margin-top: 0.8rem;
 `;
 
+/**
+ * Renders the "Today's Activity" panel with loading, populated, and empty states.
+ *
+ * The panel shows a heading, a spinner while data is loading, a scrollable list of activities when available,
+ * or the message "No activity today..." when there are no activities.
+ *
+ * @returns A React element representing the Today's Activity panel.
+ */
 function TodayActivity() {
 	const { activities, isLoading } = useTodayActivity();
 	return (

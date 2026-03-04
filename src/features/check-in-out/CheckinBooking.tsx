@@ -24,6 +24,11 @@ const Box = styled.div`
 	padding: 2.4rem 4rem;
 `;
 
+/**
+ * Render the check-in UI for a booking, allowing optional breakfast addition, payment confirmation, and performing check-in.
+ *
+ * @returns The JSX element containing booking details, an optional breakfast checkbox with calculated pricing, a payment confirmation checkbox showing the total amount (with breakdown when breakfast is added), and action buttons to complete check-in or go back.
+ */
 function CheckinBooking() {
 	const [confirmPaid, setConfirmPaid] = useState(false);
 	const [addBreakfast, setAddBreakfast] = useState(false);

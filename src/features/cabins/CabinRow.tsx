@@ -38,6 +38,17 @@ const Discount = styled.div`
 	color: var(--color-green-700);
 `;
 
+/**
+ * Renders a table row for a cabin with actions to duplicate, edit, or delete it.
+ *
+ * The row displays the cabin image, name, capacity, price, and discount. Actions:
+ * - Duplicate: creates a new cabin using the same properties with the name prefixed by "Copy of ".
+ * - Edit: opens a form pre-populated with the cabin data.
+ * - Delete: opens a confirmation that calls the deletion handler when confirmed.
+ *
+ * @param cabin - The cabin data to display and operate on
+ * @returns The table row JSX element representing the cabin
+ */
 function CabinRow({ cabin }: { cabin: Cabin }) {
 	const { isDeleting, deleteCabin } = useDeleteCabin();
 	const { createCabin } = useCreateCabin();
