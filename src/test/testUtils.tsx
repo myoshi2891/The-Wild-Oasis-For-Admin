@@ -47,7 +47,9 @@ export function createTestQueryClient(): QueryClient {
 			queries: {
 				retry: false,
 				cacheTime: Infinity,
-				staleTime: Infinity,
+				// staleTime はリポジトリルールにより 0 をデフォルトとする。
+				// 個別テストで非 0 が必要な場合は useQuery の staleTime で上書きすること。
+				staleTime: 0,
 			},
 			mutations: {
 				retry: false,

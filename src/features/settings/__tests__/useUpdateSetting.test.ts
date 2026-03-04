@@ -37,9 +37,11 @@ describe("useUpdateSetting", () => {
 			);
 		});
 
-		expect(invalidateSpy).toHaveBeenCalledWith(
-			expect.objectContaining({ queryKey: ["settings"] })
-		);
+		await waitFor(() => {
+			expect(invalidateSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ queryKey: ["settings"] })
+			);
+		});
 	});
 
 	it("更新失敗時にエラートーストを表示する", async () => {

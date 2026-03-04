@@ -40,4 +40,18 @@ describe("useSettings", () => {
 
 		expect(result.current.isLoading).toBe(true);
 	});
+
+	it("API がエラーを返した場合に error を設定する", async () => {
+		mockGetSettings.mockRejectedValue(new Error("API Error"));
+
+		const { useSettings } = await import("../useSettings");
+		const { result } = renderHookWithProviders(() => useSettings());
+
+		await waitFor(() => {
+			expect(result.current.isLoading).toBe(false);
+		});
+
+		expect(result.current.error).toBeDefined();
+		expect((result.current.error as Error).message).toBe("API Error");
+	});
 });
