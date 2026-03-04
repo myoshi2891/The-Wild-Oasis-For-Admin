@@ -114,7 +114,7 @@ export async function getStaysAfterDate(
 		.from("bookings")
 		.select("*, guests(fullName)")
 		.gte("startDate", date)
-		.lte("startDate", getToday());
+		.lte("startDate", getToday({ end: false }));
 
 	if (error) {
 		console.error(error);
@@ -132,7 +132,7 @@ export async function getStaysTodayActivity(): Promise<
 		.from("bookings")
 		.select("*, guests(fullName, nationality, countryFlag)")
 		.or(
-			`and(status.eq.unconfirmed,startDate.eq.${getToday()}),and(status.eq.checked-in,endDate.eq.${getToday()})`
+			`and(status.eq.unconfirmed,startDate.eq.${getToday({ end: false })}),and(status.eq.checked-in,endDate.eq.${getToday({ end: false })})`
 		)
 		.order("created_at");
 

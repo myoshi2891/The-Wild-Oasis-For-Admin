@@ -25,12 +25,12 @@ describe("formatDistanceFromNow", () => {
 
 describe("getToday", () => {
 	it("ISO 日付文字列を返す", () => {
-		const result = getToday();
+		const result = getToday({ end: false });
 		expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 	});
 
 	it("デフォルトでは時刻が 00:00:00.000 に設定される", () => {
-		const result = getToday();
+		const result = getToday({ end: false });
 		expect(result).toContain("T00:00:00.000Z");
 	});
 
