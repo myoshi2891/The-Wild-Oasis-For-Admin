@@ -73,7 +73,6 @@ function CreateCabinForm({ cabinToEdit, onCloseModal }: CreateCabinFormProps) {
 			);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	function onError(_errors: Record<string, unknown>) {
 		// console.log(errors);
 	}

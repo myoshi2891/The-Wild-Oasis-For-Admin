@@ -58,5 +58,6 @@ function useDarkMode(): DarkModeContextType {
 	return context;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { DarkModeProvider, useDarkMode };
 export type { DarkModeContextType };
