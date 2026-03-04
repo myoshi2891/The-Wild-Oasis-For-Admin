@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { subtractDates, formatDistanceFromNow, getToday, formatCurrency } from "../helpers";
 
 describe("subtractDates", () => {
@@ -13,11 +13,37 @@ describe("subtractDates", () => {
 	it("逆順の日付の場合は負の値を返す", () => {
 		expect(subtractDates("2024-02-05", "2024-02-10")).toBe(-5);
 	});
+
+	it("Date オブジェクトでも日数差を返す", () => {
+		expect(
+			subtractDates(new Date("2024-02-10"), new Date("2024-02-05"))
+		).toBe(5);
+	});
+
+	it("Date オブジェクトで同じ日付は 0 を返す", () => {
+		expect(
+			subtractDates(new Date("2024-02-05"), new Date("2024-02-05"))
+		).toBe(0);
+	});
+
+	it("Date オブジェクトで逆順は負の値を返す", () => {
+		expect(
+			subtractDates(new Date("2024-02-05"), new Date("2024-02-10"))
+		).toBe(-5);
+	});
 });
 
 describe("formatDistanceFromNow", () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it("過去の日付に対して相対距離文字列を返す", () => {
-		const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+		const fixed = new Date("2024-06-15T12:00:00.000Z").getTime();
+		vi.useFakeTimers();
+		vi.setSystemTime(fixed);
+
+		const twoDaysAgo = new Date(fixed - 2 * 24 * 60 * 60 * 1000).toISOString();
 		const result = formatDistanceFromNow(twoDaysAgo);
 		expect(result).toContain("2 days");
 	});

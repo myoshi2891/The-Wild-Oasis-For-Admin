@@ -9,10 +9,12 @@ import type { ReactNode } from "react";
 // API パラメータ
 // ────────────────────────────────────────────
 
+export type FilterMethod = "eq" | "gte" | "lte" | "neq";
+
 export interface Filter {
 	field: string;
 	value: string;
-	method?: "eq" | "gte" | "lte" | "neq";
+	method?: FilterMethod;
 }
 
 export interface SortBy {

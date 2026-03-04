@@ -131,7 +131,7 @@ function Toggle({ id }: { id: string }) {
 		<StyledToggle
 			type="button"
 			onClick={handleClick}
-			aria-label="Open menu"
+			aria-label={isOpen ? "Close menu" : "Open menu"}
 			aria-haspopup="menu"
 			aria-expanded={isOpen}
 		>
