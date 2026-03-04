@@ -11,11 +11,11 @@ description: デプロイを実施する。`/deploy` でトリガー。Vercel �
 ## 手順
 
 1. `git status` でコミット漏れがないことを確認する
-2. Lint を実行: `npm run lint`
+2. Lint を実行: `bun run lint`
 3. Lint が失敗した場合は即座に停止してユーザーに報告する
-4. テストを実行: `npm test` または CI のテスト成功を確認する
+4. テストを実行: `bun run test` または CI のテスト成功を確認する
 5. テストが失敗した場合は即座に停止してユーザーに報告する
-6. ビルドを実行: `npm run build`
+6. ビルドを実行: `bun run build`
 7. ビルドが失敗した場合は即座に停止してユーザーに報告する
 8. $ENV 環境にデプロイ:
    - preview: `vercel` (プレビューデプロイ)
