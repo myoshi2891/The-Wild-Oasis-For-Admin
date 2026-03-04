@@ -104,11 +104,10 @@ export async function getBooking(id: number): Promise<BookingWithDetails> {
 }
 
 /**
- * Retrieves bookings created on or after the given date up through today.
+ * Fetches bookings created on or after the given date up through the end of today.
  *
- * @param date - Start date (inclusive) to filter bookings by `created_at` (ISO date string or date portion).
- * @returns An array of booking records containing `created_at`, `totalPrice`, and `extrasPrice` for each matching booking.
- * @throws Error When bookings cannot be loaded (message: "Bookings could not get loaded").
+ * @param date - The lower bound for `created_at` (inclusive), e.g., an ISO date string.
+ * @returns An array of records containing `created_at`, `totalPrice`, and `extrasPrice` for each matching booking.
  */
 export async function getBookingsAfterDate(
 	date: string
@@ -128,10 +127,10 @@ export async function getBookingsAfterDate(
 }
 
 /**
- * Retrieves stays whose `startDate` falls between the provided `date` and today.
+ * Fetches stays whose start date is on or after the specified date and up through today.
  *
- * @param date - Lower bound date (inclusive) for stay `startDate`; expected as a date string (e.g., ISO 8601)
- * @returns An array of stays starting on or after `date` and on or before today
+ * @param date - The lower-bound start date (ISO date string) used to filter stays
+ * @returns An array of `StayAfterDate` objects matching the date range
  */
 export async function getStaysAfterDate(
 	date: string
@@ -151,12 +150,9 @@ export async function getStaysAfterDate(
 }
 
 /**
- * Fetch bookings that have check-in or check-out activity today and include basic guest info.
+ * Fetches bookings that have activity today (a check-in or a check-out) and includes guest information.
  *
- * Results are ordered by `created_at`.
- *
- * @returns An array of `BookingWithGuestInfo` for bookings that either have status `unconfirmed` and a `startDate` of today, or status `checked-in` and an `endDate` of today; each entry includes guest `fullName`, `nationality`, and `countryFlag`.
- * @throws Error with message "Bookings could not get loaded" if the query fails.
+ * @returns An array of bookings occurring today with each booking including guest `fullName`, `nationality`, and `countryFlag`
  */
 export async function getStaysTodayActivity(): Promise<
 	BookingWithGuestInfo[]

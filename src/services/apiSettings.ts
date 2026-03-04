@@ -21,15 +21,15 @@ export async function getSettings(): Promise<Settings> {
 }
 
 /**
- * Update the application's single settings row (id = 1) with the provided values.
+ * Update the single settings row in the database.
  *
- * @param newSetting - Partial settings fields to apply to the settings row (only provided keys are updated)
- * @returns The updated `Settings` row, or `null` if no row was returned
- * @throws Error when the settings could not be updated (message: "Settings could not be updated")
+ * @param newSetting - An object with the setting fields to update.
+ * @returns The updated `Settings` object.
+ * @throws Error if the settings row cannot be updated.
  */
 export async function updateSetting(
 	newSetting: SettingsUpdate
-): Promise<Settings | null> {
+): Promise<Settings> {
 	const { data, error } = await supabase
 		.from("settings")
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
