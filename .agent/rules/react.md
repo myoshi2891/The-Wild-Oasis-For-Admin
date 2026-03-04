@@ -1,6 +1,6 @@
 ---
 activation: fileMatch
-pattern: "**/*.{tsx,ts,jsx,js}"
+pattern: "src/**/*.{tsx,jsx}"
 ---
 
 # React / TypeScript Coding Standards
