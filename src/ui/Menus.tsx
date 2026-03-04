@@ -124,7 +124,11 @@ function Toggle({ id }: { id: string }) {
 			y: rect.y + rect.height + 8,
 		});
 
-		openId === "" || openId !== id ? open(id) : close();
+		if (openId === "" || openId !== id) {
+			open(id);
+		} else {
+			close();
+		}
 	}
 
 	return (

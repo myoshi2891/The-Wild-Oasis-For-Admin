@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { Cabin, Booking, Guest, Settings, BookingStatus, BookingWithSummary, BookingWithDetails, CreateCabinFormData } from "../domain";
+import type { Cabin, Booking, Guest, Settings, BookingStatus, BookingWithSummary, CreateCabinFormData } from "../domain";
 import type { Filter, SortBy, PaginatedResult } from "../common";
 
 describe("Domain Types", () => {
