@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { subtractDates, formatDistanceFromNow, getToday, formatCurrency } from "../helpers";
 
 describe("subtractDates", () => {
@@ -16,10 +16,14 @@ describe("subtractDates", () => {
 });
 
 describe("formatDistanceFromNow", () => {
-	it("ISO日付文字列から相対的な距離を返す", () => {
-		const result = formatDistanceFromNow(new Date().toISOString());
-		expect(typeof result).toBe("string");
-		expect(result.length).toBeGreaterThan(0);
+	it("過去の日付に対して相対距離文字列を返す", () => {
+		const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+		const result = formatDistanceFromNow(twoDaysAgo);
+		expect(result).toContain("2 days");
+	});
+
+	it("不正な日付に対して空文字を返す", () => {
+		expect(formatDistanceFromNow("invalid-date")).toBe("");
 	});
 });
 

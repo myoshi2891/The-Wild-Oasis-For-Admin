@@ -97,7 +97,10 @@ function Menus({ children }: { children: ReactNode }) {
 	const [openId, setOpenId] = useState("");
 	const [position, setPosition] = useState<Position | null>(null);
 
-	const close = () => setOpenId("");
+	const close = () => {
+		setOpenId("");
+		setPosition(null);
+	};
 	const open = setOpenId;
 
 	return (
