@@ -10,8 +10,8 @@ const mockUseCheckin = vi.fn(() => ({
 	isCheckingIn: false,
 }));
 
-// useEffect([booking]) で re-render 毎にリセットされないように安定した参照を使う
-const stableBooking = {
+// デフォルト booking データ
+const defaultBooking = {
 	id: 10,
 	status: "unconfirmed",
 	startDate: "2025-02-01",
@@ -35,11 +35,17 @@ const stableBooking = {
 	cabins: { name: "Cabin 001" },
 };
 
+// useEffect([booking]) で re-render 毎にリセットされないように安定した参照を使う
+const stableBooking = { ...defaultBooking };
+
+// vi.fn() でラップして per-test で booking を上書き可能にする
+const mockUseBooking = vi.fn(() => ({
+	booking: stableBooking,
+	isLoading: false,
+}));
+
 vi.mock("../../bookings/useBooking", () => ({
-	useBooking: () => ({
-		booking: stableBooking,
-		isLoading: false,
-	}),
+	useBooking: () => mockUseBooking(),
 }));
 
 vi.mock("../useCheckin", () => ({
@@ -62,6 +68,10 @@ describe("CheckinBooking", () => {
 		mockUseCheckin.mockReturnValue({
 			checkin: mockCheckin,
 			isCheckingIn: false,
+		});
+		mockUseBooking.mockReturnValue({
+			booking: stableBooking,
+			isLoading: false,
 		});
 	});
 
@@ -122,25 +132,26 @@ describe("CheckinBooking", () => {
 	});
 
 	it("isCheckingIn が true の場合 Check in ボタンが disabled のまま", () => {
-		// isCheckingIn: true に上書き（typo キー isCheckigIn は使わない）
+		// isCheckingIn: true に上書き
 		mockUseCheckin.mockReturnValue({
 			checkin: mockCheckin,
 			isCheckingIn: true,
 		});
 
-		// isPaid: true にして confirmPaid=true を保証→disabled の原因は isCheckingIn のみ
-		const isPaidBooking = { ...stableBooking, isPaid: true };
-		Object.assign(stableBooking, isPaidBooking);
+		// isPaid: true の booking を per-test mock で返す（stableBooking を変更しない）
+		const isPaidBooking = { ...defaultBooking, isPaid: true };
+		mockUseBooking.mockReturnValue({
+			booking: isPaidBooking,
+			isLoading: false,
+		});
 
 		renderWithProviders(<CheckinBooking />);
 
 		const checkinBtn = screen.getByRole("button", {
 			name: /check in booking/i,
 		});
+		// disabled の唯一の原因は isCheckingIn: true
 		expect(checkinBtn).toBeDisabled();
 		expect(mockCheckin).not.toHaveBeenCalled();
-
-		// stableBooking を元に戻す
-		Object.assign(stableBooking, { isPaid: false });
 	});
 });
