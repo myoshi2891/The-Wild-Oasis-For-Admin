@@ -15,7 +15,12 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // ── 環境変数の読み込み ──────────────────────────────
-// .env.local → .env の順で読み込み（Vite と同じ優先順位）
+/**
+ * Loads environment variables from .env.local then .env into process.env without overwriting existing values.
+ *
+ * Reads each file if present at the project root, parses lines of the form `KEY=VALUE`, ignores empty lines
+ * and lines starting with `#`, and sets `process.env[KEY]` only when that key is not already defined.
+ */
 function loadEnv() {
 	const __dirname = path.dirname(fileURLToPath(import.meta.url));
 	const root = path.resolve(__dirname, "..");
@@ -54,13 +59,28 @@ if (!supabaseUrl || !supabaseKey) {
 console.log(`🔗 Supabase: ${supabaseUrl}`);
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ── ヘルパー ──────────────────────────────────────
+/**
+ * Produces an ISO-8601 date-time string for today plus a number of days.
+ *
+ * @param numDays - Number of days to add to the current date (may be negative)
+ * @param withTime - If `false`, time is set to 00:00:00 UTC; if `true`, current time of day is preserved
+ * @returns An ISO-8601 string for the computed date/time without the trailing `Z`
+ */
 function fromToday(numDays: number, withTime = false) {
 	const date = add(new Date(), { days: numDays });
 	if (!withTime) date.setUTCHours(0, 0, 0, 0);
 	return date.toISOString().slice(0, -1);
 }
 
+/**
+ * Computes the difference in days from `dateStr2` to `dateStr1`, rounded up to the next whole day.
+ *
+ * Both inputs must be date strings parsable by the JavaScript `Date` constructor. A positive result means `dateStr1` is later than `dateStr2`; a negative result means it is earlier.
+ *
+ * @param dateStr1 - The later (or target) date as a string
+ * @param dateStr2 - The earlier (or reference) date as a string
+ * @returns The number of days between `dateStr2` and `dateStr1`, rounded up to an integer (can be negative)
+ */
 function subtractDates(dateStr1: string, dateStr2: string): number {
 	return Math.ceil(
 		(new Date(dateStr1).getTime() - new Date(dateStr2).getTime()) /
@@ -351,7 +371,11 @@ const defaultSettings = {
 	breakfastPrice: 15,
 };
 
-// ── 実行 ──────────────────────────────────────────
+/**
+ * Deletes all rows from the bookings, guests, and cabins tables in dependency order to satisfy foreign key constraints.
+ *
+ * Performs deletions in the order: bookings, then guests, then cabins.
+ */
 
 async function deleteAll() {
 	console.log("🗑️  既存データを削除中...");
@@ -362,6 +386,11 @@ async function deleteAll() {
 	console.log("   ✅ 削除完了");
 }
 
+/**
+ * Inserts the predefined cabin records into the database `cabins` table.
+ *
+ * @throws Error when the database insert fails with the underlying error message
+ */
 async function seedCabins() {
 	console.log("🏠 客室を作成中...");
 	const { error } = await supabase.from("cabins").insert(cabins);
@@ -369,6 +398,11 @@ async function seedCabins() {
 	console.log(`   ✅ ${cabins.length} 件作成`);
 }
 
+/**
+ * Inserts the predefined guest records into the `guests` table.
+ *
+ * @throws {Error} If the database insert fails, with the original error message.
+ */
 async function seedGuests() {
 	console.log("👤 ゲストを作成中...");
 	const { error } = await supabase.from("guests").insert(guests);
@@ -376,6 +410,14 @@ async function seedGuests() {
 	console.log(`   ✅ ${guests.length} 件作成`);
 }
 
+/**
+ * Inserts booking records into the database based on in-file booking templates.
+ *
+ * Maps template guest and cabin references to actual DB IDs, computes `numNights`, `cabinPrice`, `extrasPrice`, `totalPrice`, and a `status` value for each booking, then inserts the resulting bookings into the `bookings` table.
+ *
+ * @throws When fetching guest or cabin IDs fails.
+ * @throws When inserting bookings into the database fails.
+ */
 async function seedBookings() {
 	console.log("📋 予約を作成中...");
 
@@ -427,6 +469,13 @@ async function seedBookings() {
 	console.log(`   ✅ ${finalBookings.length} 件作成`);
 }
 
+/**
+ * Ensures the database has a settings row matching the in-script defaults by updating an existing row or inserting a new one.
+ *
+ * Performs an upsert-like operation: if a settings row exists it is updated with `defaultSettings`; otherwise a new row is inserted.
+ *
+ * @throws Error If the update or insert operation fails (includes the database error message).
+ */
 async function seedSettings() {
 	console.log("⚙️  設定を作成中...");
 	// upsert — 既存設定があれば更新、なければ作成
@@ -451,6 +500,12 @@ async function seedSettings() {
 	}
 }
 
+/**
+ * Orchestrates the end-to-end seeding workflow to populate the Supabase database with test data.
+ *
+ * Executes deletion of existing data, then inserts guests, cabins, bookings, and settings in order,
+ * logs a completion summary, and exits the process on failure.
+ */
 async function main() {
 	console.log("\n🌱 E2E テスト用シードデータ注入開始\n");
 
