@@ -14,8 +14,18 @@ for (const file of [".env.test", ".env.local", ".env"]) {
 			if (!trimmed || trimmed.startsWith("#")) continue;
 			const eqIdx = trimmed.indexOf("=");
 			if (eqIdx === -1) continue;
-			const key = trimmed.slice(0, eqIdx);
-			const value = trimmed.slice(eqIdx + 1);
+			let key = trimmed.slice(0, eqIdx);
+			if (key.startsWith("export ")) {
+				key = key.slice("export ".length).trim();
+			}
+			let value = trimmed.slice(eqIdx + 1).trim();
+			if (
+				(value.startsWith('"') && value.endsWith('"')) ||
+				(value.startsWith("'") && value.endsWith("'"))
+			) {
+				value = value.slice(1, -1);
+				value = value.replace(/\\(["'])/g, "$1");
+			}
 			if (!process.env[key]) process.env[key] = value;
 		}
 	}

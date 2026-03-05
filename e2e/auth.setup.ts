@@ -38,9 +38,12 @@ setup("authenticate", async ({ page }) => {
 
 	// localStorage に supabase auth token が書き込まれるまでポーリングして確実にする
 	await expect.poll(async () => {
-		const storage = await page.evaluate(() => window.localStorage);
-		const authKey = Object.keys(storage).find(key => key.includes('-auth-token'));
-		return authKey ? storage[authKey] : null;
+		return await page.evaluate(() => {
+			const authKey = Object.keys(window.localStorage).find((key) =>
+				key.includes("-auth-token")
+			);
+			return authKey ? window.localStorage.getItem(authKey) : null;
+		});
 	}, { timeout: 10_000 }).toBeTruthy();
 
 	// storageState を保存

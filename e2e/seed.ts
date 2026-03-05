@@ -29,7 +29,13 @@ function loadEnv() {
 				const eqIdx = trimmed.indexOf("=");
 				if (eqIdx === -1) continue;
 				const key = trimmed.slice(0, eqIdx);
-				const value = trimmed.slice(eqIdx + 1);
+				let value = trimmed.slice(eqIdx + 1);
+				if (
+					(value.startsWith('"') && value.endsWith('"')) ||
+					(value.startsWith("'") && value.endsWith("'"))
+				) {
+					value = value.slice(1, -1);
+				}
 				if (!process.env[key]) {
 					process.env[key] = value;
 				}
@@ -356,9 +362,12 @@ const defaultSettings = {
 async function deleteAll() {
 	console.log("🗑️  既存データを削除中...");
 	// bookings → guests → cabins の順（FK 依存）
-	await supabase.from("bookings").delete().gt("id", 0);
-	await supabase.from("guests").delete().gt("id", 0);
-	await supabase.from("cabins").delete().gt("id", 0);
+	const { error: errBk } = await supabase.from("bookings").delete().gt("id", 0);
+	if (errBk) throw new Error(`bookings delete failed: ${errBk.message}`);
+	const { error: errGs } = await supabase.from("guests").delete().gt("id", 0);
+	if (errGs) throw new Error(`guests delete failed: ${errGs.message}`);
+	const { error: errCb } = await supabase.from("cabins").delete().gt("id", 0);
+	if (errCb) throw new Error(`cabins delete failed: ${errCb.message}`);
 	console.log("   ✅ 削除完了");
 }
 

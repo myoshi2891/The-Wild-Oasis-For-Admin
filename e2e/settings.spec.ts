@@ -26,7 +26,11 @@ test.describe("設定", () => {
 			await minNights.clear();
 			await minNights.fill("5");
 			const updatePromise = page.waitForResponse(
-				(res) => res.url().includes("/rest/v1/settings") && res.status() >= 200 && res.status() < 300
+				(res) =>
+					res.url().includes("/rest/v1/settings") &&
+					res.request().method() === "PATCH" &&
+					res.status() >= 200 &&
+					res.status() < 300
 			);
 			await minNights.blur();
 			await updatePromise;
@@ -43,7 +47,11 @@ test.describe("設定", () => {
 			await minNights.clear();
 			await minNights.fill(originalValue);
 			const revertPromise = page.waitForResponse(
-				(res) => res.url().includes("/rest/v1/settings") && res.status() >= 200 && res.status() < 300
+				(res) =>
+					res.url().includes("/rest/v1/settings") &&
+					res.request().method() === "PATCH" &&
+					res.status() >= 200 &&
+					res.status() < 300
 			);
 			await minNights.blur();
 			await revertPromise;
