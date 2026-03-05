@@ -24,5 +24,13 @@ package-lock.json
 *.sln
 *.sw?
 .env
+.env.test
+.env.local
+.eslintcache
 # Coverage
 coverage/
+
+# Playwright
+test-results/
+playwright-report/
+e2e/.auth/
