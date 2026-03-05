@@ -17,7 +17,7 @@ describe("useDeleteCabin", () => {
 	});
 
 	it("削除成功時にトーストを表示しキャッシュを無効化する", async () => {
-		mockDeleteCabinApi.mockResolvedValue(undefined);
+		mockDeleteCabinApi.mockResolvedValue(null);
 
 		const { useDeleteCabin } = await import("../useDeleteCabin");
 		const queryClient = createTestQueryClient();

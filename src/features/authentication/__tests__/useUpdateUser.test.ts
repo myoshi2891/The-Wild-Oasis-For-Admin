@@ -17,7 +17,7 @@ describe("useUpdateUser", () => {
 	});
 
 	it("更新成功時にユーザーキャッシュを更新しトーストを表示する", async () => {
-		const updatedUser = { id: "1", role: "authenticated", email: "a@b.com" };
+		const updatedUser = { id: "1", role: "authenticated", email: "a@b.com" } as any;
 		mockUpdateCurrentUser.mockResolvedValue({ user: updatedUser });
 
 		const { useUpdateUser } = await import("../useUpdateUser");

@@ -187,7 +187,7 @@ export async function updateBooking(
 	const { data, error } = await supabase
 		.from("bookings")
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		.update(obj as any)
+		.update(obj as never)
 		.eq("id", id)
 		.select()
 		.single();

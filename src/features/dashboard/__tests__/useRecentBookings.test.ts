@@ -13,7 +13,7 @@ describe("useRecentBookings", () => {
 	});
 
 	it("デフォルトで直近7日のデータを取得する", async () => {
-		const mockBookings = [{ id: 1, totalPrice: 500 }];
+		const mockBookings = [{ id: 1, totalPrice: 500 }] as any;
 		mockGetBookingsAfterDate.mockResolvedValue(mockBookings);
 
 		const now = Date.now();
@@ -40,7 +40,7 @@ describe("useRecentBookings", () => {
 	});
 
 	it("URL パラメータで日数を変更できる", async () => {
-		const mockBookings = [{ id: 1 }];
+		const mockBookings = [{ id: 1 }] as any;
 		mockGetBookingsAfterDate.mockResolvedValue(mockBookings);
 
 		const now = Date.now();

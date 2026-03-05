@@ -17,7 +17,7 @@ describe("useDeleteBooking", () => {
 	});
 
 	it("削除成功時にトーストを表示しキャッシュを無効化する", async () => {
-		mockDeleteBookingApi.mockResolvedValue(undefined);
+		mockDeleteBookingApi.mockResolvedValue(null);
 
 		const { useDeleteBooking } = await import("../useDeleteBooking");
 		const queryClient = createTestQueryClient();

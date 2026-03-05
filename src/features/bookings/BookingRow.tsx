@@ -71,7 +71,7 @@ function BookingRow({
 		guests: { fullName: guestName, email },
 		cabins: { name: cabinName },
 	},
-}) {
+}: any) {
 	const navigate = useNavigate();
 	const { checkout, isCheckingOut } = useCheckout();
 	const { deleteBooking, isDeleting } = useDeleteBooking();
@@ -104,7 +104,7 @@ function BookingRow({
 				</span>
 			</Stacked>
 
-			<Tag $type={statusToTagName[status]}>{status.replace("-", " ")}</Tag>
+			<Tag $type={statusToTagName[status as keyof typeof statusToTagName] as any}>{status.replace("-", " ")}</Tag>
 
 			<Amount>{formatCurrency(totalPrice)}</Amount>
 

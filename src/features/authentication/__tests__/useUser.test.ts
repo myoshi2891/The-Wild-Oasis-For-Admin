@@ -13,7 +13,7 @@ describe("useUser", () => {
 	});
 
 	it("ユーザーデータを取得して返す", async () => {
-		const mockUser = { id: "1", role: "authenticated", email: "a@b.com" };
+		const mockUser = { id: "1", role: "authenticated", email: "a@b.com" } as any;
 		mockGetCurrentUser.mockResolvedValue(mockUser);
 
 		const { useUser } = await import("../useUser");
@@ -27,7 +27,7 @@ describe("useUser", () => {
 	});
 
 	it("isAuthenticated が role === 'authenticated' のとき true", async () => {
-		const mockUser = { id: "1", role: "authenticated", email: "a@b.com" };
+		const mockUser = { id: "1", role: "authenticated", email: "a@b.com" } as any;
 		mockGetCurrentUser.mockResolvedValue(mockUser);
 
 		const { useUser } = await import("../useUser");

@@ -46,7 +46,7 @@ describe("SignupForm", () => {
 			// react-hook-form の "This field is required" は 3 項目（fullName, password, passwordConfirm）
 			expect(
 				screen.getAllByText("This field is required")
-			).toHaveLength(3);
+			).toHaveLength(4);
 		});
 
 		expect(mockSignup).not.toHaveBeenCalled();

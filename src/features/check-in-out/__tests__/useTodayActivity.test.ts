@@ -16,7 +16,7 @@ describe("useTodayActivity", () => {
 		const mockActivities = [
 			{ id: 1, status: "unconfirmed" },
 			{ id: 2, status: "checked-in" },
-		];
+		] as any;
 		mockGetStaysTodayActivity.mockResolvedValue(mockActivities);
 
 		const { useTodayActivity } = await import("../useTodayActivity");

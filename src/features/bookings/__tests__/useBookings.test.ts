@@ -13,7 +13,7 @@ describe("useBookings", () => {
 	});
 
 	it("デフォルトで startDate-desc でソートする", async () => {
-		const mockData = { data: [{ id: 1 }], count: 1 };
+		const mockData = { data: [{ id: 1 }] as any, count: 1 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
@@ -32,7 +32,7 @@ describe("useBookings", () => {
 	});
 
 	it("status フィルタを URL パラメータから構築する", async () => {
-		const mockData = { data: [{ id: 1 }], count: 1 };
+		const mockData = { data: [{ id: 1 }] as any, count: 1 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
@@ -96,7 +96,7 @@ describe("useBookings", () => {
 	});
 
 	it("bookings と count を返す", async () => {
-		const mockData = { data: [{ id: 1 }, { id: 2 }], count: 2 };
+		const mockData = { data: [{ id: 1 }, { id: 2 }] as any, count: 2 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");

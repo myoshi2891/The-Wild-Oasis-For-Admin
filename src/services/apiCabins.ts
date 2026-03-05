@@ -66,9 +66,9 @@ export async function createEditCabin(
 
 	const builder = id
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-		  query.update(payload as any).eq("id", id)
+		  query.update(payload as never).eq("id", id)
 		: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-		  query.insert([payload as any]);
+		  query.insert([payload as never]);
 
 	const { data, error } = await builder.select().single();
 

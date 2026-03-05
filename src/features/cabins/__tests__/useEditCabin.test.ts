@@ -17,7 +17,7 @@ describe("useEditCabin", () => {
 	});
 
 	it("編集成功時にトーストを表示しキャッシュを無効化する", async () => {
-		const edited = { id: 5, name: "Cabin 005 Updated" };
+		const edited = { id: 5, name: "Cabin 005 Updated" } as any;
 		mockCreateEditCabin.mockResolvedValue(edited);
 
 		const { useEditCabin } = await import("../useEditCabin");

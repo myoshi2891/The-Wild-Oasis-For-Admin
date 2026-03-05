@@ -23,7 +23,7 @@ const StyledSalesChart = styled(DashboardBox)`
 	}
 `;
 
-function SalesChart({ bookings, numDays }) {
+function SalesChart({ bookings, numDays }: any) {
 	const { isDarkMode } = useDarkMode();
 
 	const allDates = eachDayOfInterval({
@@ -35,15 +35,15 @@ function SalesChart({ bookings, numDays }) {
 		return {
 			label: format(date, "MMM dd"),
 			totalSales: bookings
-				?.filter((booking) =>
+				?.filter((booking: any) =>
 					isSameDay(date, new Date(booking.created_at))
 				)
-				.reduce((acc, cur) => acc + cur.totalPrice, 0),
+				.reduce((acc: number, cur: any) => acc + cur.totalPrice, 0),
 			extrasSales: bookings
-				?.filter((booking) =>
+				?.filter((booking: any) =>
 					isSameDay(date, new Date(booking.created_at))
 				)
-				.reduce((acc, cur) => acc + cur.extrasPrice, 0),
+				.reduce((acc: number, cur: any) => acc + cur.extrasPrice, 0),
 		};
 	});
 
@@ -64,8 +64,8 @@ function SalesChart({ bookings, numDays }) {
 	return (
 		<StyledSalesChart>
 			<Heading as="h2">
-				Sales from {format(allDates.at(0), "MMM dd yyyy")} &mdash;{" "}
-				{format(allDates.at(-1), "MMM dd yyyy")}
+				Sales from {format(allDates[0], "MMM dd yyyy")} &mdash;{" "}
+				{format(allDates[allDates.length - 1], "MMM dd yyyy")}
 			</Heading>
 			<ResponsiveContainer height={300} width="100%">
 				<AreaChart data={data}>

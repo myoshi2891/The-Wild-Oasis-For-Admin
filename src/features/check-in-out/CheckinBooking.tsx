@@ -49,10 +49,10 @@ function CheckinBooking() {
 		numGuests,
 		hasBreakfast,
 		numNights,
-	} = booking;
+	} = booking as any;
 
 	const optionalBreakfastPrice =
-		settings.breakfastPrice * numNights * numGuests;
+		(settings?.breakfastPrice ?? 0) * numNights * numGuests;
 
 	function handleCheckin() {
 		if (!confirmPaid) return;
@@ -67,7 +67,7 @@ function CheckinBooking() {
 				},
 			});
 		} else {
-			checkin({ bookingId, breakfast: {} });
+			checkin({ bookingId, breakfast: {} as any });
 		}
 	}
 

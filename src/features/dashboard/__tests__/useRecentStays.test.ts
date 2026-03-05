@@ -17,7 +17,7 @@ describe("useRecentStays", () => {
 			{ id: 1, status: "checked-in", numNights: 3 },
 			{ id: 2, status: "checked-out", numNights: 2 },
 			{ id: 3, status: "unconfirmed", numNights: 1 },
-		];
+		] as any;
 		mockGetStaysAfterDate.mockResolvedValue(mockStays);
 
 		const { useRecentStays } = await import("../useRecentStays");
@@ -36,7 +36,7 @@ describe("useRecentStays", () => {
 			{ id: 1, status: "checked-in", numNights: 3 },
 			{ id: 2, status: "checked-out", numNights: 2 },
 			{ id: 3, status: "unconfirmed", numNights: 1 },
-		];
+		] as any;
 		mockGetStaysAfterDate.mockResolvedValue(mockStays);
 
 		const { useRecentStays } = await import("../useRecentStays");

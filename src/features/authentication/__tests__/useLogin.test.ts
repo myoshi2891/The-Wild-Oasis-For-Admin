@@ -25,7 +25,7 @@ describe("useLogin", () => {
 	});
 
 	it("login 成功時に queryData をセットし /dashboard へ遷移する", async () => {
-		const mockUser = { user: { id: "1", role: "authenticated" }, session: {} };
+		const mockUser = { user: { id: "1", role: "authenticated" } as any, session: {} as any };
 		mockLoginApi.mockResolvedValue(mockUser);
 
 		const { useLogin } = await import("../useLogin");

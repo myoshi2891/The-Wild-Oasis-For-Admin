@@ -56,9 +56,9 @@ function TodayActivity() {
 				<Heading as="h2">Today's Activity</Heading>
 			</Row>
 			{!isLoading ? (
-				activities?.length > 0 ? (
+				(activities?.length ?? 0) > 0 ? (
 					<TodayList>
-						{activities.map((activity) => (
+						{activities?.map((activity) => (
 							<TodayItem activity={activity} key={activity.id} />
 						))}
 					</TodayList>

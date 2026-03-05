@@ -20,7 +20,7 @@ describe("useSignup", () => {
 	});
 
 	it("signup 成功時にトーストを表示する", async () => {
-		const mockData = { user: { id: "1" }, session: {} };
+		const mockData = { user: { id: "1" } as any, session: {} as any };
 		mockSignupApi.mockResolvedValue(mockData);
 
 		const { useSignup } = await import("../useSignup");

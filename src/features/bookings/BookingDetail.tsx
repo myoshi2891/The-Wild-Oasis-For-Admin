@@ -58,7 +58,7 @@ function BookingDetail() {
 			<Row $type="horizontal">
 				<HeadingGroup>
 					<Heading as="h1">Booking #{bookingId}</Heading>
-					<Tag $type={statusToTagName[status]}>
+					<Tag $type={statusToTagName[status] as any}>
 						{status.replace("-", " ")}
 					</Tag>
 				</HeadingGroup>
@@ -76,11 +76,10 @@ function BookingDetail() {
 
 				{status === "checked-in" && (
 					<Button
-						icon={<HiArrowUpOnSquare />}
 						onClick={() => checkout(bookingId)}
 						disabled={isCheckingOut}
 					>
-						Check out
+						<HiArrowUpOnSquare /> Check out
 					</Button>
 				)}
 

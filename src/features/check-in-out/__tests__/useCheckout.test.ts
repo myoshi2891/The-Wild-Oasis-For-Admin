@@ -17,7 +17,7 @@ describe("useCheckout", () => {
 	});
 
 	it("チェックアウト成功時にトースト・キャッシュ無効化", async () => {
-		const updated = { id: 3, status: "checked-out" };
+		const updated = { id: 3, status: "checked-out" } as any;
 		mockUpdateBooking.mockResolvedValue(updated);
 
 		const { useCheckout } = await import("../useCheckout");

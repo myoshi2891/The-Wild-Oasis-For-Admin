@@ -18,7 +18,7 @@ describe("useCheckin", () => {
 	});
 
 	it("チェックイン成功時にトースト表示・キャッシュ無効化・ルートへ遷移", async () => {
-		const updated = { id: 1, status: "checked-in" };
+		const updated = { id: 1, status: "checked-in" } as any;
 		mockUpdateBooking.mockResolvedValue(updated);
 
 		const { useCheckin } = await import("../useCheckin");
@@ -43,7 +43,7 @@ describe("useCheckin", () => {
 	});
 
 	it("朝食オプション付きチェックイン: updateBooking に breakfast データを含める", async () => {
-		const updated = { id: 2, status: "checked-in" };
+		const updated = { id: 2, status: "checked-in" } as any;
 		mockUpdateBooking.mockResolvedValue(updated);
 
 		const { useCheckin } = await import("../useCheckin");

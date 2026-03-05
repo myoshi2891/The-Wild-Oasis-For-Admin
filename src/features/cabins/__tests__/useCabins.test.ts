@@ -16,7 +16,7 @@ describe("useCabins", () => {
 		const mockCabins = [
 			{ id: 1, name: "Cabin 001" },
 			{ id: 2, name: "Cabin 002" },
-		];
+		] as any;
 		mockGetCabins.mockResolvedValue(mockCabins);
 
 		const { useCabins } = await import("../useCabins");

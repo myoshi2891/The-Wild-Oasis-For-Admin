@@ -17,7 +17,7 @@ describe("useCreateCabin", () => {
 	});
 
 	it("作成成功時にトーストを表示しキャッシュを無効化する", async () => {
-		const created = { id: 1, name: "Cabin 001" };
+		const created = { id: 1, name: "Cabin 001" } as any;
 		mockCreateEditCabin.mockResolvedValue(created);
 
 		const { useCreateCabin } = await import("../useCreateCabin");

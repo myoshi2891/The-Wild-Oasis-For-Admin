@@ -68,7 +68,7 @@ const Guest = styled.div`
   }
 `;
 
-const Price = styled.div`
+const Price = styled.div<{ isPaid?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -102,7 +102,7 @@ const Footer = styled.footer`
 `;
 
 // A purely presentational component
-function BookingDataBox({ booking }) {
+function BookingDataBox({ booking }: any) {
   const {
     created_at,
     startDate,
