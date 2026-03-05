@@ -40,12 +40,15 @@ vi.mock("react-hot-toast", () => ({
 	},
 }));
 
+// ── QueryClient factory ─────────────────────────────────────
 /**
  * Create a QueryClient preconfigured for tests.
  *
- * The client disables retries, sets query cacheTime to Infinity and staleTime to 0, and uses a no-op logger so tests run deterministically without noisy logs.
+ * - queries: retry=false, cacheTime=Infinity, staleTime=0
+ * - mutations: retry=false
+ * - logger: no-op（コンソール出力を抑制）
  *
- * @returns A configured QueryClient instance suitable for use in tests
+ * @returns A QueryClient configured for tests: query and mutation retries disabled, query `cacheTime` set to `Infinity`, `staleTime` set to `0`, and a no-op logger.
  */
 export function createTestQueryClient(): QueryClient {
 	return new QueryClient({
