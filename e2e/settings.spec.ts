@@ -23,8 +23,9 @@ test.describe("設定", () => {
 
 		try {
 			// 値を変更して blur
+			const newValue = originalValue === "5" ? "4" : "5";
 			await minNights.clear();
-			await minNights.fill("5");
+			await minNights.fill(newValue);
 			const updatePromise = page.waitForResponse(
 				(res) =>
 					res.url().includes("/rest/v1/settings") &&
@@ -39,7 +40,7 @@ test.describe("設定", () => {
 			await page.reload();
 
 			// 変更が保存されていることを確認
-			await expect(minNights).toHaveValue("5", {
+			await expect(minNights).toHaveValue(newValue, {
 				timeout: 10_000,
 			});
 		} finally {

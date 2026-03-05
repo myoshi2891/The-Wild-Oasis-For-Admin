@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
 function loadEnv() {
 	const __dirname = path.dirname(fileURLToPath(import.meta.url));
 	const root = path.resolve(__dirname, "..");
-	for (const file of [".env.local", ".env"]) {
+	for (const file of [".env.test", ".env.local", ".env"]) {
 		const envPath = path.join(root, file);
 		if (fs.existsSync(envPath)) {
 			const content = fs.readFileSync(envPath, "utf-8");
@@ -79,13 +79,13 @@ function fromToday(numDays: number, withTime = false) {
 }
 
 /**
- * Computes the difference in days from `dateStr2` to `dateStr1`, rounded up to the next whole day.
+ * Computes the difference in calendar days from `dateStr2` to `dateStr1`.
  *
  * Both inputs must be date strings parsable by the JavaScript `Date` constructor. A positive result means `dateStr1` is later than `dateStr2`; a negative result means it is earlier.
  *
  * @param dateStr1 - The later (or target) date as a string
  * @param dateStr2 - The earlier (or reference) date as a string
- * @returns The number of days between `dateStr2` and `dateStr1`, rounded up to an integer (can be negative)
+ * @returns The difference in calendar days between `dateStr2` and `dateStr1` (can be negative)
  */
 function subtractDates(dateStr1: string, dateStr2: string): number {
 	return differenceInCalendarDays(new Date(dateStr1), new Date(dateStr2));
@@ -488,10 +488,12 @@ async function seedBookings() {
 async function seedSettings() {
 	console.log("⚙️  設定を作成中...");
 	// upsert — 既存設定があれば更新、なければ作成
-	const { data: existing } = await supabase
+	const { data: existing, error: selectError } = await supabase
 		.from("settings")
 		.select("id")
 		.limit(1);
+
+	if (selectError) throw new Error(`settings select failed: ${selectError.message}`);
 
 	if (existing && existing.length > 0) {
 		const { error } = await supabase
