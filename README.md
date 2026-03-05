@@ -81,6 +81,7 @@ graph TB
 | recharts | データ可視化 | ^2.12.7 |
 | Vite | ビルドツール & 開発サーバー | ^7.2.4 |
 | Vitest | ユニットテスト | ^4.0.18 |
+| Playwright | E2Eテスト自動化 | ^1.46.0 |
 
 出典: __package.json:16-29__ __package.json:31-49__
 
