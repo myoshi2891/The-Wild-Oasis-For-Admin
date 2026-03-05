@@ -11,7 +11,10 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"seed:e2e": "bun run e2e/seed.ts",
+		"test:e2e": "npx playwright test",
+		"test:e2e:ui": "npx playwright test --ui"
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.81.1",
@@ -29,6 +32,7 @@
 		"styled-components": "^6.1.12"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.58.2",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.2",
 		"@testing-library/user-event": "^14.6.1",
