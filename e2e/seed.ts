@@ -24,6 +24,8 @@ import { fileURLToPath } from "node:url";
  * Reads each file if present at the project root, parses lines of the form `KEY=VALUE`, ignores empty lines
  * and lines starting with `#`, and sets `process.env[KEY]` only when that key is not already defined.
  */
+let isTestEnvLoaded = false;
+
 function loadEnv() {
 	const __dirname = path.dirname(fileURLToPath(import.meta.url));
 	const root = path.resolve(__dirname, "..");
@@ -35,6 +37,7 @@ function loadEnv() {
 	for (const file of envFiles) {
 		const envPath = path.join(root, file);
 		if (fs.existsSync(envPath)) {
+			if (file === ".env.test") isTestEnvLoaded = true;
 			const content = fs.readFileSync(envPath, "utf-8");
 			for (const line of content.split("\n")) {
 				const trimmed = line.trim();
@@ -69,7 +72,8 @@ if (!supabaseUrl || !supabaseKey) {
 	console.error(
 		"❌ VITE_SUPABASE_URL / VITE_SUPABASE_KEY が設定されていません。"
 	);
-	console.error("   .env.test, .env.local, または .env に設定してください。");
+	console.error("   基本設定として .env.test に環境変数を設定してください。");
+	console.error("   (ALLOW_NON_TEST_SEED=true 設定時のみ .env.local や .env も参照します)");
 	process.exit(1);
 }
 
@@ -561,6 +565,7 @@ async function main() {
 	}
 
 	if (
+		!isTestEnvLoaded &&
 		process.env.NODE_ENV !== "test" &&
 		process.env.ALLOW_NON_TEST_SEED !== "true" &&
 		process.env.ALLOW_NON_TEST_SEED !== "1"
