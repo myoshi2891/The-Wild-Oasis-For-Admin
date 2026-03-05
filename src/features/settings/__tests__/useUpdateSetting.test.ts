@@ -20,7 +20,7 @@ describe("useUpdateSetting", () => {
 		mockUpdateSettingApi.mockResolvedValue({
 			id: 1,
 			breakfastPrice: 20,
-		});
+		} as any);
 
 		const { useUpdateSetting } = await import("../useUpdateSetting");
 		const queryClient = createTestQueryClient();

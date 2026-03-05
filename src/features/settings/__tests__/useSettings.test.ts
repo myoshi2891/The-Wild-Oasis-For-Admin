@@ -20,7 +20,7 @@ describe("useSettings", () => {
 			maxGuestsPerBooking: 8,
 			breakfastPrice: 15,
 		};
-		mockGetSettings.mockResolvedValue(mockSettings);
+		mockGetSettings.mockResolvedValue(mockSettings as any);
 
 		const { useSettings } = await import("../useSettings");
 		const { result } = renderHookWithProviders(() => useSettings());
