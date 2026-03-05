@@ -3,8 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../../test/testUtils";
 
-// vi.fn() でラップして per-test でデータを上書き可能にする
-const mockUseBookings = vi.fn(() => ({
+const MOCK_BOOKINGS_RESPONSE = {
 	bookings: [
 		{
 			id: 1,
@@ -19,7 +18,10 @@ const mockUseBookings = vi.fn(() => ({
 	],
 	isLoading: false,
 	count: 1,
-}));
+};
+
+// vi.fn() でラップして per-test でデータを上書き可能にする
+const mockUseBookings = vi.fn(() => ({ ...MOCK_BOOKINGS_RESPONSE }));
 
 vi.mock("../useBookings", () => ({
 	useBookings: () => mockUseBookings(),
@@ -41,23 +43,7 @@ import BookingTable from "../BookingTable";
 describe("BookingTable", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		// デフォルトの mock をリセット
-		mockUseBookings.mockReturnValue({
-			bookings: [
-				{
-					id: 1,
-					startDate: "2025-02-01T00:00:00Z",
-					endDate: "2025-02-04T00:00:00Z",
-					numNights: 3,
-					totalPrice: 840,
-					status: "unconfirmed",
-					guests: { fullName: "John Doe", email: "john@test.com" },
-					cabins: { name: "Cabin 001" },
-				},
-			],
-			isLoading: false,
-			count: 1,
-		});
+		mockUseBookings.mockReturnValue({ ...MOCK_BOOKINGS_RESPONSE });
 	});
 
 	it("テーブルヘッダーを表示する", () => {
@@ -83,9 +69,11 @@ describe("BookingTable", () => {
 			isLoading: true,
 			count: 0,
 		});
-		renderWithProviders(<BookingTable />);
+		const { container } = renderWithProviders(<BookingTable />);
 
-		// テーブルヘッダーが表示されない（Spinner が返される）
+		// Spinner（styled div）が描画されている
+		expect(container.firstChild).toBeInTheDocument();
+		// テーブルヘッダーが表示されない
 		expect(screen.queryByText("Cabin")).not.toBeInTheDocument();
 		expect(screen.queryByText("Guest")).not.toBeInTheDocument();
 	});
