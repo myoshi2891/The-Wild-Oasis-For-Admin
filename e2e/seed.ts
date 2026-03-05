@@ -4,7 +4,7 @@
  * Usage:
  *   bun run e2e/seed.ts
  *
- * .env.local (or .env) の VITE_SUPABASE_URL / VITE_SUPABASE_KEY を使って
+ * .env.test (or .env.local/ .env) の VITE_SUPABASE_URL / VITE_SUPABASE_KEY を使って
  * テスト用 Supabase プロジェクトに cabins, guests, bookings, settings を注入する。
  */
 
@@ -532,6 +532,13 @@ async function seedSettings() {
  * logs a completion summary, and exits the process on failure.
  */
 async function main() {
+	if (!process.argv.includes("--force-seed") && process.env.ALLOW_DESTRUCTIVE_SEED !== "1") {
+		console.error("\n❌ 安全確保のため、テストデータの削除・注入がブロックされました。");
+		console.error("   明示的に実行を許可するには '--force-seed' フラグを付与するか、");
+		console.error("   環境変数 ALLOW_DESTRUCTIVE_SEED=1 を設定して実行してください。\n");
+		process.exit(1);
+	}
+
 	console.log("\n🌱 E2E テスト用シードデータ注入開始\n");
 
 	try {
