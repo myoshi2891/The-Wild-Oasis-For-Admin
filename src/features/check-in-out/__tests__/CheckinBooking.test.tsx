@@ -4,6 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../../test/testUtils";
 
 const mockCheckin = vi.fn();
+// vi.fn() でラップして per-test で mockReturnValue を上書き可能にする
+const mockUseCheckin = vi.fn(() => ({
+	checkin: mockCheckin,
+	isCheckingIn: false,
+}));
 
 // useEffect([booking]) で re-render 毎にリセットされないように安定した参照を使う
 const stableBooking = {
@@ -38,7 +43,7 @@ vi.mock("../../bookings/useBooking", () => ({
 }));
 
 vi.mock("../useCheckin", () => ({
-	useCheckin: () => ({ checkin: mockCheckin, isCheckingIn: false }),
+	useCheckin: (...args: unknown[]) => mockUseCheckin(...args),
 }));
 
 vi.mock("../../settings/useSettings", () => ({
@@ -53,6 +58,11 @@ import CheckinBooking from "../CheckinBooking";
 describe("CheckinBooking", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// デフォルトの mock をリセット
+		mockUseCheckin.mockReturnValue({
+			checkin: mockCheckin,
+			isCheckingIn: false,
+		});
 	});
 
 	it("予約チェックインの見出しを表示する", () => {
@@ -106,5 +116,26 @@ describe("CheckinBooking", () => {
 		await user.click(checkinBtn);
 
 		expect(mockCheckin).toHaveBeenCalledTimes(1);
+		expect(mockCheckin).toHaveBeenCalledWith(
+			expect.objectContaining({ bookingId: 10 })
+		);
+	});
+
+	it("isCheckingIn が true の場合 Check in ボタンが disabled のまま", () => {
+		// NOTE: ソースコード CheckinBooking.tsx は isCheckigIn (typo) で destructure しているが、
+		// useCheckin フックは isCheckingIn を返す。テストでは両方のキーを返してソース側の typo もカバー。
+		mockUseCheckin.mockReturnValue({
+			checkin: mockCheckin,
+			isCheckingIn: true,
+			isCheckigIn: true, // ソースの typo に合わせる
+		});
+
+		renderWithProviders(<CheckinBooking />);
+
+		const checkinBtn = screen.getByRole("button", {
+			name: /check in booking/i,
+		});
+		expect(checkinBtn).toBeDisabled();
+		expect(mockCheckin).not.toHaveBeenCalled();
 	});
 });

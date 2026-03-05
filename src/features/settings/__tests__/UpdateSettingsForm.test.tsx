@@ -67,6 +67,7 @@ describe("UpdateSettingsForm", () => {
 		await user.type(minNightsInput, "5");
 		await user.tab(); // blur を発火
 
+		expect(mockUpdateSetting).toHaveBeenCalledTimes(1);
 		expect(mockUpdateSetting).toHaveBeenCalledWith({
 			minBookingLength: 5,
 		});
