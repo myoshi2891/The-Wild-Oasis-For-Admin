@@ -46,7 +46,7 @@ test.describe("客室管理", () => {
 		// "Copy of 002" が追加されるのを待機
 		const copyRow = page.locator("[role='row']").filter({
 			hasText: "Copy of 002",
-		});
+		}).first();
 		await expect(copyRow).toBeVisible({ timeout: 15_000 });
 
 		// 追加された行を削除する
