@@ -32,14 +32,16 @@ setup("authenticate", async ({ page }) => {
 	// API の完了を待機
 	await tokenResponsePromise;
 
-	// ダッシュボードへの遷移を待機し、完全にロードされるのを待つ
+	// アプリケーションが描画されるのを待機
 	await expect(page).toHaveURL(/dashboard/, { timeout: 15_000 });
-	await expect(
-		page.getByRole("heading", { name: "Booking", level: 5 })
-	).toBeVisible({ timeout: 15_000 });
+	await expect(page.getByRole("main")).toBeVisible({ timeout: 15_000 });
 
-	// セッションが local storage に書き込まれる猶予のための少しの待機
-	await page.waitForTimeout(1000);
+	// localStorage に supabase auth token が書き込まれるまでポーリングして確実にする
+	await expect.poll(async () => {
+		const storage = await page.evaluate(() => window.localStorage);
+		const authKey = Object.keys(storage).find(key => key.includes('-auth-token'));
+		return authKey ? storage[authKey] : null;
+	}, { timeout: 10_000 }).toBeTruthy();
 
 	// storageState を保存
 	await page.context().storageState({ path: "e2e/.auth/user.json" });

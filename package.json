@@ -52,6 +52,9 @@
 		"vite-plugin-eslint2": "^5.0.5",
 		"vitest": "^4.0.18"
 	},
+	"engines": {
+		"bun": ">=1.0.0"
+	},
 	"overrides": {
 		"rollup": ">=4.59.0",
 		"minimatch": ">=3.1.3",

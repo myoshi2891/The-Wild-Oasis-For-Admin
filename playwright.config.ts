@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 // ── .env.local から環境変数を読み込む ──
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-for (const file of [".env.local", ".env"]) {
+for (const file of [".env.test", ".env.local", ".env"]) {
 	const envPath = path.join(__dirname, file);
 	if (fs.existsSync(envPath)) {
 		const content = fs.readFileSync(envPath, "utf-8");

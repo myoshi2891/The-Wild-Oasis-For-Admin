@@ -10,9 +10,9 @@ test.describe("予約管理", () => {
 	});
 
 	test("予約一覧テーブルが表示される", async ({ page }) => {
-		// 少なくとも1件の予約行が存在する（ヘッダー行 + データ行）
-		const rows = page.locator("[role='row']");
-		await expect(rows).not.toHaveCount(0);
+		// ヘッダー行(th)を含まないデータ行のみを抽出して、少なくとも1件存在することを確認
+		const dataRows = page.locator("[role='row']").filter({ hasNot: page.locator('th') });
+		await expect(dataRows).not.toHaveCount(0);
 	});
 
 	test("ステータスフィルターが動作する", async ({ page }) => {

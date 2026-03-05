@@ -21,24 +21,28 @@ test.describe("設定", () => {
 		// 現在の値を取得
 		const originalValue = await minNights.inputValue();
 
-		// 値を変更して blur
-		await minNights.clear();
-		await minNights.fill("5");
-		await minNights.blur();
+		try {
+			// 値を変更して blur
+			await minNights.clear();
+			await minNights.fill("5");
+			await minNights.blur();
 
-		// 少し待ってリロード
-		await page.waitForTimeout(1000);
-		await page.reload();
+			// リロードして反映を待機
+			await page.reload();
 
-		// 変更が保存されている
-		await expect(page.locator("#min-nights")).toHaveValue("5", {
-			timeout: 10_000,
-		});
-
-		// 元の値に戻す
-		await page.locator("#min-nights").clear();
-		await page.locator("#min-nights").fill(originalValue);
-		await page.locator("#min-nights").blur();
-		await page.waitForTimeout(500);
+			// 変更が保存されていることを確認
+			await expect(minNights).toHaveValue("5", {
+				timeout: 10_000,
+			});
+		} finally {
+			// 例外発生時も含めて元の値に確実に戻す
+			await minNights.clear();
+			await minNights.fill(originalValue);
+			await minNights.blur();
+			// 元に戻ったことを確認して待機
+			await expect(minNights).toHaveValue(originalValue, {
+				timeout: 10_000,
+			});
+		}
 	});
 });

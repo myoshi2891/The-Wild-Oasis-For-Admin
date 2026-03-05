@@ -29,7 +29,7 @@ test.describe("客室管理", () => {
 		await expect(page.getByText("002", { exact: true })).toBeVisible();
 	});
 
-	test("客室を複製できる", async ({ page }) => {
+	test("客室を複製して削除できる（独立テスト）", async ({ page }) => {
 		// 002 の行のメニュー（3点ボタン）をクリック
 		const row = page.locator("[role='row']").filter({
 			hasText: /^002/,
@@ -39,33 +39,21 @@ test.describe("客室管理", () => {
 		// "Duplicate" をクリック
 		await page.getByRole("button", { name: /duplicate/i }).click();
 
-		// "Copy of 002" が追加される
-		await expect(page.getByText("Copy of 002")).toBeVisible({
-			timeout: 10_000,
-		});
-	});
-
-	test("複製した客室を削除できる", async ({ page }) => {
-		// "Copy of 002" の行を探す
+		// "Copy of 002" が追加されるのを待機
 		const copyRow = page.locator("[role='row']").filter({
 			hasText: "Copy of 002",
 		});
+		await expect(copyRow).toBeVisible({ timeout: 15_000 });
 
-		// 存在するか確認
-		await expect(copyRow).toBeVisible({ timeout: 10_000 });
-
+		// 追加された行を削除する
 		await copyRow.getByRole("button").click();
-
-		// "Delete" をクリック
 		await page.getByRole("button", { name: /delete/i }).click();
 
-		// 確認モーダルで "Delete" をクリック
-		await page
-			.getByRole("button", { name: /delete/i })
-			.last()
-			.click();
+		// 確認ダイアログ内の削除ボタンをクリックする（脆弱な .last() を排除）
+		const dialog = page.getByRole("dialog");
+		await dialog.getByRole("button", { name: /delete/i }).click();
 
-		// 行が消える
+		// 行が消えることを確認
 		await expect(page.getByText("Copy of 002")).not.toBeVisible({
 			timeout: 10_000,
 		});

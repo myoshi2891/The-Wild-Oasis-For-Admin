@@ -13,9 +13,10 @@ test.describe("アカウント", () => {
 		await page.goto("/account");
 		await expect(page).toHaveURL(/account/);
 
-		// ダークモードトグルボタン（header 内のボタン）
-		const header = page.locator("header");
-		const darkModeButton = header.locator("button").nth(1);
+		// ダークモードトグルボタン
+		const darkModeButton = page.getByRole("button", {
+			name: /toggle dark mode/i,
+		});
 
 		// 初期状態
 		const isDarkBefore = await page.evaluate(() =>
@@ -34,5 +35,11 @@ test.describe("アカウント", () => {
 
 		// 元に戻す
 		await darkModeButton.click();
+
+		// 元に戻ったことを検証
+		const isDarkReverted = await page.evaluate(() =>
+			document.documentElement.classList.contains("dark-mode")
+		);
+		expect(isDarkReverted).toBe(isDarkBefore);
 	});
 });
