@@ -2,7 +2,10 @@
  * E2E テスト用ダミーデータ注入スクリプト
  *
  * Usage:
- *   bun run e2e/seed.ts
+ *   bun run e2e/seed.ts --force-seed
+ *
+ *   ※ 誤操作防止のため、--force-seed フラグまたは ALLOW_DESTRUCTIVE_SEED=1 
+ *      環境変数を設定してセーフティガードを解除する必要があります。
  *
  * .env.test (or .env.local/ .env) の VITE_SUPABASE_URL / VITE_SUPABASE_KEY を使って
  * テスト用 Supabase プロジェクトに cabins, guests, bookings, settings を注入する。
@@ -44,7 +47,7 @@ function loadEnv() {
 				) {
 					value = value.slice(1, -1).trim();
 				}
-				if (!process.env[key]) {
+				if (process.env[key] === undefined) {
 					process.env[key] = value;
 				}
 			}
@@ -61,7 +64,7 @@ if (!supabaseUrl || !supabaseKey) {
 	console.error(
 		"❌ VITE_SUPABASE_URL / VITE_SUPABASE_KEY が設定されていません。"
 	);
-	console.error("   .env.local または .env に設定してください。");
+	console.error("   .env.test, .env.local, または .env に設定してください。");
 	process.exit(1);
 }
 
