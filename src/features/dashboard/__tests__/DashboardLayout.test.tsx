@@ -1,4 +1,4 @@
-import React from "react";
+
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../../test/testUtils";
@@ -21,7 +21,7 @@ vi.mock("../useRecentBookings", () => ({
 				extrasPrice: 10,
 			},
 		],
-		isLoading1: false,
+		isLoading: false,
 	}),
 }));
 

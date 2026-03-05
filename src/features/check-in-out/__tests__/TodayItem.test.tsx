@@ -1,4 +1,4 @@
-import React from "react";
+
 import { describe, it, expect, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../../test/testUtils";
@@ -25,7 +25,8 @@ describe("TodayItem", () => {
 		renderWithProviders(<TodayItem activity={activity} />);
 
 		expect(screen.getByText("Arriving")).toBeInTheDocument();
-		expect(screen.getByText("Check in")).toBeInTheDocument();
+		const checkinLink = screen.getByRole("link", { name: /check in/i });
+		expect(checkinLink).toHaveAttribute("href", "/checkin/1");
 		expect(screen.getByText("John Doe")).toBeInTheDocument();
 		expect(screen.getByText("3 nights")).toBeInTheDocument();
 	});

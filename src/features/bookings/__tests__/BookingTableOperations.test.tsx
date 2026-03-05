@@ -1,6 +1,6 @@
-import React from "react";
+
 import { describe, it, expect } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { renderWithProviders } from "../../../test/testUtils";
 import BookingTableOperations from "../BookingTableOperations";
 
@@ -25,6 +25,6 @@ describe("BookingTableOperations", () => {
 		// SortBy options
 		const sortSelect = screen.getByRole("combobox");
 		expect(sortSelect).toBeInTheDocument();
-		expect(screen.getAllByRole("option")).toHaveLength(4);
+		expect(within(sortSelect).getAllByRole("option")).toHaveLength(4);
 	});
 });
