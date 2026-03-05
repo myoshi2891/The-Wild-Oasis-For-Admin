@@ -9,7 +9,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { add, isFuture, isPast, isToday } from "date-fns";
+import { add, differenceInCalendarDays, isFuture, isPast, isToday } from "date-fns";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,7 +34,7 @@ function loadEnv() {
 					(value.startsWith('"') && value.endsWith('"')) ||
 					(value.startsWith("'") && value.endsWith("'"))
 				) {
-					value = value.slice(1, -1);
+					value = value.slice(1, -1).trim();
 				}
 				if (!process.env[key]) {
 					process.env[key] = value;
@@ -68,10 +68,7 @@ function fromToday(numDays: number, withTime = false) {
 }
 
 function subtractDates(dateStr1: string, dateStr2: string): number {
-	return Math.ceil(
-		(new Date(dateStr1).getTime() - new Date(dateStr2).getTime()) /
-			(1000 * 60 * 60 * 24)
-	);
+	return differenceInCalendarDays(new Date(dateStr1), new Date(dateStr2));
 }
 
 // ── シードデータ ────────────────────────────────────
@@ -389,14 +386,17 @@ async function seedBookings() {
 	console.log("📋 予約を作成中...");
 
 	// 実際の DB ID を取得（insert 順でマッピング）
-	const { data: guestRows } = await supabase
+	const { data: guestRows, error: guestError } = await supabase
 		.from("guests")
 		.select("id")
 		.order("id");
-	const { data: cabinRows } = await supabase
+	if (guestError) throw new Error(`Failed to fetch guest IDs: ${guestError.message}`);
+
+	const { data: cabinRows, error: cabinError } = await supabase
 		.from("cabins")
 		.select("id")
 		.order("id");
+	if (cabinError) throw new Error(`Failed to fetch cabin IDs: ${cabinError.message}`);
 
 	if (!guestRows || !cabinRows) throw new Error("Failed to fetch IDs");
 
