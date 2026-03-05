@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 // ── 環境変数の読み込み ──────────────────────────────
 /**
- * Loads environment variables from .env.local then .env into process.env without overwriting existing values.
+ * Loads environment variables from .env.test then .env.local then .env into process.env without overwriting existing values.
  *
  * Reads each file if present at the project root, parses lines of the form `KEY=VALUE`, ignores empty lines
  * and lines starting with `#`, and sets `process.env[KEY]` only when that key is not already defined.
@@ -33,8 +33,11 @@ function loadEnv() {
 				if (!trimmed || trimmed.startsWith("#")) continue;
 				const eqIdx = trimmed.indexOf("=");
 				if (eqIdx === -1) continue;
-				const key = trimmed.slice(0, eqIdx);
-				let value = trimmed.slice(eqIdx + 1);
+				let key = trimmed.slice(0, eqIdx).trim();
+				if (key.startsWith("export ")) {
+					key = key.slice("export ".length).trim();
+				}
+				let value = trimmed.slice(eqIdx + 1).trim();
 				if (
 					(value.startsWith('"') && value.endsWith('"')) ||
 					(value.startsWith("'") && value.endsWith("'"))
@@ -487,27 +490,38 @@ async function seedBookings() {
  */
 async function seedSettings() {
 	console.log("⚙️  設定を作成中...");
-	// upsert — 既存設定があれば更新、なければ作成
-	const { data: existing, error: selectError } = await supabase
+	// idempotency — 既存設定をすべて取得して単一の行に正規化する
+	const { data: existingRows, error: selectError } = await supabase
 		.from("settings")
 		.select("id")
-		.limit(1);
+		.order("id");
 
 	if (selectError) throw new Error(`settings select failed: ${selectError.message}`);
 
-	if (existing && existing.length > 0) {
-		const { error } = await supabase
-			.from("settings")
-			.update(defaultSettings)
-			.eq("id", existing[0].id);
-		if (error) throw new Error(`settings update failed: ${error.message}`);
-		console.log("   ✅ 既存設定を更新");
-	} else {
+	if (!existingRows || existingRows.length === 0) {
 		const { error } = await supabase
 			.from("settings")
 			.insert([defaultSettings]);
 		if (error) throw new Error(`settings insert failed: ${error.message}`);
 		console.log("   ✅ 新規設定を作成");
+	} else {
+		const canonicalId = existingRows[0].id;
+		const { error: updateError } = await supabase
+			.from("settings")
+			.update(defaultSettings)
+			.eq("id", canonicalId);
+		if (updateError) throw new Error(`settings update failed: ${updateError.message}`);
+
+		// 重複して作られた余分なデータがあれば削除してレコードを1件のみに維持する
+		if (existingRows.length > 1) {
+			const extraIds = existingRows.slice(1).map((r) => r.id);
+			const { error: deleteError } = await supabase
+				.from("settings")
+				.delete()
+				.in("id", extraIds);
+			if (deleteError) throw new Error(`settings cleanup failed: ${deleteError.message}`);
+		}
+		console.log("   ✅ 既存設定を更新し正規化完了");
 	}
 }
 
