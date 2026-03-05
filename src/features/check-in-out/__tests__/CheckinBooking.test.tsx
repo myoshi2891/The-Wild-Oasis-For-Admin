@@ -43,7 +43,7 @@ vi.mock("../../bookings/useBooking", () => ({
 }));
 
 vi.mock("../useCheckin", () => ({
-	useCheckin: (...args: unknown[]) => mockUseCheckin(...args),
+	useCheckin: () => mockUseCheckin(),
 }));
 
 vi.mock("../../settings/useSettings", () => ({
@@ -122,13 +122,15 @@ describe("CheckinBooking", () => {
 	});
 
 	it("isCheckingIn が true の場合 Check in ボタンが disabled のまま", () => {
-		// NOTE: ソースコード CheckinBooking.tsx は isCheckigIn (typo) で destructure しているが、
-		// useCheckin フックは isCheckingIn を返す。テストでは両方のキーを返してソース側の typo もカバー。
+		// isCheckingIn: true に上書き（typo キー isCheckigIn は使わない）
 		mockUseCheckin.mockReturnValue({
 			checkin: mockCheckin,
 			isCheckingIn: true,
-			isCheckigIn: true, // ソースの typo に合わせる
 		});
+
+		// isPaid: true にして confirmPaid=true を保証→disabled の原因は isCheckingIn のみ
+		const isPaidBooking = { ...stableBooking, isPaid: true };
+		Object.assign(stableBooking, isPaidBooking);
 
 		renderWithProviders(<CheckinBooking />);
 
@@ -137,5 +139,8 @@ describe("CheckinBooking", () => {
 		});
 		expect(checkinBtn).toBeDisabled();
 		expect(mockCheckin).not.toHaveBeenCalled();
+
+		// stableBooking を元に戻す
+		Object.assign(stableBooking, { isPaid: false });
 	});
 });
