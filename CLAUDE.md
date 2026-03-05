@@ -14,6 +14,8 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 - Test: `bun run test`
 - Typecheck: `bun run typecheck`
 - Preview: `bun run preview`
+- E2E Seed: `bun run seed:e2e`
+- E2E Test: `bun run test:e2e`
 
 ## 📐 Code Style
 

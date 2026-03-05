@@ -1,10 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
-import {
-	renderWithProviders,
-	mockNavigate,
-} from "../../../test/testUtils";
+import { renderWithProviders } from "../../../test/testUtils";
 
 const mockBookingData = {
 	id: 42,

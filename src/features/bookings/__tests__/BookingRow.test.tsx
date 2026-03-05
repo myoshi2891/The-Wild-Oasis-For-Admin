@@ -1,8 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { renderWithProviders, mockNavigate } from "../../../test/testUtils";
+import { renderWithProviders } from "../../../test/testUtils";
 
 const mockCheckout = vi.fn();
 const mockDeleteBooking = vi.fn();
