@@ -163,7 +163,6 @@ sequenceDiagram
 | Forms | react-hook-form v7 | 高パフォーマンスフォーム管理 |
 | BaaS | Supabase | PostgreSQL + Auth + Storage 統合 |
 | Build | Vite 7 | 高速 HMR、ES Modules ネイティブ |
-| Build | Vite 7 | 高速 HMR、ES Modules ネイティブ |
 | Testing | Vitest 4 + Testing Library | ユニット・コンポーネントテスト |
 | E2E Testing | Playwright | エンドツーエンドのUI・挙動自動検証 |
 | Deploy | Vercel | Vite 最適化、自動プレビュー |
@@ -207,7 +206,7 @@ E2Eテストでは実際ブラウザを介したフローを担保するため�
 
 1. **暗黙的テスト推論制限**: `.env.test` ファイルのパース成功、または `NODE_ENV=test` がない限り実行をブロック。非テスト環境（`.env.local` 等）で実行を強制する場合は `ALLOW_NON_TEST_SEED=true` などの個別 Opt-in が必須。
 2. **実行フラグ制限**: `bun run e2e/seed.ts` の単独直叩きではデータベースは初期化されず強制終了。実行には明示的に `--force-seed` 引数または `ALLOW_DESTRUCTIVE_SEED=1` の手動指定が必須。
-3. **E2E 自動パイプライン**: npm コマンド `"test:e2e"` は、実行毎に常に自動で `"seed:e2e"`（`--force-seed` 付与済み）をチェーン起動した後 Playwright を走らせるため、手操作によるシードのし忘れや依存のエラー（テストのハングアップ）を防止。
+3. **E2E 自動パイプライン**: `bun run test:e2e` コマンドは、実行毎に常に自動で `bun run seed:e2e`（`--force-seed` 付与済み）をチェーン起動した後 Playwright を走らせるため、手操作によるシードのし忘れや依存のエラー（テストのハングアップ）を防止。
 
 ```bash
 bun run seed:e2e       # E2E用DBのデータを再生成（--force-seed 自動付加）
