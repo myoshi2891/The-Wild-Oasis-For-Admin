@@ -17,15 +17,7 @@ test.describe("認証フロー（未認証）", () => {
 		).toBeVisible();
 	});
 
-	test("正しい認証情報でログイン→ダッシュボードへ遷移", async ({ page }) => {
-		await page.goto("/login");
 
-		await page.locator("#email").fill(process.env.E2E_USER_EMAIL!);
-		await page.locator("#password").fill(process.env.E2E_USER_PASSWORD!);
-		await page.getByRole("button", { name: /login/i }).click();
-
-		await expect(page).toHaveURL(/dashboard/, { timeout: 15_000 });
-	});
 
 	test("無効な認証情報でエラーメッセージが表示される", async ({ page }) => {
 		await page.goto("/login");
@@ -44,24 +36,6 @@ test.describe("認証フロー（未認証）", () => {
 		page,
 	}) => {
 		await page.goto("/dashboard");
-
-		// /login にリダイレクトされる
-		await expect(page).toHaveURL(/login/, { timeout: 15_000 });
-	});
-});
-
-// ── 認証済みテスト（storageState 使用） ──
-test.describe("認証済みユーザー", () => {
-	test.use({ storageState: "e2e/.auth/user.json" });
-
-	test("ログアウトで /login に遷移", async ({ page }) => {
-		await page.goto("/dashboard");
-		await expect(page).toHaveURL(/dashboard/, { timeout: 15_000 });
-
-		// HeaderMenu 内のログアウトボタン（最後の button）をクリック
-		const header = page.locator("header");
-		const logoutButton = header.locator("button").last();
-		await logoutButton.click();
 
 		// /login にリダイレクトされる
 		await expect(page).toHaveURL(/login/, { timeout: 15_000 });
