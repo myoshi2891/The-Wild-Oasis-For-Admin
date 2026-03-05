@@ -36,8 +36,12 @@ test.describe("客室管理", () => {
 		});
 		await row.getByRole("button").click();
 
-		// "Duplicate" をクリック
+		// "Duplicate" をクリックし、API呼び出し完了を待つ
+		const duplicatePromise = page.waitForResponse(
+			(res) => res.url().includes("/rest/v1/cabins") && res.request().method() === "POST" && res.status() >= 200 && res.status() < 300
+		);
 		await page.getByRole("button", { name: /duplicate/i }).click();
+		await duplicatePromise;
 
 		// "Copy of 002" が追加されるのを待機
 		const copyRow = page.locator("[role='row']").filter({

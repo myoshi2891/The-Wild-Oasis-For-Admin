@@ -25,7 +25,11 @@ test.describe("設定", () => {
 			// 値を変更して blur
 			await minNights.clear();
 			await minNights.fill("5");
+			const updatePromise = page.waitForResponse(
+				(res) => res.url().includes("/rest/v1/settings") && res.status() >= 200 && res.status() < 300
+			);
 			await minNights.blur();
+			await updatePromise;
 
 			// リロードして反映を待機
 			await page.reload();
@@ -38,7 +42,11 @@ test.describe("設定", () => {
 			// 例外発生時も含めて元の値に確実に戻す
 			await minNights.clear();
 			await minNights.fill(originalValue);
+			const revertPromise = page.waitForResponse(
+				(res) => res.url().includes("/rest/v1/settings") && res.status() >= 200 && res.status() < 300
+			);
 			await minNights.blur();
+			await revertPromise;
 			// 元に戻ったことを確認して待機
 			await expect(minNights).toHaveValue(originalValue, {
 				timeout: 10_000,
