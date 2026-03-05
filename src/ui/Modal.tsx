@@ -149,7 +149,7 @@ function Window({
 
 	return createPortal(
 		<Overlay>
-			<StyledModal ref={ref}>
+			<StyledModal ref={ref} role="dialog" aria-modal="true">
 				<CloseButton onClick={close} aria-label="Close">
 					<HiXMark aria-hidden="true" />
 				</CloseButton>
