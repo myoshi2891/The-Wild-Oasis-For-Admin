@@ -67,8 +67,8 @@ describe("CabinRow", () => {
 	});
 
 	it("割引が 0 の場合にダッシュを表示する", () => {
-		const noDscount = { ...mockCabin, discount: 0 };
-		renderCabinRow(noDscount);
+		const noDiscount = { ...mockCabin, discount: 0 };
+		renderCabinRow(noDiscount);
 		expect(screen.getByText("—")).toBeInTheDocument();
 	});
 });

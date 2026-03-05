@@ -1,4 +1,4 @@
-import React from "react";
+
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import BookingDataBox from "../BookingDataBox";
@@ -60,5 +60,11 @@ describe("BookingDataBox", () => {
 	it("observations がある場合に表示する", () => {
 		render(<BookingDataBox booking={mockBooking} />);
 		expect(screen.getByText("Late arrival")).toBeInTheDocument();
+	});
+
+	it("observations が空の場合は表示しない", () => {
+		const noObs = { ...mockBooking, observations: "" };
+		render(<BookingDataBox booking={noObs} />);
+		expect(screen.queryByText("Late arrival")).not.toBeInTheDocument();
 	});
 });

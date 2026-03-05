@@ -1,4 +1,4 @@
-import React from "react";
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -42,9 +42,11 @@ describe("SignupForm", () => {
 		);
 
 		await waitFor(() => {
+			// email type="email" は jsdom のネイティブ制約でバリデートされるため、
+			// react-hook-form の "This field is required" は 3 項目（fullName, password, passwordConfirm）
 			expect(
-				screen.getAllByText("This field is required").length
-			).toBeGreaterThanOrEqual(1);
+				screen.getAllByText("This field is required")
+			).toHaveLength(3);
 		});
 
 		expect(mockSignup).not.toHaveBeenCalled();
