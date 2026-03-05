@@ -13,8 +13,8 @@
 		"test:coverage": "vitest run --coverage",
 		"typecheck": "tsc --noEmit",
 		"seed:e2e": "bun run e2e/seed.ts --force-seed",
-		"test:e2e": "bunx playwright test",
-		"test:e2e:ui": "bunx playwright test --ui"
+		"test:e2e": "bun run seed:e2e && bunx playwright test",
+		"test:e2e:ui": "bun run seed:e2e && bunx playwright test --ui"
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.81.1",

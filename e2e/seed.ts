@@ -27,7 +27,12 @@ import { fileURLToPath } from "node:url";
 function loadEnv() {
 	const __dirname = path.dirname(fileURLToPath(import.meta.url));
 	const root = path.resolve(__dirname, "..");
-	for (const file of [".env.test", ".env.local", ".env"]) {
+	const envFiles = [".env.test"];
+	if (process.env.ALLOW_NON_TEST_SEED === "true" || process.env.ALLOW_NON_TEST_SEED === "1") {
+		envFiles.push(".env.local", ".env");
+	}
+
+	for (const file of envFiles) {
 		const envPath = path.join(root, file);
 		if (fs.existsSync(envPath)) {
 			const content = fs.readFileSync(envPath, "utf-8");
@@ -451,7 +456,20 @@ async function seedBookings() {
 	const guestIds = guestRows.map((r) => r.id);
 	const cabinIds = cabinRows.map((r) => r.id);
 
-	const finalBookings = bookingsData.map((b) => {
+	if (guestIds.length < guests.length) {
+		throw new Error(`DB has fewer guests (${guestIds.length}) than required by templates (${guests.length}).`);
+	}
+	if (cabinIds.length < cabins.length) {
+		throw new Error(`DB has fewer cabins (${cabinIds.length}) than required by templates (${cabins.length}).`);
+	}
+
+	const finalBookings = bookingsData.map((b, index) => {
+		const guestDbId = guestIds[b.guestId - 1];
+		if (!guestDbId) throw new Error(`Booking template [${index}] references out-of-bounds guestId: ${b.guestId}`);
+
+		const cabinDbId = cabinIds[b.cabinId - 1];
+		if (!cabinDbId) throw new Error(`Booking template [${index}] references out-of-bounds cabinId: ${b.cabinId}`);
+
 		const cabin = cabins[b.cabinId - 1];
 		const numNights = subtractDates(b.endDate, b.startDate);
 		const cabinPrice = numNights * (cabin.regularPrice - cabin.discount);
@@ -474,8 +492,8 @@ async function seedBookings() {
 			extrasPrice,
 			totalPrice,
 			status,
-			guestId: guestIds[b.guestId - 1],
-			cabinId: cabinIds[b.cabinId - 1],
+			guestId: guestDbId,
+			cabinId: cabinDbId,
 		};
 	});
 
@@ -539,6 +557,17 @@ async function main() {
 		console.error("\n❌ 安全確保のため、テストデータの削除・注入がブロックされました。");
 		console.error("   明示的に実行を許可するには '--force-seed' フラグを付与するか、");
 		console.error("   環境変数 ALLOW_DESTRUCTIVE_SEED=1 を設定して実行してください。\n");
+		process.exit(1);
+	}
+
+	if (
+		process.env.NODE_ENV !== "test" &&
+		process.env.ALLOW_NON_TEST_SEED !== "true" &&
+		process.env.ALLOW_NON_TEST_SEED !== "1"
+	) {
+		console.error("\n❌ テスト用以外の環境への誤シードを防止するため実行ブロックされました。");
+		console.error("   テスト用DBへシードする場合は NODE_ENV=test を指定するか、");
+		console.error("   環境変数 ALLOW_NON_TEST_SEED=true を明示的に設定してください。\n");
 		process.exit(1);
 	}
 
