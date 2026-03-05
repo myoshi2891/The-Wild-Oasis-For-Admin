@@ -26,7 +26,7 @@ package-lock.json
 .env
 .env.test
 .env.local
-.env.example
+.eslintcache
 # Coverage
 coverage/
 
@@ -34,5 +34,3 @@ coverage/
 test-results/
 playwright-report/
 e2e/.auth/
-
-e2e/seed.ts
