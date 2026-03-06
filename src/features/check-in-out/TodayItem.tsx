@@ -32,7 +32,13 @@ const Guest = styled.div`
  * @param activity - Activity object with shape `{ id, status, guests, numNights }`. `status` is expected to be either `"unconfirmed"` or `"checked-in"`. `guests` must include `fullName`, `nationality`, and `countryFlag`.
  * @returns A React element representing the styled list item for the activity.
  */
-function TodayItem({ activity }: any) {
+import type { BookingWithGuestInfo } from "../../types/domain";
+
+interface TodayItemProps {
+	activity: BookingWithGuestInfo;
+}
+
+function TodayItem({ activity }: TodayItemProps) {
 	const { id, status, guests, numNights } = activity;
 
 	return (
