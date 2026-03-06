@@ -5,6 +5,7 @@ import { renderHookWithProviders } from "../../../test/testUtils";
 vi.mock("../../../services/apiBookings");
 
 import { getBookingsAfterDate } from "../../../services/apiBookings";
+import type { BookingAfterDate } from "../../../types/domain";
 const mockGetBookingsAfterDate = vi.mocked(getBookingsAfterDate);
 
 describe("useRecentBookings", () => {
@@ -13,7 +14,7 @@ describe("useRecentBookings", () => {
 	});
 
 	it("デフォルトで直近7日のデータを取得する", async () => {
-		const mockBookings = [{ id: 1, totalPrice: 500 }];
+		const mockBookings: BookingAfterDate[] = [{ created_at: "2023-01-01", totalPrice: 500, extrasPrice: 0 }];
 		mockGetBookingsAfterDate.mockResolvedValue(mockBookings);
 
 		const now = Date.now();
@@ -40,7 +41,7 @@ describe("useRecentBookings", () => {
 	});
 
 	it("URL パラメータで日数を変更できる", async () => {
-		const mockBookings = [{ id: 1 }];
+		const mockBookings: BookingAfterDate[] = [{ created_at: "2023-01-01", totalPrice: 500, extrasPrice: 0 }];
 		mockGetBookingsAfterDate.mockResolvedValue(mockBookings);
 
 		const now = Date.now();

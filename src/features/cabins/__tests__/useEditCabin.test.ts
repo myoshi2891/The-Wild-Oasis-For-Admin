@@ -5,6 +5,7 @@ import {
 	renderHookWithProviders,
 	createTestQueryClient,
 } from "../../../test/testUtils";
+import type { Cabin } from "../../../types/domain";
 
 vi.mock("../../../services/apiCabins");
 
@@ -17,7 +18,7 @@ describe("useEditCabin", () => {
 	});
 
 	it("編集成功時にトーストを表示しキャッシュを無効化する", async () => {
-		const edited = { id: 5, name: "Cabin 005 Updated" };
+		const edited = { id: 5, name: "Cabin 005 Updated" } as unknown as Cabin;
 		mockCreateEditCabin.mockResolvedValue(edited);
 
 		const { useEditCabin } = await import("../useEditCabin");

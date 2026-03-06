@@ -11,7 +11,7 @@ import {
 	YAxis,
 	ResponsiveContainer,
 } from "recharts";
-import { eachDayOfInterval, format, isSameDay, subDays } from "date-fns";
+import { eachDayOfInterval, format, subDays } from "date-fns";
 import type { BookingAfterDate } from "../../types/domain";
 
 export interface SalesChartProps {
@@ -47,19 +47,23 @@ function SalesChart({ bookings, numDays }: SalesChartProps) {
 		end: new Date(),
 	});
 
+	const salesMap = bookings.reduce((acc, booking) => {
+		const key = format(new Date(booking.created_at), "yyyy-MM-dd");
+		if (!acc[key]) {
+			acc[key] = { totalSales: 0, extrasSales: 0 };
+		}
+		acc[key].totalSales += booking.totalPrice;
+		acc[key].extrasSales += booking.extrasPrice;
+		return acc;
+	}, {} as Record<string, { totalSales: number; extrasSales: number }>);
+
 	const data = allDates.map((date) => {
+		const key = format(date, "yyyy-MM-dd");
+		const label = format(date, "MMM dd");
 		return {
-			label: format(date, "MMM dd"),
-			totalSales: bookings
-				.filter((booking) =>
-					isSameDay(date, new Date(booking.created_at))
-				)
-				.reduce((acc, cur) => acc + cur.totalPrice, 0),
-			extrasSales: bookings
-				.filter((booking) =>
-					isSameDay(date, new Date(booking.created_at))
-				)
-				.reduce((acc, cur) => acc + cur.extrasPrice, 0),
+			label,
+			totalSales: salesMap[key]?.totalSales ?? 0,
+			extrasSales: salesMap[key]?.extrasSales ?? 0,
 		};
 	});
 

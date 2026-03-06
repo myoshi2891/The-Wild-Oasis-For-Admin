@@ -9,6 +9,7 @@ import {
 vi.mock("../../../services/apiBookings");
 
 import { updateBooking } from "../../../services/apiBookings";
+import type { Booking } from "../../../types/domain";
 const mockUpdateBooking = vi.mocked(updateBooking);
 
 describe("useCheckout", () => {
@@ -17,8 +18,8 @@ describe("useCheckout", () => {
 	});
 
 	it("チェックアウト成功時にトースト・キャッシュ無効化", async () => {
-		const updated = { id: 3, status: "checked-out" };
-		mockUpdateBooking.mockResolvedValue(updated);
+		const updated: Partial<Booking> = { id: 3, status: "checked-out" };
+		mockUpdateBooking.mockResolvedValue(updated as Booking);
 
 		const { useCheckout } = await import("../useCheckout");
 		const queryClient = createTestQueryClient();

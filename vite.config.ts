@@ -1,5 +1,5 @@
-/// <reference types="vitest/config" />
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
+import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import eslint from "vite-plugin-eslint2";
 
@@ -11,5 +11,6 @@ export default defineConfig({
 		environment: "jsdom",
 		setupFiles: "./src/test/setup.ts",
 		css: true,
+		exclude: [...configDefaults.exclude, "e2e/**/*.spec.ts"],
 	},
 });

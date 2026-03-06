@@ -21,8 +21,7 @@ vi.mock("../useCreateCabin", () => ({
 }));
 
 import CabinRow from "../CabinRow";
-import Table from "../../../ui/Table";
-import Menus from "../../../ui/Menus";
+import { TableProviders } from "../../../test/testUtils";
 
 const mockCabin = {
 	id: 1,
@@ -37,14 +36,9 @@ const mockCabin = {
 
 function renderCabinRow(cabin = mockCabin) {
 	return renderWithProviders(
-		<Menus>
-			<Table columns="0.6fr 1.8fr 2.2fr 1fr 1fr 1fr">
-				<Table.Body
-					data={[cabin]}
-					render={(c) => <CabinRow key={c.id} cabin={c} />}
-				/>
-			</Table>
-		</Menus>
+		<TableProviders columns="0.6fr 1.8fr 2.2fr 1fr 1fr 1fr">
+			<CabinRow cabin={cabin} />
+		</TableProviders>
 	);
 }
 

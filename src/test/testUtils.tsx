@@ -17,7 +17,12 @@ import {
 	type RenderHookResult,
 	type RenderResult,
 } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi, beforeEach } from "vitest";
+
+// ── Clear LocalStorage globally for test wrapper scopes ────────
+beforeEach(() => {
+	localStorage.clear();
+});
 
 import { DarkModeProvider } from "../context/DarkModeContext";
 import Table from "../ui/Table";
@@ -166,14 +171,15 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 }
 
 /**
- * Render children inside a single-column Table with Menus wrapped around them.
- *
+ * Render children inside a configurable Table wrapper with Menus.
+ * 
  * @param children - Elements to render inside the Menus (typically table cell/row content)
- * @returns A React element: a `Table` with one column whose content is the provided `children` wrapped by `Menus`
+ * @param columns - Grid layout columns definition
+ * @returns A React element: a `Table` with configured columns whose content is the provided `children` wrapped by `Menus`
  */
-export function TableProviders({ children }: { children: ReactNode }) {
+export function TableProviders({ children, columns = "1fr" }: { children: ReactNode; columns?: string }) {
 	return (
-		<Table columns="1fr">
+		<Table columns={columns}>
 			<Menus>{children}</Menus>
 		</Table>
 	);

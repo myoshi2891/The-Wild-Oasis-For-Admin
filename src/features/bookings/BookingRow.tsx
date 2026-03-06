@@ -14,11 +14,15 @@ import Menus from "../../ui/Menus";
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 
-import { formatCurrency } from "../../utils/helpers";
-import { formatDistanceFromNow } from "../../utils/helpers";
+import { formatCurrency, formatDistanceFromNow, getTagType } from "../../utils/helpers";
 
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useDeleteBooking } from "./useDeleteBooking";
+import type { BookingWithSummary } from "../../types/domain";
+
+export interface BookingRowProps {
+	booking: BookingWithSummary;
+}
 
 const Cabin = styled.div`
 	font-size: 1.6rem;
@@ -71,16 +75,10 @@ function BookingRow({
 		guests: { fullName: guestName, email },
 		cabins: { name: cabinName },
 	},
-}) {
+}: BookingRowProps) {
 	const navigate = useNavigate();
 	const { checkout, isCheckingOut } = useCheckout();
 	const { deleteBooking, isDeleting } = useDeleteBooking();
-
-	const statusToTagName = {
-		unconfirmed: "blue",
-		"checked-in": "green",
-		"checked-out": "silver",
-	};
 
 	return (
 		<Table.Row>
@@ -104,14 +102,14 @@ function BookingRow({
 				</span>
 			</Stacked>
 
-			<Tag $type={statusToTagName[status]}>{status.replace("-", " ")}</Tag>
+			<Tag $type={getTagType(status)}>{status.replace("-", " ")}</Tag>
 
 			<Amount>{formatCurrency(totalPrice)}</Amount>
 
 			<Modal>
 				<Menus.Menu>
-					<Menus.Toggle id={bookingId} />
-					<Menus.List id={bookingId}>
+					<Menus.Toggle id={String(bookingId)} />
+					<Menus.List id={String(bookingId)}>
 						<Menus.Button
 							icon={<HiEye />}
 							onClick={() => navigate(`/bookings/${bookingId}`)}

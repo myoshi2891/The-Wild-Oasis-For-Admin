@@ -5,6 +5,7 @@ import { renderHookWithProviders } from "../../../test/testUtils";
 vi.mock("../../../services/apiBookings");
 
 import { getBookings } from "../../../services/apiBookings";
+import type { BookingWithSummary } from "../../../types/domain";
 const mockGetBookings = vi.mocked(getBookings);
 
 describe("useBookings", () => {
@@ -12,8 +13,19 @@ describe("useBookings", () => {
 		vi.clearAllMocks();
 	});
 
+	function createMockBookingSummary(overrides: Partial<BookingWithSummary>): BookingWithSummary {
+		return {
+			id: 1, created_at: "2023-01-01", startDate: "2023-01-01", endDate: "2023-01-03",
+			numNights: 2, numGuests: 2, cabinPrice: 100, extrasPrice: 0, totalPrice: 100,
+			status: "unconfirmed", hasBreakfast: false, isPaid: false, observations: "",
+			cabinId: 1, guestId: 1, cabins: { name: "Cabin 1" },
+			guests: { fullName: "Test Guest", email: "test@example.com" },
+			...overrides,
+		};
+	}
+
 	it("デフォルトで startDate-desc でソートする", async () => {
-		const mockData = { data: [{ id: 1 }], count: 1 };
+		const mockData = { data: [createMockBookingSummary({ id: 1 })], count: 1 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
@@ -32,7 +44,7 @@ describe("useBookings", () => {
 	});
 
 	it("status フィルタを URL パラメータから構築する", async () => {
-		const mockData = { data: [{ id: 1 }], count: 1 };
+		const mockData = { data: [createMockBookingSummary({ id: 1 })], count: 1 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
@@ -96,7 +108,9 @@ describe("useBookings", () => {
 	});
 
 	it("bookings と count を返す", async () => {
-		const mockData = { data: [{ id: 1 }, { id: 2 }], count: 2 };
+		const b1 = createMockBookingSummary({ id: 1 });
+		const b2 = createMockBookingSummary({ id: 2 });
+		const mockData = { data: [b1, b2], count: 2 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
@@ -106,7 +120,7 @@ describe("useBookings", () => {
 			expect(result.current.isLoading).toBe(false);
 		});
 
-		expect(result.current.bookings).toEqual([{ id: 1 }, { id: 2 }]);
+		expect(result.current.bookings).toEqual(mockData.data);
 		expect(result.current.count).toBe(2);
 	});
 });

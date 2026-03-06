@@ -19,6 +19,7 @@ describe("useSettings", () => {
 			maxBookingLength: 90,
 			maxGuestsPerBooking: 8,
 			breakfastPrice: 15,
+			created_at: "2023-01-01T00:00:00.000Z",
 		};
 		mockGetSettings.mockResolvedValue(mockSettings);
 
@@ -52,6 +53,9 @@ describe("useSettings", () => {
 		});
 
 		expect(result.current.error).toBeDefined();
-		expect((result.current.error as Error).message).toBe("API Error");
+		expect(result.current.error).toBeInstanceOf(Error);
+		if (result.current.error instanceof Error) {
+			expect(result.current.error.message).toBe("API Error");
+		}
 	});
 });

@@ -8,6 +8,7 @@ vi.mock("../useCheckout", () => ({
 }));
 
 import TodayItem from "../TodayItem";
+import type { BookingWithGuestInfo } from "../../../types/domain";
 
 const baseActivity = {
 	id: 1,
@@ -17,11 +18,11 @@ const baseActivity = {
 		nationality: "United States",
 		countryFlag: "https://flagcdn.com/us.svg",
 	},
-};
+} as unknown as BookingWithGuestInfo;
 
 describe("TodayItem", () => {
 	it("unconfirmed で 'Arriving' タグと 'Check in' リンクを表示する", () => {
-		const activity = { ...baseActivity, status: "unconfirmed" };
+		const activity = { ...baseActivity, status: "unconfirmed" } as unknown as BookingWithGuestInfo;
 		renderWithProviders(<TodayItem activity={activity} />);
 
 		expect(screen.getByText("Arriving")).toBeInTheDocument();
@@ -32,7 +33,7 @@ describe("TodayItem", () => {
 	});
 
 	it("checked-in で 'Departing' タグと 'Check out' ボタンを表示する", () => {
-		const activity = { ...baseActivity, status: "checked-in" };
+		const activity = { ...baseActivity, status: "checked-in" } as unknown as BookingWithGuestInfo;
 		renderWithProviders(<TodayItem activity={activity} />);
 
 		expect(screen.getByText("Departing")).toBeInTheDocument();

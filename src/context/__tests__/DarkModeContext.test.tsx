@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { renderHook } from "@testing-library/react";
-import React from "react";
 import { DarkModeProvider, useDarkMode } from "../DarkModeContext";
 
 const originalMatchMedia = window.matchMedia;

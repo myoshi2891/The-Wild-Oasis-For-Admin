@@ -10,6 +10,7 @@ import {
 vi.mock("../../../services/apiBookings");
 
 import { updateBooking } from "../../../services/apiBookings";
+import type { Booking } from "../../../types/domain";
 const mockUpdateBooking = vi.mocked(updateBooking);
 
 describe("useCheckin", () => {
@@ -18,8 +19,8 @@ describe("useCheckin", () => {
 	});
 
 	it("チェックイン成功時にトースト表示・キャッシュ無効化・ルートへ遷移", async () => {
-		const updated = { id: 1, status: "checked-in" };
-		mockUpdateBooking.mockResolvedValue(updated);
+		const updated: Partial<Booking> = { id: 1, status: "checked-in" };
+		mockUpdateBooking.mockResolvedValue(updated as Booking);
 
 		const { useCheckin } = await import("../useCheckin");
 		const queryClient = createTestQueryClient();
@@ -43,8 +44,8 @@ describe("useCheckin", () => {
 	});
 
 	it("朝食オプション付きチェックイン: updateBooking に breakfast データを含める", async () => {
-		const updated = { id: 2, status: "checked-in" };
-		mockUpdateBooking.mockResolvedValue(updated);
+		const updated: Partial<Booking> = { id: 2, status: "checked-in" };
+		mockUpdateBooking.mockResolvedValue(updated as Booking);
 
 		const { useCheckin } = await import("../useCheckin");
 		const { result } = renderHookWithProviders(() => useCheckin());

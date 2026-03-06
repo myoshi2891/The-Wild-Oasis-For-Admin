@@ -5,6 +5,8 @@ import {
 	mockToast,
 	renderHookWithProviders,
 	createTestQueryClient,
+	makeMockUser,
+	makeMockSession,
 } from "../../../test/testUtils";
 
 vi.mock("../../../services/apiAuth");
@@ -25,7 +27,11 @@ describe("useLogin", () => {
 	});
 
 	it("login 成功時に queryData をセットし /dashboard へ遷移する", async () => {
-		const mockUser = { user: { id: "1", role: "authenticated" }, session: {} };
+		const testUser = makeMockUser();
+		const mockUser = {
+			user: testUser,
+			session: makeMockSession(testUser),
+		};
 		mockLoginApi.mockResolvedValue(mockUser);
 
 		const { useLogin } = await import("../useLogin");

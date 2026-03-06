@@ -9,6 +9,7 @@ import {
 vi.mock("../../../services/apiSettings");
 
 import { updateSetting as updateSettingApi } from "../../../services/apiSettings";
+
 const mockUpdateSettingApi = vi.mocked(updateSettingApi);
 
 describe("useUpdateSetting", () => {
@@ -20,6 +21,10 @@ describe("useUpdateSetting", () => {
 		mockUpdateSettingApi.mockResolvedValue({
 			id: 1,
 			breakfastPrice: 20,
+			created_at: "2023-01-01",
+			minBookingLength: 3,
+			maxBookingLength: 90,
+			maxGuestsPerBooking: 8,
 		});
 
 		const { useUpdateSetting } = await import("../useUpdateSetting");

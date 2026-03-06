@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { waitFor } from "@testing-library/react";
-import { mockToast, renderHookWithProviders } from "../../../test/testUtils";
+import { mockToast, renderHookWithProviders, makeMockUser } from "../../../test/testUtils";
 
 vi.mock("../../../services/apiAuth");
 
@@ -20,7 +20,10 @@ describe("useSignup", () => {
 	});
 
 	it("signup 成功時にトーストを表示する", async () => {
-		const mockData = { user: { id: "1" }, session: {} };
+		const mockData = {
+			user: makeMockUser(),
+			session: null,
+		};
 		mockSignupApi.mockResolvedValue(mockData);
 
 		const { useSignup } = await import("../useSignup");

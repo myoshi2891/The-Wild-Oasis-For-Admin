@@ -1,0 +1,34 @@
+ [31m❯[39m src/features/authentication/__tests__/SignupForm.test.tsx [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 2058[2mms[22m[39m
+[22m[39m{ message: [32m'Delete failed'[39m }
+[22m[39m{ message: [32m'Delete failed'[39m }
+[22m[39m{ message: [32m'Update failed'[39m }
+[22m[39m{ message: [32m'Upload failed'[39m }
+Error: Menus compound components must be used within a <Menus>
+Error: Menus compound components must be used within a <Menus>
+ [32m✓[39m src/ui/__tests__/ErrorFallback.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 279[2mms[22m[39m
+[22m[39mLogin error: Error: Invalid credentials
+Error: Table compound components must be used within a <Table>
+Error: Table compound components must be used within a <Table>
+Error: DarkModeContext was used outside of DarkModeProvider...
+Error: DarkModeContext was used outside of DarkModeProvider...
+[41m[1m FAIL [22m[49m e2e/account.spec.ts[2m [ e2e/account.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m e2e/authentication.spec.ts[2m [ e2e/authentication.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m e2e/bookings.spec.ts[2m [ e2e/bookings.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m e2e/cabins.spec.ts[2m [ e2e/cabins.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m e2e/checkin.spec.ts[2m [ e2e/checkin.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m e2e/dashboard.spec.ts[2m [ e2e/dashboard.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m e2e/navigation.spec.ts[2m [ e2e/navigation.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m e2e/settings.spec.ts[2m [ e2e/settings.spec.ts ][22m
+[31m[1mError[22m: Playwright Test did not expect test.describe() to be called here.
+[41m[1m FAIL [22m[49m src/features/authentication/__tests__/SignupForm.test.tsx[2m > [22mSignupForm[2m > [22m空欄送信で必須エラーを表示する
+[31m[1mAssertionError[22m: expected [ <span …(1)></span>, …(3) ] to have a length of 3 but got 4
+[90m [2m❯[22m runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:[2m47:12[22m[39m
+[2m Test Files [22m [1m[31m9 failed[39m[22m[2m | [22m[1m[32m69 passed[39m[22m[90m (78)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m224 passed[39m[22m[90m (225)[39m

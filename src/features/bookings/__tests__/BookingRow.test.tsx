@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../../test/testUtils";
@@ -18,8 +17,8 @@ vi.mock("../useDeleteBooking", () => ({
 }));
 
 import BookingRow from "../BookingRow";
-import Table from "../../../ui/Table";
-import Menus from "../../../ui/Menus";
+import { TableProviders } from "../../../test/testUtils";
+import type { BookingWithSummary } from "../../../types/domain";
 
 function renderBookingRow(status = "unconfirmed") {
 	const booking = {
@@ -31,17 +30,12 @@ function renderBookingRow(status = "unconfirmed") {
 		status,
 		guests: { fullName: "John Doe", email: "john@example.com" },
 		cabins: { name: "Cabin 001" },
-	};
+	} as unknown as BookingWithSummary;
 
 	return renderWithProviders(
-		<Menus>
-			<Table columns="0.6fr 2fr 2.4fr 1.4fr 1fr 3.2rem">
-				<Table.Body
-					data={[booking]}
-					render={(b) => <BookingRow key={b.id} booking={b} />}
-				/>
-			</Table>
-		</Menus>
+		<TableProviders columns="0.6fr 2fr 2.4fr 1.4fr 1fr 3.2rem">
+			<BookingRow booking={booking} />
+		</TableProviders>
 	);
 }
 

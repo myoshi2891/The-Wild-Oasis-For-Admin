@@ -5,6 +5,7 @@ import { renderHookWithProviders } from "../../../test/testUtils";
 vi.mock("../../../services/apiAuth");
 
 import { getCurrentUser } from "../../../services/apiAuth";
+import type { User } from "@supabase/supabase-js";
 const mockGetCurrentUser = vi.mocked(getCurrentUser);
 
 describe("useUser", () => {
@@ -13,8 +14,8 @@ describe("useUser", () => {
 	});
 
 	it("ユーザーデータを取得して返す", async () => {
-		const mockUser = { id: "1", role: "authenticated", email: "a@b.com" };
-		mockGetCurrentUser.mockResolvedValue(mockUser);
+		const mockUser: Partial<User> = { id: "1", role: "authenticated", email: "a@b.com" };
+		mockGetCurrentUser.mockResolvedValue(mockUser as User);
 
 		const { useUser } = await import("../useUser");
 		const { result } = renderHookWithProviders(() => useUser());
@@ -27,8 +28,8 @@ describe("useUser", () => {
 	});
 
 	it("isAuthenticated が role === 'authenticated' のとき true", async () => {
-		const mockUser = { id: "1", role: "authenticated", email: "a@b.com" };
-		mockGetCurrentUser.mockResolvedValue(mockUser);
+		const mockUser: Partial<User> = { id: "1", role: "authenticated", email: "a@b.com" };
+		mockGetCurrentUser.mockResolvedValue(mockUser as User);
 
 		const { useUser } = await import("../useUser");
 		const { result } = renderHookWithProviders(() => useUser());

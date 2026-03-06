@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -82,7 +81,7 @@ describe("UpdatePasswordForm", () => {
 
 		expect(mockUpdateUser).toHaveBeenCalledWith(
 			{ password: "validpassword" },
-			expect.objectContaining({ onSuccess: expect.any(Function) })
+			expect.objectContaining({ onSettled: expect.any(Function) })
 		);
 	});
 });
