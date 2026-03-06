@@ -56,6 +56,15 @@ export interface StatProps {
   color: string;
 }
 
+/**
+ * Renders a compact statistic card showing an icon, an uppercase title, and a value.
+ *
+ * @param icon - Visual element displayed inside a circular, colored background
+ * @param title - Short label shown above the value (displayed uppercase)
+ * @param value - Numeric or textual value shown prominently
+ * @param color - Base color name used to style the icon background and icon tint (e.g., `"blue"`)
+ * @returns A React element containing the styled stat card
+ */
 function Stat({ icon, title, value, color }: StatProps) {
   return (
     <StyledStat>

@@ -3,6 +3,17 @@ import { subDays } from "date-fns";
 import { useSearchParams } from "react-router-dom";
 import { getStaysAfterDate } from "../../services/apiBookings";
 
+/**
+ * Fetches stays from the past N days where N is taken from the URL `last` parameter.
+ *
+ * The `last` parameter is parsed as a positive integer; if missing or invalid, `numDays` defaults to 7.
+ *
+ * @returns An object with:
+ * - `isLoading` - `true` while the fetch is in progress, otherwise `false`.
+ * - `stays` - the raw array of stays returned by the query, or `undefined` if not loaded.
+ * - `confirmedStays` - the subset of `stays` whose `status` is `"checked-in"` or `"checked-out"`, or `undefined` if `stays` is undefined.
+ * - `numDays` - the validated number of days used to compute the query cutoff (always a positive integer).
+ */
 export function useRecentStays() {
 	const [searchParams] = useSearchParams();
 

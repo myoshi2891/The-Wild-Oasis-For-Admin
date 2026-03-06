@@ -1,5 +1,12 @@
 import { add } from 'date-fns';
 
+/**
+ * Compute an ISO date/time string for a date offset from today.
+ *
+ * @param numDays - Number of days to add to the current date; may be negative to go into the past
+ * @param withTime - When `false` (default), the time is set to `00:00:00` UTC; when `true`, the current time is preserved
+ * @returns An ISO-formatted date/time string with the trailing `Z` removed
+ */
 function fromToday(numDays: number, withTime = false) {
   const date = add(new Date(), { days: numDays });
   if (!withTime) date.setUTCHours(0, 0, 0, 0);

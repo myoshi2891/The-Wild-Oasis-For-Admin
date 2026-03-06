@@ -33,13 +33,11 @@ const ActionContent = styled.span`
 `;
 
 /**
- * Render a detailed view of a single booking including status and contextual actions.
+ * Render the detailed view for a single booking, including its status and contextual actions.
  *
- * Displays a loading spinner while the booking is being fetched and an empty state if no booking is available.
- * Shows the booking ID, a status tag, booking details, and action controls: check in (when unconfirmed), check out (when checked-in), delete (with confirmation), and back navigation.
- * Action controls are disabled while their respective operations are in progress; after deletion the view navigates back.
+ * Shows a loading spinner while the booking is being fetched and an empty booking state if no booking is available.
  *
- * @returns A React element presenting the booking details, status tag, and contextual action controls
+ * @returns A React element that displays the booking information, a status tag, and contextual action controls (check in, check out, delete, and navigation)
  */
 function BookingDetail() {
 	const { booking, isLoading } = useBooking();

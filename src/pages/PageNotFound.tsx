@@ -28,6 +28,11 @@ const Box = styled.div`
   }
 `;
 
+/**
+ * Render a centered "page not found" view with a prominent heading and a back button.
+ *
+ * @returns A React element that displays a not-found message and a "Go back" button which navigates back when clicked.
+ */
 function PageNotFound() {
   const moveBack = useMoveBack();
 

@@ -47,7 +47,12 @@ vi.mock("react-hot-toast", () => ({
 	},
 }));
 
-// ── Mock Factory ─────────────────────────────────────────────
+/**
+ * Create a mock User object with sensible default fields for tests.
+ *
+ * @param overrides - Partial fields to merge into the default mock user
+ * @returns A `User` object composed of the defaults with any `overrides` applied
+ */
 export function makeMockUser(overrides: Partial<User> = {}): User {
 	const base: User = {
 		id: "1",
@@ -65,6 +70,12 @@ export function makeMockUser(overrides: Partial<User> = {}): User {
 	return { ...base, ...overrides };
 }
 
+/**
+ * Create a mock Session object linked to the given User.
+ *
+ * @param user - The User to include on the returned Session
+ * @returns A Session containing mock access and refresh tokens, `expires_in` and `expires_at` values, `token_type: "bearer"`, and the provided `user`
+ */
 export function makeMockSession(user: User): Session {
 	return {
 		access_token: "mock-access-token",
@@ -76,6 +87,12 @@ export function makeMockSession(user: User): Session {
 	};
 }
 
+/**
+ * Builds a StayAfterDate object populated with sensible default values for tests.
+ *
+ * @param overrides - Partial fields to override the defaults in the returned StayAfterDate
+ * @returns A StayAfterDate object with the defaults applied and any `overrides` values replacing them
+ */
 export function createMockStay(overrides: Partial<StayAfterDate>): StayAfterDate {
 	return {
 		id: 1, created_at: "2023-01-01", startDate: "2023-01-01", endDate: "2023-01-02",
@@ -125,12 +142,12 @@ interface WrapperOptions {
 }
 
 /**
- * Create a React wrapper component that provides a QueryClient and MemoryRouter to its children for testing.
+ * Create a React wrapper that provides QueryClient, DarkMode, and MemoryRouter to children for testing.
  *
  * @param options - Optional configuration for the wrapper
- * @param options.queryClient - QueryClient instance to use; if omitted a new test QueryClient is created
+ * @param options.queryClient - QueryClient instance to use; when omitted a test QueryClient is created
  * @param options.routerProps - Props forwarded to the MemoryRouter
- * @returns A React component that wraps its children with a QueryClientProvider (using the provided or created client) and a MemoryRouter (using the provided router props)
+ * @returns A React component that wraps its children with QueryClientProvider, DarkModeProvider, and MemoryRouter
  */
 function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	const client = queryClient ?? createTestQueryClient();
@@ -148,6 +165,13 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	};
 }
 
+/**
+ * Render children inside a configurable Table wrapper with Menus.
+ * 
+ * @param children - Elements to render inside the Menus (typically table cell/row content)
+ * @param columns - Grid layout columns definition
+ * @returns A React element: a `Table` with configured columns whose content is the provided `children` wrapped by `Menus`
+ */
 export function TableProviders({ children, columns = "1fr" }: { children: ReactNode; columns?: string }) {
 	return (
 		<Table columns={columns}>

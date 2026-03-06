@@ -21,6 +21,14 @@ const Avatar = styled.img`
   outline: 2px solid var(--color-grey-100);
 `;
 
+/**
+ * Renders a user avatar and display name, using available profile metadata or sensible fallbacks.
+ *
+ * If a profile `avatar` URL is present it will be used; otherwise a default image is shown.
+ * The displayed name and the image `alt` text prefer `fullName`, then the user's email, and finally the literal "Unknown user".
+ *
+ * @returns A React element containing the user's avatar image and display name.
+ */
 function UserAvatar() {
 	const { user } = useUser();
 	const { fullName, avatar } = (user?.user_metadata as { fullName?: string; avatar?: string }) || {};

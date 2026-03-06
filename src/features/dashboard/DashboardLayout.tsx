@@ -15,6 +15,11 @@ const StyledDashboardLayout = styled.div`
 	gap: 2.4rem;
 `;
 
+/**
+ * Render the dashboard grid containing statistics, today's activity, and charts; displays a spinner while required data is loading.
+ *
+ * @returns The dashboard JSX element: a styled grid with Stats, TodayActivity, DurationChart, and SalesChart, or a Spinner when bookings, stays, or cabins are loading.
+ */
 function DashboardLayout() {
 	const { bookings, isLoading: isLoadingBookings } = useRecentBookings();
 	const { confirmedStays, isLoading: isLoadingStays, numDays } = useRecentStays();

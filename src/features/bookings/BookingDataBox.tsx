@@ -106,7 +106,12 @@ const Footer = styled.footer`
   text-align: right;
 `;
 
-// A purely presentational component
+/**
+ * Render a styled information box that displays a booking's dates, guest details, pricing and status.
+ *
+ * @param booking - BookingWithDetails containing dates, guest and cabin info, pricing, observations, and payment status
+ * @returns A React element that presents the booking details in a compact, styled layout
+ */
 function BookingDataBox({ booking }: BookingDataBoxProps) {
   const {
     created_at,

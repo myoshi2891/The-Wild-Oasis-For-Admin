@@ -37,6 +37,16 @@ interface TodayItemProps {
 	activity: BookingWithGuestInfo;
 }
 
+/**
+ * Render a row representing a single booking activity in the "Today" list.
+ *
+ * Displays a status tag (Arriving or Departing), the guest's country flag and full name,
+ * the number of nights, and an action control: a "Check in" link for unconfirmed bookings
+ * or a checkout button for checked-in bookings.
+ *
+ * @param activity - BookingWithGuestInfo describing the booking and guest details to display
+ * @returns The JSX element for the activity row
+ */
 function TodayItem({ activity }: TodayItemProps) {
 	const { id, status, guests, numNights } = activity;
 

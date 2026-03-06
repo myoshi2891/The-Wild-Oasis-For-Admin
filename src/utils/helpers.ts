@@ -47,6 +47,12 @@ export const formatCurrency = (value: number): string =>
 		currency: "USD",
 	}).format(value);
 
+/**
+ * Selects a tag color for a booking status.
+ *
+ * @param status - The booking status used to determine the tag color. One of `unconfirmed`, `checked-in`, or `checked-out`.
+ * @returns The tag color: `blue` for `unconfirmed`, `green` for `checked-in`, `silver` for `checked-out`.
+ */
 export function getTagType(status: BookingStatus): "blue" | "green" | "silver" {
 	const mapping: Record<BookingStatus, "blue" | "green" | "silver"> = {
 		unconfirmed: "blue",

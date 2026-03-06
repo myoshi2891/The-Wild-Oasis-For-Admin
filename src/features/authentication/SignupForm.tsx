@@ -9,6 +9,15 @@ import { useSignup } from "./useSignup";
 
 import type { SignupFormData } from "../../types/domain";
 
+/**
+ * Render a signup form with client-side validation and submission handling.
+ *
+ * The form includes inputs for full name, email, password, and password confirmation,
+ * validates each field (required, email pattern, password minimum length, matching passwords),
+ * disables inputs while a signup request is in progress, and resets on successful signup.
+ *
+ * @returns A `JSX.Element` containing the signup form with submit and reset actions.
+ */
 function SignupForm() {
 	const { signup, isLoading } = useSignup();
 	const { register, formState, getValues, handleSubmit, reset } = useForm<SignupFormData>();

@@ -9,6 +9,13 @@ import Input from "../../ui/Input";
 import { useUser } from "./useUser";
 import { useUpdateUser } from "./useUpdateUser";
 
+/**
+ * Renders a form for viewing and updating the current user's email, full name, and avatar.
+ *
+ * The form shows the email as read-only, provides an editable full-name input and an avatar file input, and includes Cancel and Update buttons. Submitting sends the updated full name and optional avatar; on successful update the avatar input and form are reset.
+ *
+ * @returns The rendered form element for updating user data.
+ */
 function UpdateUserDataForm() {
 	// We don't need the loading state, and can immediately use the user data, because we know that it has already been loaded at this point
 	const { user } = useUser();

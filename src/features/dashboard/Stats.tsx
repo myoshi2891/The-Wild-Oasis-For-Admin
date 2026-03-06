@@ -15,6 +15,15 @@ export interface StatsProps {
 	cabinCount: number;
 }
 
+/**
+ * Renders four summary Stat components for bookings, sales, check-ins, and occupancy rate.
+ *
+ * @param bookings - Bookings to derive count and total sales from.
+ * @param confirmedStays - Confirmed stays to derive check-ins and total nights from.
+ * @param numDays - Number of days in the reporting period used to compute occupancy.
+ * @param cabinCount - Number of cabins used to compute occupancy (treated as at least 1).
+ * @returns A React fragment containing Stat components for Booking, Sales, Check ins, and Occupancy rate.
+ */
 function Stats({ bookings, confirmedStays, numDays, cabinCount }: StatsProps) {
 	const numBookings = bookings.length;
 

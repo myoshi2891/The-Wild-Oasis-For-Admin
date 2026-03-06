@@ -26,9 +26,9 @@ const Box = styled.div`
 `;
 
 /**
- * Render the check-in UI for a booking, allowing optional breakfast addition, payment confirmation, and performing check-in.
+ * Render UI for checking in a booking with optional breakfast addition and payment confirmation.
  *
- * @returns The JSX element containing booking details, an optional breakfast checkbox with calculated pricing, a payment confirmation checkbox showing the total amount (with breakdown when breakfast is added), and action buttons to complete check-in or go back.
+ * @returns The JSX element containing booking details, an optional breakfast option with calculated pricing, a payment confirmation control showing the total (with breakdown when breakfast is added), and action buttons to complete check-in or go back.
  */
 function CheckinBooking() {
 	const [confirmPaid, setConfirmPaid] = useState(false);
@@ -56,6 +56,13 @@ function CheckinBooking() {
 	const optionalBreakfastPrice =
 		settings.breakfastPrice * numNights * numGuests;
 
+	/**
+	 * Initiates check-in for the current booking.
+	 *
+	 * If payment has not been confirmed, the function exits without action. When breakfast is selected,
+	 * the check-in payload includes `hasBreakfast: true`, `extrasPrice` equal to `optionalBreakfastPrice`,
+	 * and `totalPrice` adjusted by adding `optionalBreakfastPrice`; otherwise the payload contains only `bookingId`.
+	 */
 	function handleCheckin() {
 		if (!confirmPaid) return;
 

@@ -121,6 +121,16 @@ const startDataDark: DurationBucket[] = [
 	},
 ];
 
+/**
+ * Aggregate stay counts into the provided duration buckets.
+ *
+ * Increments the `value` of each bucket in `startData` based on each stay's `numNights`
+ * and returns only the buckets whose `value` is greater than zero.
+ *
+ * @param startData - Initial duration buckets (each has `duration`, `value`, and `color`) used as the accumulator
+ * @param stays - Array of stays; each stay's `numNights` selects which duration bucket to increment
+ * @returns An array of `DurationBucket` objects with updated `value` counts, filtered to only include buckets with `value > 0`
+ */
 function prepareData(startData: DurationBucket[], stays: StayAfterDate[]) {
 	// A bit ugly code, but sometimes this is what it takes when working with real data 😅
 
@@ -153,6 +163,12 @@ export interface DurationChartProps {
 	confirmedStays: StayAfterDate[];
 }
 
+/**
+ * Render a pie chart summarizing the distribution of confirmed stays by duration.
+ *
+ * @param confirmedStays - Array of stays used to compute duration buckets for the chart
+ * @returns A JSX element containing the duration summary pie chart and its legend
+ */
 function DurationChart({ confirmedStays }: DurationChartProps) {
 	const { isDarkMode } = useDarkMode();
 	const startData = isDarkMode ? startDataDark : startDataLight;

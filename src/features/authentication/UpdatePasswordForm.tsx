@@ -12,6 +12,14 @@ interface UpdatePasswordFormValues {
   passwordConfirm: string;
 }
 
+/**
+ * Renders a password update form with client-side validation and submission handling.
+ *
+ * The form validates a new password (minimum 8 characters) and a matching confirmation field,
+ * submits the updated password via the user-update hook, and resets the form on successful update.
+ *
+ * @returns The rendered form component for updating a user's password.
+ */
 function UpdatePasswordForm() {
   const { register, handleSubmit, formState, getValues, reset } = useForm<UpdatePasswordFormValues>();
   const { errors } = formState;

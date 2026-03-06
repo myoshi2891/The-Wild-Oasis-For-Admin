@@ -6,6 +6,14 @@ import SpinnerMini from "../../ui/SpinnerMini";
 import FormRowVertical from "../../ui/FormRowVertical";
 import { useLogin } from "./useLogin";
 
+/**
+ * Renders a login form with email and password fields and a submit button.
+ *
+ * The form disables inputs and the submit button while a login request is in progress,
+ * prevents submission when either field is empty, and clears both fields after the login attempt settles.
+ *
+ * @returns The rendered login form element.
+ */
 function LoginForm() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
