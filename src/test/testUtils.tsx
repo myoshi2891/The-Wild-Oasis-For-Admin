@@ -17,8 +17,8 @@ import {
 import { vi } from "vitest";
 
 import { DarkModeProvider } from "../context/DarkModeContext";
-import Table from "./Table";
-import Menus from "./Menus";
+import Table from "../ui/Table";
+import Menus from "../ui/Menus";
 
 // ── Mock: react-router-dom navigate ─────────────────────────
 export const mockNavigate = vi.fn();

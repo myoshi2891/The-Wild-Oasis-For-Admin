@@ -47,12 +47,12 @@ async function createBookings() {
     .from("guests")
     .select("id")
     .order("id");
-  const allGuestIds = guestsIds ? guestsIds.map((guest: NonNullable<typeof guestsIds>[number]) => guest.id) : [];
+  const allGuestIds = guestsIds ? guestsIds.map((guest: { id: number }) => guest.id) : [];
   const { data: cabinsIds } = await supabase
     .from("cabins")
     .select("id")
     .order("id");
-  const allCabinIds = cabinsIds ? cabinsIds.map((cabin: NonNullable<typeof cabinsIds>[number]) => cabin.id) : [];
+  const allCabinIds = cabinsIds ? cabinsIds.map((cabin: { id: number }) => cabin.id) : [];
 
   const finalBookings = bookings.map((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet

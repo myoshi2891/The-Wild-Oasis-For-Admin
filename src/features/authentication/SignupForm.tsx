@@ -7,12 +7,19 @@ import { useSignup } from "./useSignup";
 
 // Email regex: /\S+@\S+\.\S+/
 
+interface SignupFormData {
+	fullName: string;
+	email: string;
+	password: string;
+	passwordConfirm: string;
+}
+
 function SignupForm() {
 	const { signup, isLoading } = useSignup();
-	const { register, formState, getValues, handleSubmit, reset } = useForm();
+	const { register, formState, getValues, handleSubmit, reset } = useForm<SignupFormData>();
 	const { errors } = formState;
 
-	function onSubmit({ fullName, email, password, passwordConfirm }: any) {
+	function onSubmit({ fullName, email, password, passwordConfirm }: SignupFormData) {
 		signup(
 			{ fullName, email, password, passwordConfirm },
 			{
@@ -23,12 +30,12 @@ function SignupForm() {
 
 	return (
 		<Form onSubmit={handleSubmit(onSubmit)}>
-			<FormRow label="Full name" error={errors?.fullname?.message as string}>
+			<FormRow label="Full name" error={errors?.fullName?.message as string}>
 				<Input
 					type="text"
 					id="fullName"
 					disabled={isLoading}
-					{...register("fullname", {
+					{...register("fullName", {
 						required: "This field is required",
 					})}
 				/>
@@ -90,7 +97,7 @@ function SignupForm() {
 					variation="secondary"
 					type="reset"
 					disabled={isLoading}
-					onClick={reset}
+					onClick={() => reset()}
 				>
 					Cancel
 				</Button>

@@ -23,15 +23,17 @@ const Avatar = styled.img`
 
 function UserAvatar() {
 	const { user } = useUser();
-	const { fullName, avatar } = (user as any)?.user_metadata || {};
+	const { fullName, avatar } = (user?.user_metadata as { fullName?: string; avatar?: string }) || {};
+
+	const fallbackName = fullName || user?.email || "Unknown user";
 
 	return (
 		<StyledUserAvatar>
 			<Avatar
 				src={avatar || "default-user.jpg"}
-				alt={`Avatar of ${fullName}`}
+				alt={`Avatar of ${fallbackName}`}
 			/>
-			<span>{fullName}</span>
+			<span>{fallbackName}</span>
 		</StyledUserAvatar>
 	);
 }

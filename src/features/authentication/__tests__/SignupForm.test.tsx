@@ -43,7 +43,7 @@ describe("SignupForm", () => {
 
 		await waitFor(() => {
 			// email type="email" は jsdom のネイティブ制約でバリデートされるため、
-			// react-hook-form の "This field is required" は 3 項目（fullName, password, passwordConfirm）
+			// react-hook-form の "This field is required" は 4 項目（fullName, email, password, passwordConfirm）
 			expect(
 				screen.getAllByText("This field is required")
 			).toHaveLength(4);

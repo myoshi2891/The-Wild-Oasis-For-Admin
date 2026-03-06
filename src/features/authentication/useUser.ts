@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentUser } from "../../services/apiAuth";
 
-export function useUser() {
+import type { User } from "@supabase/supabase-js";
+
+export function useUser(): { isLoading: boolean; user: User | null | undefined; isAuthenticated: boolean } {
 	const { isLoading, data: user } = useQuery({
 		queryKey: ["user"],
 		queryFn: getCurrentUser,

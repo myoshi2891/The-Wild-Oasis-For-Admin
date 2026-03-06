@@ -5,6 +5,7 @@ import { mockToast, renderHookWithProviders } from "../../../test/testUtils";
 vi.mock("../../../services/apiAuth");
 
 import { signup as signupApi } from "../../../services/apiAuth";
+import type { User, Session } from "@supabase/supabase-js";
 const mockSignupApi = vi.mocked(signupApi);
 
 describe("useSignup", () => {
@@ -20,8 +21,8 @@ describe("useSignup", () => {
 	});
 
 	it("signup 成功時にトーストを表示する", async () => {
-		const mockData = { user: { id: "1" } as any, session: {} as any };
-		mockSignupApi.mockResolvedValue(mockData);
+		const mockData: { user: Partial<User>; session: Partial<Session> } = { user: { id: "1" }, session: {} };
+		mockSignupApi.mockResolvedValue(mockData as unknown as { user: User | null; session: Session | null });
 
 		const { useSignup } = await import("../useSignup");
 		const { result } = renderHookWithProviders(() => useSignup());
