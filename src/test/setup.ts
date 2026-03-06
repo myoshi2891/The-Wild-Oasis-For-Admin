@@ -27,4 +27,5 @@ global.ResizeObserver = class {
 // Clear localStorage between test scopes
 afterEach(() => {
 	localStorage.clear();
+	document.documentElement.classList.remove("dark-mode", "light-mode");
 });
