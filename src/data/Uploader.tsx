@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { isFuture, isPast, isToday } from "date-fns";
 import supabase from "../services/supabase";
@@ -46,12 +47,12 @@ async function createBookings() {
     .from("guests")
     .select("id")
     .order("id");
-  const allGuestIds = guestsIds ? guestsIds.map((guest: any) => guest.id) : [];
+  const allGuestIds = guestsIds ? guestsIds.map((guest: NonNullable<typeof guestsIds>[number]) => guest.id) : [];
   const { data: cabinsIds } = await supabase
     .from("cabins")
     .select("id")
     .order("id");
-  const allCabinIds = cabinsIds ? cabinsIds.map((cabin: any) => cabin.id) : [];
+  const allCabinIds = cabinsIds ? cabinsIds.map((cabin: NonNullable<typeof cabinsIds>[number]) => cabin.id) : [];
 
   const finalBookings = bookings.map((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
