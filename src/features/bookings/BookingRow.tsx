@@ -19,6 +19,11 @@ import { formatDistanceFromNow } from "../../utils/helpers";
 
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useDeleteBooking } from "./useDeleteBooking";
+import type { BookingWithSummary } from "../../types/domain";
+
+export interface BookingRowProps {
+	booking: BookingWithSummary;
+}
 
 const Cabin = styled.div`
 	font-size: 1.6rem;
@@ -71,12 +76,12 @@ function BookingRow({
 		guests: { fullName: guestName, email },
 		cabins: { name: cabinName },
 	},
-}: any) {
+}: BookingRowProps) {
 	const navigate = useNavigate();
 	const { checkout, isCheckingOut } = useCheckout();
 	const { deleteBooking, isDeleting } = useDeleteBooking();
 
-	const statusToTagName = {
+	const statusToTagName: Record<string, "blue" | "green" | "silver"> = {
 		unconfirmed: "blue",
 		"checked-in": "green",
 		"checked-out": "silver",
@@ -104,14 +109,14 @@ function BookingRow({
 				</span>
 			</Stacked>
 
-			<Tag $type={statusToTagName[status as keyof typeof statusToTagName] as any}>{status.replace("-", " ")}</Tag>
+			<Tag $type={statusToTagName[status]}>{status.replace("-", " ")}</Tag>
 
 			<Amount>{formatCurrency(totalPrice)}</Amount>
 
 			<Modal>
 				<Menus.Menu>
-					<Menus.Toggle id={bookingId} />
-					<Menus.List id={bookingId}>
+					<Menus.Toggle id={String(bookingId)} />
+					<Menus.List id={String(bookingId)}>
 						<Menus.Button
 							icon={<HiEye />}
 							onClick={() => navigate(`/bookings/${bookingId}`)}

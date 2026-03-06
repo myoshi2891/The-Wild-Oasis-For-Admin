@@ -47,7 +47,7 @@ function BookingDetail() {
 
 	const { status, id: bookingId } = booking;
 
-	const statusToTagName = {
+	const statusToTagName: Record<string, "blue" | "green" | "silver"> = {
 		unconfirmed: "blue",
 		"checked-in": "green",
 		"checked-out": "silver",
@@ -58,7 +58,7 @@ function BookingDetail() {
 			<Row $type="horizontal">
 				<HeadingGroup>
 					<Heading as="h1">Booking #{bookingId}</Heading>
-					<Tag $type={statusToTagName[status] as any}>
+					<Tag $type={statusToTagName[status]}>
 						{status.replace("-", " ")}
 					</Tag>
 				</HeadingGroup>

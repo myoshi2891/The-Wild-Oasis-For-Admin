@@ -11,6 +11,11 @@ import DataItem from "../../ui/DataItem";
 import Flag from "../../ui/Flag";
 
 import { formatDistanceFromNow, formatCurrency } from "../../utils/helpers";
+import type { BookingWithDetails } from "../../types/domain";
+
+export interface BookingDataBoxProps {
+  booking: BookingWithDetails;
+}
 
 const StyledBookingDataBox = styled.section`
   /* Box */
@@ -102,7 +107,7 @@ const Footer = styled.footer`
 `;
 
 // A purely presentational component
-function BookingDataBox({ booking }: any) {
+function BookingDataBox({ booking }: BookingDataBoxProps) {
   const {
     created_at,
     startDate,

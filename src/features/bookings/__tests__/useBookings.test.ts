@@ -5,6 +5,7 @@ import { renderHookWithProviders } from "../../../test/testUtils";
 vi.mock("../../../services/apiBookings");
 
 import { getBookings } from "../../../services/apiBookings";
+import type { BookingWithSummary } from "../../../types/domain";
 const mockGetBookings = vi.mocked(getBookings);
 
 describe("useBookings", () => {
@@ -13,7 +14,7 @@ describe("useBookings", () => {
 	});
 
 	it("デフォルトで startDate-desc でソートする", async () => {
-		const mockData = { data: [{ id: 1 }] as any, count: 1 };
+		const mockData = { data: [{ id: 1 }] as unknown as BookingWithSummary[], count: 1 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
@@ -32,7 +33,7 @@ describe("useBookings", () => {
 	});
 
 	it("status フィルタを URL パラメータから構築する", async () => {
-		const mockData = { data: [{ id: 1 }] as any, count: 1 };
+		const mockData = { data: [{ id: 1 }] as unknown as BookingWithSummary[], count: 1 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
@@ -96,7 +97,7 @@ describe("useBookings", () => {
 	});
 
 	it("bookings と count を返す", async () => {
-		const mockData = { data: [{ id: 1 }, { id: 2 }] as any, count: 2 };
+		const mockData = { data: [{ id: 1 }, { id: 2 }] as unknown as BookingWithSummary[], count: 2 };
 		mockGetBookings.mockResolvedValue(mockData);
 
 		const { useBookings } = await import("../useBookings");
