@@ -81,7 +81,7 @@ describe("UpdatePasswordForm", () => {
 
 		expect(mockUpdateUser).toHaveBeenCalledWith(
 			{ password: "validpassword" },
-			expect.objectContaining({ onSuccess: expect.any(Function) })
+			expect.objectContaining({ onSettled: expect.any(Function) })
 		);
 	});
 });

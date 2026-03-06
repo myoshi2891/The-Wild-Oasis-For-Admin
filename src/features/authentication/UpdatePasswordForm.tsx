@@ -27,7 +27,7 @@ function UpdatePasswordForm() {
   const { updateUser, isUpdating } = useUpdateUser();
 
   const onSubmit: SubmitHandler<UpdatePasswordFormValues> = ({ password }) => {
-    updateUser({ password }, { onSuccess: () => reset() });
+    updateUser({ password }, { onSettled: () => reset() });
   };
 
   return (

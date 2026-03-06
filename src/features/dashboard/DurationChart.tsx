@@ -72,7 +72,7 @@ const startDataLight: DurationBucket[] = [
 		color: "#3b82f6",
 	},
 	{
-		duration: "21+ nights",
+		duration: "22+ nights",
 		value: 0,
 		color: "#a855f7",
 	},
@@ -115,7 +115,7 @@ const startDataDark: DurationBucket[] = [
 		color: "#1d4ed8",
 	},
 	{
-		duration: "21+ nights",
+		duration: "22+ nights",
 		value: 0,
 		color: "#7e22ce",
 	},
@@ -151,7 +151,7 @@ function prepareData(startData: DurationBucket[], stays: StayAfterDate[]) {
 			if (num >= 8 && num <= 14) return incArrayValue(arr, "8-14 nights");
 			if (num >= 15 && num <= 21)
 				return incArrayValue(arr, "15-21 nights");
-			if (num >= 21) return incArrayValue(arr, "21+ nights");
+			if (num >= 22) return incArrayValue(arr, "22+ nights");
 			return arr;
 		}, startData)
 		.filter((obj) => obj.value > 0);

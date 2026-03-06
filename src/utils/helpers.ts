@@ -61,3 +61,17 @@ export function getTagType(status: BookingStatus): "blue" | "green" | "silver" {
 	};
 	return mapping[status];
 }
+
+/**
+ * Parses a numeric search parameter representing "days".
+ *
+ * Validates that the parsed value is a finite, positive integer.
+ *
+ * @param value - The raw string value from the URL query params, or `null`.
+ * @param fallback - The fallback value to return if the input is missing or invalid (defaults to 7).
+ * @returns A valid, positive integer.
+ */
+export function parsePositiveDaysParam(value: string | null, fallback = 7): number {
+	const parsed = value ? Number(value) : fallback;
+	return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed >= 1 ? parsed : fallback;
+}

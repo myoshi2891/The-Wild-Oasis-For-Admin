@@ -25,14 +25,6 @@ const Guest = styled.div`
 	font-weight: 500;
 `;
 
-/**
- * Renders a single today's activity row showing guest, flag, nights and a context-specific action.
- *
- * The row displays a status Tag ("Arriving" for "unconfirmed", "Departing" for "checked-in"), the guest's country flag and full name, the number of nights, and an action control: a "Check in" link when `status` is "unconfirmed" or a checkout control when `status` is "checked-in".
- *
- * @param activity - Activity object with shape `{ id, status, guests, numNights }`. `status` is expected to be either `"unconfirmed"` or `"checked-in"`. `guests` must include `fullName`, `nationality`, and `countryFlag`.
- * @returns A React element representing the styled list item for the activity.
- */
 interface TodayItemProps {
 	activity: BookingWithGuestInfo;
 }
