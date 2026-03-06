@@ -16,6 +16,10 @@ import {
 } from "@testing-library/react";
 import { vi } from "vitest";
 
+import { DarkModeProvider } from "../context/DarkModeContext";
+import Table from "./Table";
+import Menus from "./Menus";
+
 // ── Mock: react-router-dom navigate ─────────────────────────
 export const mockNavigate = vi.fn();
 
@@ -92,7 +96,13 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	return function TestWrapper({ children }: { children: ReactNode }) {
 		return (
 			<QueryClientProvider client={client}>
-				<MemoryRouter {...routerProps}>{children}</MemoryRouter>
+				<DarkModeProvider>
+					<MemoryRouter {...routerProps}>
+						<Table columns="1fr">
+							<Menus>{children}</Menus>
+						</Table>
+					</MemoryRouter>
+				</DarkModeProvider>
 			</QueryClientProvider>
 		);
 	};

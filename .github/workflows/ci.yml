@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Run Lint, Typecheck and Unit Tests
@@ -14,9 +17,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@ecf28ddc73e819eb6fa29df6b34ef8921c743461
         with:
-          bun-version: latest
+          bun-version: 1.2.x
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -29,3 +32,6 @@ jobs:
 
       - name: Run Unit Tests
         run: bun run test
+        env:
+          VITE_SUPABASE_URL: "http://localhost:54321"
+          VITE_SUPABASE_KEY: "dummy-key"
