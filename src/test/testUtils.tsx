@@ -17,7 +17,12 @@ import {
 	type RenderHookResult,
 	type RenderResult,
 } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi, beforeEach } from "vitest";
+
+// ── Clear LocalStorage globally for test wrapper scopes ────────
+beforeEach(() => {
+	localStorage.clear();
+});
 
 import { DarkModeProvider } from "../context/DarkModeContext";
 import Table from "../ui/Table";
@@ -153,7 +158,6 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	const client = queryClient ?? createTestQueryClient();
 
 	return function TestWrapper({ children }: { children: ReactNode }) {
-		localStorage.clear();
 		return (
 			<QueryClientProvider client={client}>
 				<DarkModeProvider>
