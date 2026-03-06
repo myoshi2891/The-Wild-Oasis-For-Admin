@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { isFuture, isPast, isToday } from "date-fns";
 import supabase from "../services/supabase";
@@ -25,45 +26,80 @@ async function deleteCabins() {
   if (error) console.log(error.message);
 }
 
+/**
+ * Delete all rows in the "bookings" table with an `id` greater than 0.
+ *
+ * If the deletion fails, logs the error message to the console.
+ */
 async function deleteBookings() {
   const { error } = await supabase.from("bookings").delete().gt("id", 0);
   if (error) console.log(error.message);
 }
 
+/**
+ * Insert predefined guest records into the "guests" table in Supabase.
+ *
+ * Logs the error message to the console if the insertion fails.
+ */
 async function createGuests() {
-  const { error } = await supabase.from("guests").insert(guests);
+  const { error } = await supabase.from("guests").insert(guests as any);
   if (error) console.log(error.message);
 }
 
+/**
+ * Insert the predefined cabin records into the database's cabins table.
+ *
+ * Logs the error message to the console if the insertion fails.
+ */
 async function createCabins() {
-  const { error } = await supabase.from("cabins").insert(cabins);
+  const { error } = await supabase.from("cabins").insert(cabins as any);
   if (error) console.log(error.message);
 }
 
+/**
+ * Builds booking records with concrete database guest/cabin IDs, computed pricing, and status, then inserts them into the `bookings` table.
+ *
+ * For each source booking, resolves the actual Supabase `guestId` and `cabinId` by querying the `guests` and `cabins` tables, computes `numNights`, `cabinPrice`, `extrasPrice`, and `totalPrice`, and determines `status` ("unconfirmed", "checked-in", or "checked-out") based on the booking dates.
+ *
+ * Bookings whose guest or cabin cannot be resolved are skipped and a warning is logged. Any insertion error is logged to the console.
+ */
 async function createBookings() {
   // Bookings need a guestId and a cabinId. We can't tell Supabase IDs for each object, it will calculate them on its own. So it might be different for different people, especially after multiple uploads. Therefore, we need to first get all guestIds and cabinIds, and then replace the original IDs in the booking data with the actual ones from the DB
   const { data: guestsIds } = await supabase
     .from("guests")
     .select("id")
     .order("id");
-  const allGuestIds = guestsIds.map((cabin) => cabin.id);
+  const allGuestIds = guestsIds ? guestsIds.map((guest: { id: number }) => guest.id) : [];
   const { data: cabinsIds } = await supabase
     .from("cabins")
     .select("id")
     .order("id");
-  const allCabinIds = cabinsIds.map((cabin) => cabin.id);
+  const allCabinIds = cabinsIds ? cabinsIds.map((cabin: { id: number }) => cabin.id) : [];
 
-  const finalBookings = bookings.map((booking) => {
+  const finalBookings = bookings.flatMap((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
+    const guestId = allGuestIds.at(booking.guestId - 1);
+    const cabinId = allCabinIds.at(booking.cabinId - 1);
+
+    if (guestId === undefined || cabinId === undefined) {
+      console.warn(`Warning: Missing guest or cabin ID. (guest lookup index: ${booking.guestId - 1}, cabin lookup index: ${booking.cabinId - 1})`);
+      return [];
+    }
+
     const cabin = cabins.at(booking.cabinId - 1);
     const numNights = subtractDates(booking.endDate, booking.startDate);
-    const cabinPrice = numNights * (cabin.regularPrice - cabin.discount);
+    let cabinPrice = 0;
+    if (cabin) {
+      cabinPrice = numNights * (cabin.regularPrice - cabin.discount);
+    } else {
+      console.warn(`Warning: cabin is falsy for booking (cabinId: ${booking.cabinId}, ${numNights} nights). Setting cabinPrice to 0.`);
+    }
     const extrasPrice = booking.hasBreakfast
       ? numNights * 15 * booking.numGuests
       : 0; // hardcoded breakfast price
     const totalPrice = cabinPrice + extrasPrice;
 
-    let status;
+    let status: "unconfirmed" | "checked-in" | "checked-out" = "unconfirmed";
     if (
       isPast(new Date(booking.endDate)) &&
       !isToday(new Date(booking.endDate))
@@ -82,16 +118,16 @@ async function createBookings() {
     )
       status = "checked-in";
 
-    return {
+    return [{
       ...booking,
       numNights,
       cabinPrice,
       extrasPrice,
       totalPrice,
-      guestId: allGuestIds.at(booking.guestId - 1),
-      cabinId: allCabinIds.at(booking.cabinId - 1),
+      guestId,
+      cabinId,
       status,
-    };
+    }];
   });
 
   console.log(finalBookings);

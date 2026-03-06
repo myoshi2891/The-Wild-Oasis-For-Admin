@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import type { BookingWithGuestInfo } from "../../types/domain";
 import { Link } from "react-router-dom";
 import Tag from "../../ui/Tag";
 import Flag from "../../ui/Flag";
@@ -32,7 +33,21 @@ const Guest = styled.div`
  * @param activity - Activity object with shape `{ id, status, guests, numNights }`. `status` is expected to be either `"unconfirmed"` or `"checked-in"`. `guests` must include `fullName`, `nationality`, and `countryFlag`.
  * @returns A React element representing the styled list item for the activity.
  */
-function TodayItem({ activity }) {
+interface TodayItemProps {
+	activity: BookingWithGuestInfo;
+}
+
+/**
+ * Render a row representing a single booking activity in the "Today" list.
+ *
+ * Displays a status tag (Arriving or Departing), the guest's country flag and full name,
+ * the number of nights, and an action control: a "Check in" link for unconfirmed bookings
+ * or a checkout button for checked-in bookings.
+ *
+ * @param activity - BookingWithGuestInfo describing the booking and guest details to display
+ * @returns The JSX element for the activity row
+ */
+function TodayItem({ activity }: TodayItemProps) {
 	const { id, status, guests, numNights } = activity;
 
 	return (

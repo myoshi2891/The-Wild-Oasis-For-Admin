@@ -6,16 +6,34 @@ import {
 	HiOutlineCalendarDays,
 	HiOutlineChartBar,
 } from "react-icons/hi2";
-function Stats({ bookings, confirmedStays, numDays, cabinCount }) {
-	const numBookings = bookings?.length;
+import type { BookingAfterDate, StayAfterDate } from "../../types/domain";
 
-	const sales = bookings?.reduce((acc, cur) => acc + cur.totalPrice, 0);
+export interface StatsProps {
+	bookings: BookingAfterDate[];
+	confirmedStays: StayAfterDate[];
+	numDays: number;
+	cabinCount: number;
+}
+
+/**
+ * Renders four summary Stat components for bookings, sales, check-ins, and occupancy rate.
+ *
+ * @param bookings - Bookings to derive count and total sales from.
+ * @param confirmedStays - Confirmed stays to derive check-ins and total nights from.
+ * @param numDays - Number of days in the reporting period used to compute occupancy.
+ * @param cabinCount - Number of cabins used to compute occupancy (treated as at least 1).
+ * @returns A React fragment containing Stat components for Booking, Sales, Check ins, and Occupancy rate.
+ */
+function Stats({ bookings, confirmedStays, numDays, cabinCount }: StatsProps) {
+	const numBookings = bookings.length;
+
+	const sales = bookings.reduce((acc, cur) => acc + cur.totalPrice, 0);
 
 	const checkins = confirmedStays.length;
 
 	const occupation =
 		confirmedStays.reduce((acc, cur) => acc + cur.numNights, 0) /
-		(numDays * cabinCount);
+		(numDays * Math.max(cabinCount, 1));
 
 	return (
 		<>

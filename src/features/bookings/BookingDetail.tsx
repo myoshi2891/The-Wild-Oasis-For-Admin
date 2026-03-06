@@ -18,6 +18,7 @@ import { useCheckout } from "../check-in-out/useCheckout";
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 import { useDeleteBooking } from "./useDeleteBooking";
+import { getTagType } from "../../utils/helpers";
 
 const HeadingGroup = styled.div`
 	display: flex;
@@ -25,20 +26,23 @@ const HeadingGroup = styled.div`
 	align-items: center;
 `;
 
+const ActionContent = styled.span`
+	display: inline-flex;
+	align-items: center;
+	gap: 0.8rem;
+`;
+
 /**
- * Render a detailed view of a single booking including status and contextual actions.
+ * Render the detailed view for a single booking, including its status and contextual actions.
  *
- * Displays a loading spinner while the booking is being fetched and an empty state if no booking is available.
- * Shows the booking ID, a status tag, booking details, and action controls: check in (when unconfirmed), check out (when checked-in), delete (with confirmation), and back navigation.
- * Action controls are disabled while their respective operations are in progress; after deletion the view navigates back.
+ * Shows a loading spinner while the booking is being fetched and an empty booking state if no booking is available.
  *
- * @returns A React element presenting the booking details, status tag, and contextual action controls
+ * @returns A React element that displays the booking information, a status tag, and contextual action controls (check in, check out, delete, and navigation)
  */
 function BookingDetail() {
 	const { booking, isLoading } = useBooking();
 	const { checkout, isCheckingOut } = useCheckout();
 	const { deleteBooking, isDeleting } = useDeleteBooking();
-
 	const moveBack = useMoveBack();
 	const navigate = useNavigate();
 
@@ -47,18 +51,12 @@ function BookingDetail() {
 
 	const { status, id: bookingId } = booking;
 
-	const statusToTagName = {
-		unconfirmed: "blue",
-		"checked-in": "green",
-		"checked-out": "silver",
-	};
-
 	return (
 		<>
 			<Row $type="horizontal">
 				<HeadingGroup>
 					<Heading as="h1">Booking #{bookingId}</Heading>
-					<Tag $type={statusToTagName[status]}>
+					<Tag $type={getTagType(status)}>
 						{status.replace("-", " ")}
 					</Tag>
 				</HeadingGroup>
@@ -76,11 +74,13 @@ function BookingDetail() {
 
 				{status === "checked-in" && (
 					<Button
-						icon={<HiArrowUpOnSquare />}
 						onClick={() => checkout(bookingId)}
 						disabled={isCheckingOut}
 					>
-						Check out
+						<ActionContent>
+							<HiArrowUpOnSquare />
+							<span>Check out</span>
+						</ActionContent>
 					</Button>
 				)}
 
