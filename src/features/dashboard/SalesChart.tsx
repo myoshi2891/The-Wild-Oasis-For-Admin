@@ -12,6 +12,12 @@ import {
 	ResponsiveContainer,
 } from "recharts";
 import { eachDayOfInterval, format, isSameDay, subDays } from "date-fns";
+import type { BookingAfterDate } from "../../types/domain";
+
+export interface SalesChartProps {
+	bookings: BookingAfterDate[];
+	numDays: number;
+}
 
 const StyledSalesChart = styled(DashboardBox)`
 	grid-column: 1 / -1;
@@ -23,7 +29,7 @@ const StyledSalesChart = styled(DashboardBox)`
 	}
 `;
 
-function SalesChart({ bookings, numDays }: any) {
+function SalesChart({ bookings, numDays }: SalesChartProps) {
 	const { isDarkMode } = useDarkMode();
 
 	const allDates = eachDayOfInterval({
@@ -35,15 +41,15 @@ function SalesChart({ bookings, numDays }: any) {
 		return {
 			label: format(date, "MMM dd"),
 			totalSales: bookings
-				?.filter((booking: any) =>
+				?.filter((booking) =>
 					isSameDay(date, new Date(booking.created_at))
 				)
-				.reduce((acc: number, cur: any) => acc + cur.totalPrice, 0),
+				.reduce((acc, cur) => acc + cur.totalPrice, 0),
 			extrasSales: bookings
-				?.filter((booking: any) =>
+				?.filter((booking) =>
 					isSameDay(date, new Date(booking.created_at))
 				)
-				.reduce((acc: number, cur: any) => acc + cur.extrasPrice, 0),
+				.reduce((acc, cur) => acc + cur.extrasPrice, 0),
 		};
 	});
 

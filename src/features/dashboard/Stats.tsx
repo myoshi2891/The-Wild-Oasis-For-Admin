@@ -6,16 +6,25 @@ import {
 	HiOutlineCalendarDays,
 	HiOutlineChartBar,
 } from "react-icons/hi2";
-function Stats({ bookings, confirmedStays, numDays, cabinCount }: any) {
-	const numBookings = bookings?.length;
+import type { BookingAfterDate, StayAfterDate } from "../../types/domain";
 
-	const sales = bookings?.reduce((acc: number, cur: any) => acc + cur.totalPrice, 0);
+export interface StatsProps {
+	bookings: BookingAfterDate[];
+	confirmedStays: StayAfterDate[];
+	numDays: number;
+	cabinCount: number;
+}
 
-	const checkins = confirmedStays.length;
+function Stats({ bookings, confirmedStays, numDays, cabinCount }: StatsProps) {
+	const numBookings = bookings?.length ?? 0;
+
+	const sales = bookings?.reduce((acc, cur) => acc + cur.totalPrice, 0) ?? 0;
+
+	const checkins = confirmedStays?.length ?? 0;
 
 	const occupation =
-		confirmedStays.reduce((acc: number, cur: any) => acc + cur.numNights, 0) /
-		(numDays * cabinCount);
+		(confirmedStays?.reduce((acc, cur) => acc + cur.numNights, 0) ?? 0) /
+		(numDays * Math.max(cabinCount, 1));
 
 	return (
 		<>

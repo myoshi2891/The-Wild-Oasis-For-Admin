@@ -9,6 +9,13 @@ import {
 	Tooltip,
 } from "recharts";
 import { useDarkMode } from "../../context/DarkModeContext";
+import type { StayAfterDate } from "../../types/domain";
+
+export interface DurationBucket {
+	duration: string;
+	value: number;
+	color: string;
+}
 
 const ChartBox = styled.div`
 	/* Box */
@@ -71,7 +78,7 @@ const startDataLight = [
 	},
 ];
 
-const startDataDark = [
+const startDataDark: DurationBucket[] = [
 	{
 		duration: "1 night",
 		value: 0,
@@ -114,10 +121,10 @@ const startDataDark = [
 	},
 ];
 
-function prepareData(startData: any[], stays: any[]) {
+function prepareData(startData: DurationBucket[], stays: StayAfterDate[]) {
 	// A bit ugly code, but sometimes this is what it takes when working with real data 😅
 
-	function incArrayValue(arr: any[], field: string) {
+	function incArrayValue(arr: DurationBucket[], field: string) {
 		return arr.map((obj) =>
 			obj.duration === field ? { ...obj, value: obj.value + 1 } : obj
 		);
@@ -137,12 +144,16 @@ function prepareData(startData: any[], stays: any[]) {
 			if (num >= 21) return incArrayValue(arr, "21+ nights");
 			return arr;
 		}, startData)
-		.filter((obj: any) => obj.value > 0);
+		.filter((obj) => obj.value > 0);
 
 	return data;
 }
 
-function DurationChart({ confirmedStays }: any) {
+export interface DurationChartProps {
+	confirmedStays: StayAfterDate[];
+}
+
+function DurationChart({ confirmedStays }: DurationChartProps) {
 	const { isDarkMode } = useDarkMode();
 	const startData = isDarkMode ? startDataDark : startDataLight;
 	const data = prepareData(startData, confirmedStays);
@@ -163,7 +174,7 @@ function DurationChart({ confirmedStays }: any) {
 						cy="50%"
 						paddingAngle={3}
 					>
-						{data.map((entry: any) => (
+						{data.map((entry) => (
 							<Cell
 								fill={entry.color}
 								stroke={entry.color}
