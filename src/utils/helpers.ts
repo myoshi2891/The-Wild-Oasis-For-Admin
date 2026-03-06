@@ -1,4 +1,5 @@
 import { formatDistance, parseISO, differenceInDays, isValid } from "date-fns";
+import type { BookingStatus } from "../types/domain";
 
 // We want to make this function work for both Date objects and strings (which come from Supabase)
 const toDate = (d: string | Date): Date => {
@@ -46,11 +47,11 @@ export const formatCurrency = (value: number): string =>
 		currency: "USD",
 	}).format(value);
 
-export function getTagType(status: string): "blue" | "green" | "silver" {
-	const mapping: Record<string, "blue" | "green" | "silver"> = {
+export function getTagType(status: BookingStatus): "blue" | "green" | "silver" {
+	const mapping: Record<BookingStatus, "blue" | "green" | "silver"> = {
 		unconfirmed: "blue",
 		"checked-in": "green",
 		"checked-out": "silver",
 	};
-	return mapping[status] || "blue";
+	return mapping[status];
 }

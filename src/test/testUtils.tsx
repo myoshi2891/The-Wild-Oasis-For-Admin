@@ -49,7 +49,7 @@ vi.mock("react-hot-toast", () => ({
 
 // ── Mock Factory ─────────────────────────────────────────────
 export function makeMockUser(overrides: Partial<User> = {}): User {
-	return {
+	const base: User = {
 		id: "1",
 		app_metadata: {},
 		user_metadata: {},
@@ -61,8 +61,8 @@ export function makeMockUser(overrides: Partial<User> = {}): User {
 		updated_at: "2023-01-01T00:00:00.000Z",
 		identities: [],
 		factors: [],
-		...overrides,
-	} as User;
+	};
+	return { ...base, ...overrides };
 }
 
 export function makeMockSession(user: User): Session {

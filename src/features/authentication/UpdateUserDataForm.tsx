@@ -63,6 +63,8 @@ function UpdateUserDataForm() {
 					onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 						if (e.target.files && e.target.files.length > 0) {
 							setAvatar(e.target.files[0]);
+						} else {
+							setAvatar(null);
 						}
 					}}
 					disabled={isUpdating}

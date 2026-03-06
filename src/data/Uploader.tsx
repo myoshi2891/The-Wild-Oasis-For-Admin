@@ -54,13 +54,14 @@ async function createBookings() {
     .order("id");
   const allCabinIds = cabinsIds ? cabinsIds.map((cabin: { id: number }) => cabin.id) : [];
 
-  const finalBookings = bookings.map((booking) => {
+  const finalBookings = bookings.flatMap((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
     const guestId = allGuestIds.at(booking.guestId - 1);
     const cabinId = allCabinIds.at(booking.cabinId - 1);
 
     if (guestId === undefined || cabinId === undefined) {
       console.warn(`Warning: Missing guest or cabin ID. (guest lookup index: ${booking.guestId - 1}, cabin lookup index: ${booking.cabinId - 1})`);
+      return [];
     }
 
     const cabin = cabins.at(booking.cabinId - 1);
@@ -76,7 +77,7 @@ async function createBookings() {
       : 0; // hardcoded breakfast price
     const totalPrice = cabinPrice + extrasPrice;
 
-    let status;
+    let status: "unconfirmed" | "checked-in" | "checked-out" = "unconfirmed";
     if (
       isPast(new Date(booking.endDate)) &&
       !isToday(new Date(booking.endDate))
@@ -95,21 +96,21 @@ async function createBookings() {
     )
       status = "checked-in";
 
-    return {
+    return [{
       ...booking,
       numNights,
       cabinPrice,
       extrasPrice,
       totalPrice,
-      guestId: guestId ?? null,
-      cabinId: cabinId ?? null,
+      guestId,
+      cabinId,
       status,
-    };
+    }];
   });
 
   console.log(finalBookings);
 
-  const { error } = await supabase.from("bookings").insert(finalBookings as any);
+  const { error } = await supabase.from("bookings").insert(finalBookings);
   if (error) console.log(error.message);
 }
 
