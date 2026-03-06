@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import type { BookingWithGuestInfo } from "../../types/domain";
 import { Link } from "react-router-dom";
 import Tag from "../../ui/Tag";
 import Flag from "../../ui/Flag";
@@ -32,8 +33,6 @@ const Guest = styled.div`
  * @param activity - Activity object with shape `{ id, status, guests, numNights }`. `status` is expected to be either `"unconfirmed"` or `"checked-in"`. `guests` must include `fullName`, `nationality`, and `countryFlag`.
  * @returns A React element representing the styled list item for the activity.
  */
-import type { BookingWithGuestInfo } from "../../types/domain";
-
 interface TodayItemProps {
 	activity: BookingWithGuestInfo;
 }

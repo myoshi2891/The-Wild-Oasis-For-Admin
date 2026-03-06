@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import styled from "styled-components";
 
 const StyledStat = styled.div`
@@ -47,7 +48,6 @@ const Value = styled.p`
   font-weight: 500;
 `;
 
-import type { ReactNode } from "react";
 
 export interface StatProps {
   icon: ReactNode;

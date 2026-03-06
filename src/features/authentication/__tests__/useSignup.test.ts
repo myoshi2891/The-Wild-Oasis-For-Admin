@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { waitFor } from "@testing-library/react";
-import { mockToast, renderHookWithProviders } from "../../../test/testUtils";
+import { mockToast, renderHookWithProviders, makeMockUser } from "../../../test/testUtils";
 
 vi.mock("../../../services/apiAuth");
 
 import { signup as signupApi } from "../../../services/apiAuth";
-import type { User, Session } from "@supabase/supabase-js";
 const mockSignupApi = vi.mocked(signupApi);
 
 describe("useSignup", () => {
@@ -21,8 +20,11 @@ describe("useSignup", () => {
 	});
 
 	it("signup 成功時にトーストを表示する", async () => {
-		const mockData: { user: Partial<User>; session: Partial<Session> } = { user: { id: "1" }, session: {} };
-		mockSignupApi.mockResolvedValue(mockData as unknown as { user: User | null; session: Session | null });
+		const mockData = {
+			user: makeMockUser(),
+			session: null,
+		};
+		mockSignupApi.mockResolvedValue(mockData);
 
 		const { useSignup } = await import("../useSignup");
 		const { result } = renderHookWithProviders(() => useSignup());

@@ -19,7 +19,7 @@ import { formatDistanceFromNow } from "../../utils/helpers";
 
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useDeleteBooking } from "./useDeleteBooking";
-import type { BookingWithSummary } from "../../types/domain";
+import type { BookingWithSummary, BookingStatus } from "../../types/domain";
 
 export interface BookingRowProps {
 	booking: BookingWithSummary;
@@ -81,7 +81,7 @@ function BookingRow({
 	const { checkout, isCheckingOut } = useCheckout();
 	const { deleteBooking, isDeleting } = useDeleteBooking();
 
-	const statusToTagName: Record<string, "blue" | "green" | "silver"> = {
+	const statusToTagName: Record<BookingStatus, "blue" | "green" | "silver"> = {
 		unconfirmed: "blue",
 		"checked-in": "green",
 		"checked-out": "silver",
@@ -109,7 +109,7 @@ function BookingRow({
 				</span>
 			</Stacked>
 
-			<Tag $type={statusToTagName[status]}>{status.replace("-", " ")}</Tag>
+			<Tag $type={statusToTagName[status as BookingStatus] || "blue"}>{status.replace("-", " ")}</Tag>
 
 			<Amount>{formatCurrency(totalPrice)}</Amount>
 

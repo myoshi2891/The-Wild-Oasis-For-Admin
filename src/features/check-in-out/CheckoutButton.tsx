@@ -2,7 +2,7 @@ import Button from "../../ui/Button";
 import { useCheckout } from "./useCheckout";
 
 interface CheckoutButtonProps {
-	bookingId: string | number;
+	bookingId: number;
 }
 
 function CheckoutButton({ bookingId }: CheckoutButtonProps) {
@@ -11,7 +11,7 @@ function CheckoutButton({ bookingId }: CheckoutButtonProps) {
 		<Button
 			variation="primary"
 			size="small"
-			onClick={() => checkout(Number(bookingId))}
+			onClick={() => checkout(bookingId)}
 			disabled={isCheckingOut}
 		>
 			Check out

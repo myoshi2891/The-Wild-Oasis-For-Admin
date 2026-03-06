@@ -1,9 +1,11 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * テスト共通ユーティリティ
  * QueryClient / MemoryRouter / styled-components をラップするヘルパー
  */
 
 import React, { type ReactNode } from "react";
+import type { User, Session } from "@supabase/supabase-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, type MemoryRouterProps } from "react-router-dom";
 import {
@@ -43,6 +45,35 @@ vi.mock("react-hot-toast", () => ({
 		error: (...args: unknown[]) => mockToast.error(...args),
 	},
 }));
+
+// ── Mock Factory ─────────────────────────────────────────────
+export function makeMockUser(overrides: Partial<User> = {}): User {
+	return {
+		id: "1",
+		app_metadata: {},
+		user_metadata: {},
+		aud: "authenticated",
+		created_at: "2023-01-01T00:00:00.000Z",
+		email: "test@test.com",
+		phone: "",
+		role: "authenticated",
+		updated_at: "2023-01-01T00:00:00.000Z",
+		identities: [],
+		factors: [],
+		...overrides,
+	} as User;
+}
+
+export function makeMockSession(user: User): Session {
+	return {
+		access_token: "mock-access-token",
+		refresh_token: "mock-refresh-token",
+		expires_in: 3600,
+		expires_at: 1000000000,
+		token_type: "bearer",
+		user,
+	};
+}
 
 // ── QueryClient factory ─────────────────────────────────────
 /**
@@ -98,14 +129,20 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 			<QueryClientProvider client={client}>
 				<DarkModeProvider>
 					<MemoryRouter {...routerProps}>
-						<Table columns="1fr">
-							<Menus>{children}</Menus>
-						</Table>
+						{children}
 					</MemoryRouter>
 				</DarkModeProvider>
 			</QueryClientProvider>
 		);
 	};
+}
+
+export function TableProviders({ children }: { children: ReactNode }) {
+	return (
+		<Table columns="1fr">
+			<Menus>{children}</Menus>
+		</Table>
+	);
 }
 
 // ── renderWithProviders ─────────────────────────────────────

@@ -53,6 +53,9 @@ describe("useSettings", () => {
 		});
 
 		expect(result.current.error).toBeDefined();
-		expect((result.current.error as Error).message).toBe("API Error");
+		expect(result.current.error).toBeInstanceOf(Error);
+		if (result.current.error instanceof Error) {
+			expect(result.current.error.message).toBe("API Error");
+		}
 	});
 });

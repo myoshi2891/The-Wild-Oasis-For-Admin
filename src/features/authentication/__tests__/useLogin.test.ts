@@ -5,12 +5,13 @@ import {
 	mockToast,
 	renderHookWithProviders,
 	createTestQueryClient,
+	makeMockUser,
+	makeMockSession,
 } from "../../../test/testUtils";
 
 vi.mock("../../../services/apiAuth");
 
 import { login as loginApi } from "../../../services/apiAuth";
-import type { User, Session } from "@supabase/supabase-js";
 const mockLoginApi = vi.mocked(loginApi);
 
 describe("useLogin", () => {
@@ -26,8 +27,11 @@ describe("useLogin", () => {
 	});
 
 	it("login 成功時に queryData をセットし /dashboard へ遷移する", async () => {
-		const mockUser: { user: Partial<User>; session: Partial<Session> } = { user: { id: "1", role: "authenticated" }, session: {} };
-		mockLoginApi.mockResolvedValue(mockUser as unknown as { user: User; session: Session });
+		const mockUser = {
+			user: makeMockUser(),
+			session: makeMockSession(makeMockUser()),
+		};
+		mockLoginApi.mockResolvedValue(mockUser);
 
 		const { useLogin } = await import("../useLogin");
 		const queryClient = createTestQueryClient();

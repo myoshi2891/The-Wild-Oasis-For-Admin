@@ -4,15 +4,26 @@ import Stats from "../Stats";
 import type { BookingAfterDate, StayAfterDate } from "../../../types/domain";
 
 describe("Stats", () => {
-	const bookings = [
-		{ id: 1, totalPrice: 250 },
-		{ id: 2, totalPrice: 300 },
-		{ id: 3, totalPrice: 450 },
-	] as unknown as BookingAfterDate[];
-	const confirmedStays = [
-		{ id: 1, numNights: 3, status: "checked-in" },
-		{ id: 2, numNights: 2, status: "checked-out" },
-	] as unknown as StayAfterDate[];
+	const bookings: BookingAfterDate[] = [
+		{ created_at: "2023-01-01", totalPrice: 250, extrasPrice: 0 },
+		{ created_at: "2023-01-02", totalPrice: 300, extrasPrice: 0 },
+		{ created_at: "2023-01-03", totalPrice: 450, extrasPrice: 0 },
+	];
+
+	function createMockStay(overrides: Partial<StayAfterDate>): StayAfterDate {
+		return {
+			id: 1, created_at: "2023-01-01", startDate: "2023-01-01", endDate: "2023-01-02",
+			numNights: 1, numGuests: 1, cabinPrice: 100, extrasPrice: 0, totalPrice: 100,
+			status: "unconfirmed", hasBreakfast: false, isPaid: false, observations: "",
+			cabinId: 1, guestId: 1, guests: { fullName: "Test" },
+			...overrides,
+		};
+	}
+
+	const confirmedStays: StayAfterDate[] = [
+		createMockStay({ id: 1, guestId: 101, status: "checked-in", numNights: 3, guests: { fullName: "Test Guest 1" } }),
+		createMockStay({ id: 2, guestId: 102, status: "checked-out", numNights: 2, guests: { fullName: "Test Guest 2" } }),
+	];
 	const numDays = 7;
 	const cabinCount = 8;
 

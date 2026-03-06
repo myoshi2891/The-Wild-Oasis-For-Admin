@@ -14,8 +14,8 @@ describe("useRecentBookings", () => {
 	});
 
 	it("デフォルトで直近7日のデータを取得する", async () => {
-		const mockBookings: Partial<BookingAfterDate>[] = [{ created_at: "2023-01-01", totalPrice: 500, extrasPrice: 0 }];
-		mockGetBookingsAfterDate.mockResolvedValue(mockBookings as BookingAfterDate[]);
+		const mockBookings: BookingAfterDate[] = [{ created_at: "2023-01-01", totalPrice: 500, extrasPrice: 0 }];
+		mockGetBookingsAfterDate.mockResolvedValue(mockBookings);
 
 		const now = Date.now();
 		const { useRecentBookings } = await import("../useRecentBookings");
@@ -41,8 +41,8 @@ describe("useRecentBookings", () => {
 	});
 
 	it("URL パラメータで日数を変更できる", async () => {
-		const mockBookings: Partial<BookingAfterDate>[] = [{ created_at: "2023-01-01", totalPrice: 500, extrasPrice: 0 }];
-		mockGetBookingsAfterDate.mockResolvedValue(mockBookings as BookingAfterDate[]);
+		const mockBookings: BookingAfterDate[] = [{ created_at: "2023-01-01", totalPrice: 500, extrasPrice: 0 }];
+		mockGetBookingsAfterDate.mockResolvedValue(mockBookings);
 
 		const now = Date.now();
 		const { useRecentBookings } = await import("../useRecentBookings");

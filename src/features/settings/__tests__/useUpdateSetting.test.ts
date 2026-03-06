@@ -9,7 +9,7 @@ import {
 vi.mock("../../../services/apiSettings");
 
 import { updateSetting as updateSettingApi } from "../../../services/apiSettings";
-import type { Settings } from "../../../types/domain";
+
 const mockUpdateSettingApi = vi.mocked(updateSettingApi);
 
 describe("useUpdateSetting", () => {
@@ -25,7 +25,7 @@ describe("useUpdateSetting", () => {
 			minBookingLength: 3,
 			maxBookingLength: 90,
 			maxGuestsPerBooking: 8,
-		} as Settings);
+		});
 
 		const { useUpdateSetting } = await import("../useUpdateSetting");
 		const queryClient = createTestQueryClient();

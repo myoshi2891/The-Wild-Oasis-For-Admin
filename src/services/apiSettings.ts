@@ -32,7 +32,7 @@ export async function updateSetting(
 ): Promise<Settings> {
 	const { data, error } = await supabase
 		.from("settings")
-		.update(newSetting as never)
+		.update(newSetting)
 		.select("*")
 		// There is only ONE row of settings, and it has the ID=1, and so this is the updated one
 		.eq("id", 1)

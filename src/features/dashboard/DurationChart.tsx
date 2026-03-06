@@ -35,7 +35,7 @@ const ChartBox = styled.div`
 	}
 `;
 
-const startDataLight = [
+const startDataLight: DurationBucket[] = [
 	{
 		duration: "1 night",
 		value: 0,

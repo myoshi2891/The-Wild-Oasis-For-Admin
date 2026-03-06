@@ -58,7 +58,12 @@ async function createBookings() {
     // Here relying on the order of cabins, as they don't have and ID yet
     const cabin = cabins.at(booking.cabinId - 1);
     const numNights = subtractDates(booking.endDate, booking.startDate);
-    const cabinPrice = cabin ? numNights * (cabin.regularPrice - cabin.discount) : 0;
+    let cabinPrice = 0;
+    if (cabin) {
+      cabinPrice = numNights * (cabin.regularPrice - cabin.discount);
+    } else {
+      console.warn(`Warning: cabin is falsy for booking (cabinId: ${booking.cabinId}, ${numNights} nights). Setting cabinPrice to 0.`);
+    }
     const extrasPrice = booking.hasBreakfast
       ? numNights * 15 * booking.numGuests
       : 0; // hardcoded breakfast price

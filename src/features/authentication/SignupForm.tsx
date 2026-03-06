@@ -7,12 +7,7 @@ import { useSignup } from "./useSignup";
 
 // Email regex: /\S+@\S+\.\S+/
 
-interface SignupFormData {
-	fullName: string;
-	email: string;
-	password: string;
-	passwordConfirm: string;
-}
+import type { SignupFormData } from "../../types/domain";
 
 function SignupForm() {
 	const { signup, isLoading } = useSignup();
