@@ -148,9 +148,9 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	};
 }
 
-export function TableProviders({ children }: { children: ReactNode }) {
+export function TableProviders({ children, columns = "1fr" }: { children: ReactNode; columns?: string }) {
 	return (
-		<Table columns="1fr">
+		<Table columns={columns}>
 			<Menus>{children}</Menus>
 		</Table>
 	);

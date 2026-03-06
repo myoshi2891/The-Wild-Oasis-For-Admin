@@ -54,6 +54,12 @@ async function createBookings() {
     .order("id");
   const allCabinIds = cabinsIds ? cabinsIds.map((cabin: { id: number }) => cabin.id) : [];
 
+  const { data: settingsData } = await supabase
+    .from("settings")
+    .select("breakfastPrice")
+    .single();
+  const breakfastPrice = settingsData?.breakfastPrice ?? 15;
+
   const finalBookings = bookings.flatMap((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
     const guestId = allGuestIds.at(booking.guestId - 1);
@@ -73,8 +79,8 @@ async function createBookings() {
       console.warn(`Warning: cabin is falsy for booking (cabinId: ${booking.cabinId}, ${numNights} nights). Setting cabinPrice to 0.`);
     }
     const extrasPrice = booking.hasBreakfast
-      ? numNights * 15 * booking.numGuests
-      : 0; // hardcoded breakfast price
+      ? numNights * breakfastPrice * booking.numGuests
+      : 0;
     const totalPrice = cabinPrice + extrasPrice;
 
     let status: "unconfirmed" | "checked-in" | "checked-out" = "unconfirmed";
