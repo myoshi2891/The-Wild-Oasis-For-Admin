@@ -1,5 +1,5 @@
 import supabase, { supabaseUrl } from "./supabase";
-import type { Cabin } from "../types/domain";
+import type { Cabin, CabinInsert, CabinUpdate } from "../types/domain";
 
 /**
  * Fetches all cabin records from the database.
@@ -59,16 +59,15 @@ export async function createEditCabin(
 		: `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
 
 	const query = supabase.from("cabins");
-	const payload = { ...newCabin, image: imagePath } as Record<
-		string,
-		unknown
-	>;
 
-	const builder = id
-		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-		  query.update(payload as never).eq("id", id)
-		: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-		  query.insert([payload as never]);
+	let builder;
+	if (id) {
+		const payload = { ...newCabin, image: imagePath } as CabinUpdate;
+		builder = query.update(payload).eq("id", id);
+	} else {
+		const payload = { ...newCabin, image: imagePath } as CabinInsert;
+		builder = query.insert([payload]);
+	}
 
 	const { data, error } = await builder.select().single();
 

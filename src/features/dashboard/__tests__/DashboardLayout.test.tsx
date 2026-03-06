@@ -44,7 +44,7 @@ vi.mock("../../check-in-out/useCheckout", () => ({
 
 vi.mock("../../../context/DarkModeContext", () => ({
 	useDarkMode: () => ({ isDarkMode: false }),
-	DarkModeProvider: ({ children }: any) => <>{children}</>,
+	DarkModeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import DashboardLayout from "../DashboardLayout";

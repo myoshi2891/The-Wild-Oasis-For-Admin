@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { waitFor } from "@testing-library/react";
 import { renderHookWithProviders } from "../../../test/testUtils";
+import type { Cabin } from "../../../types/domain";
 
 vi.mock("../../../services/apiCabins");
 
@@ -16,7 +17,7 @@ describe("useCabins", () => {
 		const mockCabins = [
 			{ id: 1, name: "Cabin 001" },
 			{ id: 2, name: "Cabin 002" },
-		] as any;
+		] as unknown as Cabin[];
 		mockGetCabins.mockResolvedValue(mockCabins);
 
 		const { useCabins } = await import("../useCabins");

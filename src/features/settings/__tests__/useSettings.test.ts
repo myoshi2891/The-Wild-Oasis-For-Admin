@@ -19,8 +19,9 @@ describe("useSettings", () => {
 			maxBookingLength: 90,
 			maxGuestsPerBooking: 8,
 			breakfastPrice: 15,
+			created_at: "2023-01-01T00:00:00.000Z",
 		};
-		mockGetSettings.mockResolvedValue(mockSettings as any);
+		mockGetSettings.mockResolvedValue(mockSettings);
 
 		const { useSettings } = await import("../useSettings");
 		const { result } = renderHookWithProviders(() => useSettings());

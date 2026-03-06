@@ -17,11 +17,27 @@ export interface Database {
 					description: string;
 					image: string;
 				};
-				Insert: Omit<Database["public"]["Tables"]["cabins"]["Row"], "id" | "created_at"> & {
+				Insert: {
 					id?: number;
 					created_at?: string;
+					name: string;
+					maxCapacity: number;
+					regularPrice: number;
+					discount: number;
+					description: string;
+					image: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["cabins"]["Insert"]>;
+				Update: {
+					id?: number;
+					created_at?: string;
+					name?: string;
+					maxCapacity?: number;
+					regularPrice?: number;
+					discount?: number;
+					description?: string;
+					image?: string;
+				};
+				Relationships: [];
 			};
 			bookings: {
 				Row: {
@@ -41,11 +57,41 @@ export interface Database {
 					cabinId: number;
 					guestId: number;
 				};
-				Insert: Omit<Database["public"]["Tables"]["bookings"]["Row"], "id" | "created_at"> & {
+				Insert: {
 					id?: number;
 					created_at?: string;
+					startDate: string;
+					endDate: string;
+					numNights: number;
+					numGuests: number;
+					cabinPrice: number;
+					extrasPrice: number;
+					totalPrice: number;
+					status: "unconfirmed" | "checked-in" | "checked-out";
+					hasBreakfast: boolean;
+					isPaid: boolean;
+					observations: string;
+					cabinId: number;
+					guestId: number;
 				};
-				Update: Partial<Database["public"]["Tables"]["bookings"]["Insert"]>;
+				Update: {
+					id?: number;
+					created_at?: string;
+					startDate?: string;
+					endDate?: string;
+					numNights?: number;
+					numGuests?: number;
+					cabinPrice?: number;
+					extrasPrice?: number;
+					totalPrice?: number;
+					status?: "unconfirmed" | "checked-in" | "checked-out";
+					hasBreakfast?: boolean;
+					isPaid?: boolean;
+					observations?: string;
+					cabinId?: number;
+					guestId?: number;
+				};
+				Relationships: [];
 			};
 			guests: {
 				Row: {
@@ -57,11 +103,25 @@ export interface Database {
 					nationalID: string;
 					countryFlag: string;
 				};
-				Insert: Omit<Database["public"]["Tables"]["guests"]["Row"], "id" | "created_at"> & {
+				Insert: {
 					id?: number;
 					created_at?: string;
+					fullName: string;
+					email: string;
+					nationality: string;
+					nationalID: string;
+					countryFlag: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["guests"]["Insert"]>;
+				Update: {
+					id?: number;
+					created_at?: string;
+					fullName?: string;
+					email?: string;
+					nationality?: string;
+					nationalID?: string;
+					countryFlag?: string;
+				};
+				Relationships: [];
 			};
 			settings: {
 				Row: {
@@ -72,12 +132,36 @@ export interface Database {
 					maxGuestsPerBooking: number;
 					breakfastPrice: number;
 				};
-				Insert: Omit<Database["public"]["Tables"]["settings"]["Row"], "id" | "created_at"> & {
+				Insert: {
 					id?: number;
 					created_at?: string;
+					minBookingLength: number;
+					maxBookingLength: number;
+					maxGuestsPerBooking: number;
+					breakfastPrice: number;
 				};
-				Update: Partial<Database["public"]["Tables"]["settings"]["Insert"]>;
+				Update: {
+					id?: number;
+					created_at?: string;
+					minBookingLength?: number;
+					maxBookingLength?: number;
+					maxGuestsPerBooking?: number;
+					breakfastPrice?: number;
+				};
+				Relationships: [];
 			};
+		};
+		Views: {
+			[_ in never]: never;
+		};
+		Functions: {
+			[_ in never]: never;
+		};
+		Enums: {
+			[_ in never]: never;
+		};
+		CompositeTypes: {
+			[_ in never]: never;
 		};
 	};
 }

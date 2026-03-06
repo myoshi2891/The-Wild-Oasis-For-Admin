@@ -21,6 +21,10 @@ describe("useUpdateSetting", () => {
 		mockUpdateSettingApi.mockResolvedValue({
 			id: 1,
 			breakfastPrice: 20,
+			created_at: "2023-01-01",
+			minBookingLength: 3,
+			maxBookingLength: 90,
+			maxGuestsPerBooking: 8,
 		} as Settings);
 
 		const { useUpdateSetting } = await import("../useUpdateSetting");

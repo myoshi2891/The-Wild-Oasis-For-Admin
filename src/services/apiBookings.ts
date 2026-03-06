@@ -186,8 +186,7 @@ export async function updateBooking(
 ): Promise<Booking> {
 	const { data, error } = await supabase
 		.from("bookings")
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		.update(obj as never)
+		.update(obj)
 		.eq("id", id)
 		.select()
 		.single();
