@@ -6,6 +6,7 @@
 
 import React, { type ReactNode } from "react";
 import type { User, Session } from "@supabase/supabase-js";
+import type { StayAfterDate } from "../types/domain";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, type MemoryRouterProps } from "react-router-dom";
 import {
@@ -72,6 +73,16 @@ export function makeMockSession(user: User): Session {
 		expires_at: 1000000000,
 		token_type: "bearer",
 		user,
+	};
+}
+
+export function createMockStay(overrides: Partial<StayAfterDate>): StayAfterDate {
+	return {
+		id: 1, created_at: "2023-01-01", startDate: "2023-01-01", endDate: "2023-01-02",
+		numNights: 1, numGuests: 1, cabinPrice: 100, extrasPrice: 0, totalPrice: 100,
+		status: "unconfirmed", hasBreakfast: false, isPaid: false, observations: "",
+		cabinId: 1, guestId: 1, guests: { fullName: "Test" },
+		...overrides,
 	};
 }
 

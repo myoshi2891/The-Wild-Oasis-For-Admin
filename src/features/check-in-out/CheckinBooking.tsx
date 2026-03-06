@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import BookingDataBox from "../../features/bookings/BookingDataBox";
+import Empty from "../../ui/Empty";
 
 import Row from "../../ui/Row";
 import Heading from "../../ui/Heading";
@@ -41,7 +42,7 @@ function CheckinBooking() {
 	const { checkin, isCheckingIn } = useCheckin();
 
 	if (isLoading || isLoadingSettings) return <Spinner />;
-	if (!booking || !settings) return null;
+	if (!booking || !settings) return <Empty resourceName="booking or settings data" />;
 
 	const {
 		id: bookingId,

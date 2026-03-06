@@ -56,6 +56,13 @@ async function createBookings() {
 
   const finalBookings = bookings.map((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
+    const guestId = allGuestIds.at(booking.guestId - 1);
+    const cabinId = allCabinIds.at(booking.cabinId - 1);
+
+    if (guestId === undefined || cabinId === undefined) {
+      console.warn(`Warning: Missing guest or cabin ID. (guest lookup index: ${booking.guestId - 1}, cabin lookup index: ${booking.cabinId - 1})`);
+    }
+
     const cabin = cabins.at(booking.cabinId - 1);
     const numNights = subtractDates(booking.endDate, booking.startDate);
     let cabinPrice = 0;
@@ -94,8 +101,8 @@ async function createBookings() {
       cabinPrice,
       extrasPrice,
       totalPrice,
-      guestId: allGuestIds.at(booking.guestId - 1),
-      cabinId: allCabinIds.at(booking.cabinId - 1),
+      guestId: guestId ?? null,
+      cabinId: cabinId ?? null,
       status,
     };
   });

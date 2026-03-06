@@ -16,14 +16,14 @@ export interface StatsProps {
 }
 
 function Stats({ bookings, confirmedStays, numDays, cabinCount }: StatsProps) {
-	const numBookings = bookings?.length ?? 0;
+	const numBookings = bookings.length;
 
-	const sales = bookings?.reduce((acc, cur) => acc + cur.totalPrice, 0) ?? 0;
+	const sales = bookings.reduce((acc, cur) => acc + cur.totalPrice, 0);
 
-	const checkins = confirmedStays?.length ?? 0;
+	const checkins = confirmedStays.length;
 
 	const occupation =
-		(confirmedStays?.reduce((acc, cur) => acc + cur.numNights, 0) ?? 0) /
+		confirmedStays.reduce((acc, cur) => acc + cur.numNights, 0) /
 		(numDays * Math.max(cabinCount, 1));
 
 	return (

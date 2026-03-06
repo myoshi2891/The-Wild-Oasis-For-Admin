@@ -27,9 +27,10 @@ describe("useLogin", () => {
 	});
 
 	it("login 成功時に queryData をセットし /dashboard へ遷移する", async () => {
+		const testUser = makeMockUser();
 		const mockUser = {
-			user: makeMockUser(),
-			session: makeMockSession(makeMockUser()),
+			user: testUser,
+			session: makeMockSession(testUser),
 		};
 		mockLoginApi.mockResolvedValue(mockUser);
 

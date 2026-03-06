@@ -49,6 +49,7 @@ describe("BookingDataBox", () => {
 		expect(screen.getByText(/3 nights/i)).toBeInTheDocument();
 		expect(screen.getByText(/John Doe/)).toBeInTheDocument();
 		expect(screen.getByText("john@example.com")).toBeInTheDocument();
+		expect(screen.getByAltText(/flag.*United States/i)).toBeInTheDocument();
 	});
 
 	it("朝食ありの場合 'Yes' を表示する", () => {

@@ -45,3 +45,12 @@ export const formatCurrency = (value: number): string =>
 		style: "currency",
 		currency: "USD",
 	}).format(value);
+
+export function getTagType(status: string): "blue" | "green" | "silver" {
+	const mapping: Record<string, "blue" | "green" | "silver"> = {
+		unconfirmed: "blue",
+		"checked-in": "green",
+		"checked-out": "silver",
+	};
+	return mapping[status] || "blue";
+}

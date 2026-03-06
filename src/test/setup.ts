@@ -1,5 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 
+import { afterEach } from "vitest";
+
 // matchMedia polyfill for jsdom (styled-components / DarkMode tests)
 Object.defineProperty(window, "matchMedia", {
 	writable: true,
@@ -21,3 +23,8 @@ global.ResizeObserver = class {
 	unobserve() {}
 	disconnect() {}
 };
+
+// Clear localStorage between test scopes
+afterEach(() => {
+	localStorage.clear();
+});

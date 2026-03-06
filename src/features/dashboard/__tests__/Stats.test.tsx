@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Stats from "../Stats";
+import { createMockStay } from "../../../test/testUtils";
 import type { BookingAfterDate, StayAfterDate } from "../../../types/domain";
 
 describe("Stats", () => {
@@ -9,16 +10,6 @@ describe("Stats", () => {
 		{ created_at: "2023-01-02", totalPrice: 300, extrasPrice: 0 },
 		{ created_at: "2023-01-03", totalPrice: 450, extrasPrice: 0 },
 	];
-
-	function createMockStay(overrides: Partial<StayAfterDate>): StayAfterDate {
-		return {
-			id: 1, created_at: "2023-01-01", startDate: "2023-01-01", endDate: "2023-01-02",
-			numNights: 1, numGuests: 1, cabinPrice: 100, extrasPrice: 0, totalPrice: 100,
-			status: "unconfirmed", hasBreakfast: false, isPaid: false, observations: "",
-			cabinId: 1, guestId: 1, guests: { fullName: "Test" },
-			...overrides,
-		};
-	}
 
 	const confirmedStays: StayAfterDate[] = [
 		createMockStay({ id: 1, guestId: 101, status: "checked-in", numNights: 3, guests: { fullName: "Test Guest 1" } }),

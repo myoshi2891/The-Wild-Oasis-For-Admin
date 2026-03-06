@@ -11,7 +11,6 @@ import Empty from "../../ui/Empty";
 
 import { useMoveBack } from "../../hooks/useMoveBack";
 import { useBooking } from "./useBooking";
-import type { BookingStatus } from "../../types/domain";
 import Spinner from "../../ui/Spinner";
 import { useNavigate } from "react-router-dom";
 import { HiArrowUpOnSquare } from "react-icons/hi2";
@@ -19,11 +18,18 @@ import { useCheckout } from "../check-in-out/useCheckout";
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 import { useDeleteBooking } from "./useDeleteBooking";
+import { getTagType } from "../../utils/helpers";
 
 const HeadingGroup = styled.div`
 	display: flex;
 	gap: 2.4rem;
 	align-items: center;
+`;
+
+const ActionContent = styled.span`
+	display: inline-flex;
+	align-items: center;
+	gap: 0.8rem;
 `;
 
 /**
@@ -39,7 +45,6 @@ function BookingDetail() {
 	const { booking, isLoading } = useBooking();
 	const { checkout, isCheckingOut } = useCheckout();
 	const { deleteBooking, isDeleting } = useDeleteBooking();
-
 	const moveBack = useMoveBack();
 	const navigate = useNavigate();
 
@@ -48,18 +53,12 @@ function BookingDetail() {
 
 	const { status, id: bookingId } = booking;
 
-	const statusToTagName: Record<BookingStatus, "blue" | "green" | "silver"> = {
-		unconfirmed: "blue",
-		"checked-in": "green",
-		"checked-out": "silver",
-	};
-
 	return (
 		<>
 			<Row $type="horizontal">
 				<HeadingGroup>
 					<Heading as="h1">Booking #{bookingId}</Heading>
-					<Tag $type={statusToTagName[status as BookingStatus] || "blue"}>
+					<Tag $type={getTagType(status)}>
 						{status.replace("-", " ")}
 					</Tag>
 				</HeadingGroup>
@@ -80,8 +79,10 @@ function BookingDetail() {
 						onClick={() => checkout(bookingId)}
 						disabled={isCheckingOut}
 					>
-						<HiArrowUpOnSquare />
-						<span>Check out</span>
+						<ActionContent>
+							<HiArrowUpOnSquare />
+							<span>Check out</span>
+						</ActionContent>
 					</Button>
 				)}
 

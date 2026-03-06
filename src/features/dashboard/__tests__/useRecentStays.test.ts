@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { waitFor } from "@testing-library/react";
-import { renderHookWithProviders } from "../../../test/testUtils";
+import { renderHookWithProviders, createMockStay } from "../../../test/testUtils";
 
 vi.mock("../../../services/apiBookings");
 
@@ -12,16 +12,6 @@ describe("useRecentStays", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
-
-	function createMockStay(overrides: Partial<StayAfterDate>): StayAfterDate {
-		return {
-			id: 1, created_at: "2023-01-01", startDate: "2023-01-01", endDate: "2023-01-02",
-			numNights: 1, numGuests: 1, cabinPrice: 100, extrasPrice: 0, totalPrice: 100,
-			status: "unconfirmed", hasBreakfast: false, isPaid: false, observations: "",
-			cabinId: 1, guestId: 1, guests: { fullName: "Test" },
-			...overrides,
-		};
-	}
 
 	it("デフォルトで直近7日の滞在データを取得する", async () => {
 		const mockStays: StayAfterDate[] = [

@@ -14,12 +14,11 @@ import Menus from "../../ui/Menus";
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 
-import { formatCurrency } from "../../utils/helpers";
-import { formatDistanceFromNow } from "../../utils/helpers";
+import { formatCurrency, formatDistanceFromNow, getTagType } from "../../utils/helpers";
 
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useDeleteBooking } from "./useDeleteBooking";
-import type { BookingWithSummary, BookingStatus } from "../../types/domain";
+import type { BookingWithSummary } from "../../types/domain";
 
 export interface BookingRowProps {
 	booking: BookingWithSummary;
@@ -81,12 +80,6 @@ function BookingRow({
 	const { checkout, isCheckingOut } = useCheckout();
 	const { deleteBooking, isDeleting } = useDeleteBooking();
 
-	const statusToTagName: Record<BookingStatus, "blue" | "green" | "silver"> = {
-		unconfirmed: "blue",
-		"checked-in": "green",
-		"checked-out": "silver",
-	};
-
 	return (
 		<Table.Row>
 			<Cabin>{cabinName}</Cabin>
@@ -109,7 +102,7 @@ function BookingRow({
 				</span>
 			</Stacked>
 
-			<Tag $type={statusToTagName[status as BookingStatus] || "blue"}>{status.replace("-", " ")}</Tag>
+			<Tag $type={getTagType(status)}>{status.replace("-", " ")}</Tag>
 
 			<Amount>{formatCurrency(totalPrice)}</Amount>
 
