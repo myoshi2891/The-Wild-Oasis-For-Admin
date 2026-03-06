@@ -5,6 +5,7 @@ import { renderWithProviders } from "../../../test/testUtils";
 
 vi.mock("../../../context/DarkModeContext", () => ({
 	useDarkMode: () => ({ isDarkMode: false }),
+	DarkModeProvider: ({ children }: any) => <>{children}</>,
 }));
 
 import SalesChart from "../SalesChart";

@@ -19,6 +19,7 @@ vi.mock("../useDeleteBooking", () => ({
 import BookingRow from "../BookingRow";
 import Table from "../../../ui/Table";
 import Menus from "../../../ui/Menus";
+import type { BookingWithSummary } from "../../../types/domain";
 
 function renderBookingRow(status = "unconfirmed") {
 	const booking = {
@@ -30,7 +31,7 @@ function renderBookingRow(status = "unconfirmed") {
 		status,
 		guests: { fullName: "John Doe", email: "john@example.com" },
 		cabins: { name: "Cabin 001" },
-	};
+	} as unknown as BookingWithSummary;
 
 	return renderWithProviders(
 		<Menus>

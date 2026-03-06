@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import BookingDataBox from "../BookingDataBox";
+import type { BookingWithDetails } from "../../../types/domain";
 
 const mockBooking = {
 	created_at: "2025-01-15T10:00:00Z",
@@ -23,7 +24,7 @@ const mockBooking = {
 		nationalID: "123456789",
 	},
 	cabins: { name: "Cabin 001" },
-};
+} as unknown as BookingWithDetails;
 
 describe("BookingDataBox", () => {
 	it("予約の基本情報を表示する", () => {

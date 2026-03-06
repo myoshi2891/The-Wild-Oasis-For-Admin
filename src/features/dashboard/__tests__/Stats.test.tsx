@@ -1,17 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Stats from "../Stats";
+import type { BookingAfterDate, StayAfterDate } from "../../../types/domain";
 
 describe("Stats", () => {
 	const bookings = [
 		{ id: 1, totalPrice: 250 },
 		{ id: 2, totalPrice: 300 },
 		{ id: 3, totalPrice: 450 },
-	];
+	] as unknown as BookingAfterDate[];
 	const confirmedStays = [
 		{ id: 1, numNights: 3, status: "checked-in" },
 		{ id: 2, numNights: 2, status: "checked-out" },
-	];
+	] as unknown as StayAfterDate[];
 	const numDays = 7;
 	const cabinCount = 8;
 
