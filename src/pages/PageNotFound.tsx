@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 import { useMoveBack } from "../hooks/useMoveBack";
 import Heading from "../ui/Heading";
+import Button from "../ui/Button";
 
 const StyledPageNotFound = styled.main`
   height: 100vh;
@@ -27,6 +28,11 @@ const Box = styled.div`
   }
 `;
 
+/**
+ * Render a centered "page not found" view with a prominent heading and a back button.
+ *
+ * @returns A React element that displays a not-found message and a "Go back" button which navigates back when clicked.
+ */
 function PageNotFound() {
   const moveBack = useMoveBack();
 
@@ -36,9 +42,9 @@ function PageNotFound() {
         <Heading as="h1">
           The page you are looking for could not be found 😢
         </Heading>
-        <button onClick={moveBack} size="large">
+        <Button onClick={moveBack} size="large">
           &larr; Go back
-        </button>
+        </Button>
       </Box>
     </StyledPageNotFound>
   );

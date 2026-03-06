@@ -7,34 +7,45 @@ import { useSignup } from "./useSignup";
 
 // Email regex: /\S+@\S+\.\S+/
 
+import type { SignupFormData } from "../../types/domain";
+
+/**
+ * Render a signup form with client-side validation and submission handling.
+ *
+ * The form includes inputs for full name, email, password, and password confirmation,
+ * validates each field (required, email pattern, password minimum length, matching passwords),
+ * disables inputs while a signup request is in progress, and resets on successful signup.
+ *
+ * @returns A `JSX.Element` containing the signup form with submit and reset actions.
+ */
 function SignupForm() {
 	const { signup, isLoading } = useSignup();
-	const { register, formState, getValues, handleSubmit, reset } = useForm();
+	const { register, formState, getValues, handleSubmit, reset } = useForm<SignupFormData>();
 	const { errors } = formState;
 
-	function onSubmit({ fullName, email, password }) {
+	function onSubmit({ fullName, email, password, passwordConfirm }: SignupFormData) {
 		signup(
-			{ fullName, email, password },
+			{ fullName, email, password, passwordConfirm },
 			{
-				onSettled: () => reset(),
+				onSuccess: () => reset(),
 			}
 		);
 	}
 
 	return (
 		<Form onSubmit={handleSubmit(onSubmit)}>
-			<FormRow label="Full name" error={errors?.fullName?.message}>
+			<FormRow label="Full name" error={errors?.fullName?.message as string}>
 				<Input
 					type="text"
 					id="fullName"
 					disabled={isLoading}
-					{...register("fullname", {
+					{...register("fullName", {
 						required: "This field is required",
 					})}
 				/>
 			</FormRow>
 
-			<FormRow label="Email address" error={errors?.email?.message}>
+			<FormRow label="Email address" error={errors?.email?.message as string}>
 				<Input
 					type="email"
 					id="email"
@@ -51,7 +62,7 @@ function SignupForm() {
 
 			<FormRow
 				label="Password (min 8 characters)"
-				error={errors?.password?.message}
+				error={errors?.password?.message as string}
 			>
 				<Input
 					type="password"
@@ -69,7 +80,7 @@ function SignupForm() {
 
 			<FormRow
 				label="Repeat password"
-				error={errors?.passwordConfirm?.message}
+				error={errors?.passwordConfirm?.message as string}
 			>
 				<Input
 					type="password"
@@ -90,7 +101,7 @@ function SignupForm() {
 					variation="secondary"
 					type="reset"
 					disabled={isLoading}
-					onClick={reset}
+					onClick={() => reset()}
 				>
 					Cancel
 				</Button>

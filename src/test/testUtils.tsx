@@ -1,9 +1,12 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * テスト共通ユーティリティ
  * QueryClient / MemoryRouter / styled-components をラップするヘルパー
  */
 
 import React, { type ReactNode } from "react";
+import type { User, Session } from "@supabase/supabase-js";
+import type { StayAfterDate } from "../types/domain";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, type MemoryRouterProps } from "react-router-dom";
 import {
@@ -15,6 +18,10 @@ import {
 	type RenderResult,
 } from "@testing-library/react";
 import { vi } from "vitest";
+
+import { DarkModeProvider } from "../context/DarkModeContext";
+import Table from "../ui/Table";
+import Menus from "../ui/Menus";
 
 // ── Mock: react-router-dom navigate ─────────────────────────
 export const mockNavigate = vi.fn();
@@ -39,6 +46,62 @@ vi.mock("react-hot-toast", () => ({
 		error: (...args: unknown[]) => mockToast.error(...args),
 	},
 }));
+
+/**
+ * Create a mock User object with sensible default fields for tests.
+ *
+ * @param overrides - Partial fields to merge into the default mock user
+ * @returns A `User` object composed of the defaults with any `overrides` applied
+ */
+export function makeMockUser(overrides: Partial<User> = {}): User {
+	const base: User = {
+		id: "1",
+		app_metadata: {},
+		user_metadata: {},
+		aud: "authenticated",
+		created_at: "2023-01-01T00:00:00.000Z",
+		email: "test@test.com",
+		phone: "",
+		role: "authenticated",
+		updated_at: "2023-01-01T00:00:00.000Z",
+		identities: [],
+		factors: [],
+	};
+	return { ...base, ...overrides };
+}
+
+/**
+ * Create a mock Session object linked to the given User.
+ *
+ * @param user - The User to include on the returned Session
+ * @returns A Session containing mock access and refresh tokens, `expires_in` and `expires_at` values, `token_type: "bearer"`, and the provided `user`
+ */
+export function makeMockSession(user: User): Session {
+	return {
+		access_token: "mock-access-token",
+		refresh_token: "mock-refresh-token",
+		expires_in: 3600,
+		expires_at: 1000000000,
+		token_type: "bearer",
+		user,
+	};
+}
+
+/**
+ * Builds a StayAfterDate object populated with sensible default values for tests.
+ *
+ * @param overrides - Partial fields to override the defaults in the returned StayAfterDate
+ * @returns A StayAfterDate object with the defaults applied and any `overrides` values replacing them
+ */
+export function createMockStay(overrides: Partial<StayAfterDate>): StayAfterDate {
+	return {
+		id: 1, created_at: "2023-01-01", startDate: "2023-01-01", endDate: "2023-01-02",
+		numNights: 1, numGuests: 1, cabinPrice: 100, extrasPrice: 0, totalPrice: 100,
+		status: "unconfirmed", hasBreakfast: false, isPaid: false, observations: "",
+		cabinId: 1, guestId: 1, guests: { fullName: "Test" },
+		...overrides,
+	};
+}
 
 // ── QueryClient factory ─────────────────────────────────────
 /**
@@ -79,12 +142,12 @@ interface WrapperOptions {
 }
 
 /**
- * Create a React wrapper component that provides a QueryClient and MemoryRouter to its children for testing.
+ * Create a React wrapper that provides QueryClient, DarkMode, and MemoryRouter to children for testing.
  *
  * @param options - Optional configuration for the wrapper
- * @param options.queryClient - QueryClient instance to use; if omitted a new test QueryClient is created
+ * @param options.queryClient - QueryClient instance to use; when omitted a test QueryClient is created
  * @param options.routerProps - Props forwarded to the MemoryRouter
- * @returns A React component that wraps its children with a QueryClientProvider (using the provided or created client) and a MemoryRouter (using the provided router props)
+ * @returns A React component that wraps its children with QueryClientProvider, DarkModeProvider, and MemoryRouter
  */
 function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	const client = queryClient ?? createTestQueryClient();
@@ -92,10 +155,28 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	return function TestWrapper({ children }: { children: ReactNode }) {
 		return (
 			<QueryClientProvider client={client}>
-				<MemoryRouter {...routerProps}>{children}</MemoryRouter>
+				<DarkModeProvider>
+					<MemoryRouter {...routerProps}>
+						{children}
+					</MemoryRouter>
+				</DarkModeProvider>
 			</QueryClientProvider>
 		);
 	};
+}
+
+/**
+ * Render children inside a single-column Table with Menus wrapped around them.
+ *
+ * @param children - Elements to render inside the Menus (typically table cell/row content)
+ * @returns A React element: a `Table` with one column whose content is the provided `children` wrapped by `Menus`
+ */
+export function TableProviders({ children }: { children: ReactNode }) {
+	return (
+		<Table columns="1fr">
+			<Menus>{children}</Menus>
+		</Table>
+	);
 }
 
 // ── renderWithProviders ─────────────────────────────────────

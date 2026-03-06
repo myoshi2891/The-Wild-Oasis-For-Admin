@@ -12,6 +12,12 @@ import {
 	ResponsiveContainer,
 } from "recharts";
 import { eachDayOfInterval, format, isSameDay, subDays } from "date-fns";
+import type { BookingAfterDate } from "../../types/domain";
+
+export interface SalesChartProps {
+	bookings: BookingAfterDate[];
+	numDays: number;
+}
 
 const StyledSalesChart = styled(DashboardBox)`
 	grid-column: 1 / -1;
@@ -23,7 +29,17 @@ const StyledSalesChart = styled(DashboardBox)`
 	}
 `;
 
-function SalesChart({ bookings, numDays }) {
+/**
+ * Render an area chart showing daily total and extras sales for the trailing `numDays` period.
+ *
+ * The component aggregates bookings by their `created_at` date to produce daily `totalSales` and
+ * `extrasSales`, formats dates for the x-axis labels, and adapts colors for dark or light mode.
+ *
+ * @param bookings - Array of bookings used to compute per-day sales; each booking's `created_at`, `totalPrice`, and `extrasPrice` are used.
+ * @param numDays - Number of days to include in the chart, ending with today.
+ * @returns A React element containing a responsive area chart that visualizes daily total and extras sales for the specified date range.
+ */
+function SalesChart({ bookings, numDays }: SalesChartProps) {
 	const { isDarkMode } = useDarkMode();
 
 	const allDates = eachDayOfInterval({
@@ -35,12 +51,12 @@ function SalesChart({ bookings, numDays }) {
 		return {
 			label: format(date, "MMM dd"),
 			totalSales: bookings
-				?.filter((booking) =>
+				.filter((booking) =>
 					isSameDay(date, new Date(booking.created_at))
 				)
 				.reduce((acc, cur) => acc + cur.totalPrice, 0),
 			extrasSales: bookings
-				?.filter((booking) =>
+				.filter((booking) =>
 					isSameDay(date, new Date(booking.created_at))
 				)
 				.reduce((acc, cur) => acc + cur.extrasPrice, 0),
@@ -64,8 +80,8 @@ function SalesChart({ bookings, numDays }) {
 	return (
 		<StyledSalesChart>
 			<Heading as="h2">
-				Sales from {format(allDates.at(0), "MMM dd yyyy")} &mdash;{" "}
-				{format(allDates.at(-1), "MMM dd yyyy")}
+				Sales from {format(allDates[0], "MMM dd yyyy")} &mdash;{" "}
+				{format(allDates[allDates.length - 1], "MMM dd yyyy")}
 			</Heading>
 			<ResponsiveContainer height={300} width="100%">
 				<AreaChart data={data}>

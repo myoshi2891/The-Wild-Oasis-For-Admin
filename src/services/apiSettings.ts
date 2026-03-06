@@ -21,9 +21,9 @@ export async function getSettings(): Promise<Settings> {
 }
 
 /**
- * Update the single settings row in the database.
+ * Updates the single settings row in the database.
  *
- * @param newSetting - An object with the setting fields to update.
+ * @param newSetting - Fields to update on the settings row.
  * @returns The updated `Settings` object.
  * @throws Error if the settings row cannot be updated.
  */
@@ -32,8 +32,7 @@ export async function updateSetting(
 ): Promise<Settings> {
 	const { data, error } = await supabase
 		.from("settings")
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		.update(newSetting as any)
+		.update(newSetting)
 		.select("*")
 		// There is only ONE row of settings, and it has the ID=1, and so this is the updated one
 		.eq("id", 1)

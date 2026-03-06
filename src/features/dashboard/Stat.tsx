@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import styled from "styled-components";
 
 const StyledStat = styled.div`
@@ -47,7 +48,24 @@ const Value = styled.p`
   font-weight: 500;
 `;
 
-function Stat({ icon, title, value, color }) {
+
+export interface StatProps {
+  icon: ReactNode;
+  title: string;
+  value: string | number;
+  color: string;
+}
+
+/**
+ * Renders a compact statistic card showing an icon, an uppercase title, and a value.
+ *
+ * @param icon - Visual element displayed inside a circular, colored background
+ * @param title - Short label shown above the value (displayed uppercase)
+ * @param value - Numeric or textual value shown prominently
+ * @param color - Base color name used to style the icon background and icon tint (e.g., `"blue"`)
+ * @returns A React element containing the styled stat card
+ */
+function Stat({ icon, title, value, color }: StatProps) {
   return (
     <StyledStat>
       <Icon color={color}>{icon}</Icon>

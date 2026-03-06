@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
@@ -6,21 +7,34 @@ import Input from "../../ui/Input";
 
 import { useUpdateUser } from "./useUpdateUser";
 
+interface UpdatePasswordFormValues {
+  password: string;
+  passwordConfirm: string;
+}
+
+/**
+ * Renders a password update form with client-side validation and submission handling.
+ *
+ * The form validates a new password (minimum 8 characters) and a matching confirmation field,
+ * submits the updated password via the user-update hook, and resets the form on successful update.
+ *
+ * @returns The rendered form component for updating a user's password.
+ */
 function UpdatePasswordForm() {
-  const { register, handleSubmit, formState, getValues, reset } = useForm();
+  const { register, handleSubmit, formState, getValues, reset } = useForm<UpdatePasswordFormValues>();
   const { errors } = formState;
 
   const { updateUser, isUpdating } = useUpdateUser();
 
-  function onSubmit({ password }) {
-    updateUser({ password }, { onSuccess: reset });
-  }
+  const onSubmit: SubmitHandler<UpdatePasswordFormValues> = ({ password }) => {
+    updateUser({ password }, { onSuccess: () => reset() });
+  };
 
   return (
 		<Form onSubmit={handleSubmit(onSubmit)}>
 			<FormRow
 				label="New Password (min 8 chars)"
-				error={errors?.password?.message}
+				error={errors?.password?.message as string}
 			>
 				<Input
 					type="password"
@@ -39,7 +53,7 @@ function UpdatePasswordForm() {
 
 			<FormRow
 				label="Confirm password"
-				error={errors?.passwordConfirm?.message}
+				error={errors?.passwordConfirm?.message as string}
 			>
 				<Input
 					type="password"
@@ -55,7 +69,7 @@ function UpdatePasswordForm() {
 				/>
 			</FormRow>
 			<FormRow>
-				<Button onClick={reset} type="reset" variation="secondary">
+				<Button onClick={() => reset()} type="reset" variation="secondary" disabled={isUpdating}>
 					Cancel
 				</Button>
 				<Button disabled={isUpdating}>Update password</Button>

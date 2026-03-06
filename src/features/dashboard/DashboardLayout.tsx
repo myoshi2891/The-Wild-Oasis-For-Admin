@@ -15,24 +15,29 @@ const StyledDashboardLayout = styled.div`
 	gap: 2.4rem;
 `;
 
+/**
+ * Render the dashboard grid containing statistics, today's activity, and charts; displays a spinner while required data is loading.
+ *
+ * @returns The dashboard JSX element: a styled grid with Stats, TodayActivity, DurationChart, and SalesChart, or a Spinner when bookings, stays, or cabins are loading.
+ */
 function DashboardLayout() {
-	const { bookings, isLoading1 } = useRecentBookings();
-	const { confirmedStays, isLoading: isLoading2, numDays } = useRecentStays();
-	const { cabins, isLoading: isLoading3 } = useCabins();
+	const { bookings, isLoading: isLoadingBookings } = useRecentBookings();
+	const { confirmedStays, isLoading: isLoadingStays, numDays } = useRecentStays();
+	const { cabins, isLoading: isLoadingCabins } = useCabins();
 
-	if (isLoading1 || isLoading2 || isLoading3) return <Spinner />;
+	if (isLoadingBookings || isLoadingStays || isLoadingCabins) return <Spinner />;
 
 	return (
 		<StyledDashboardLayout>
 			<Stats
-				bookings={bookings}
-				confirmedStays={confirmedStays}
+				bookings={bookings || []}
+				confirmedStays={confirmedStays || []}
 				numDays={numDays}
-				cabinCount={cabins.length}
+				cabinCount={cabins?.length ?? 0}
 			/>
 			<TodayActivity />
-			<DurationChart confirmedStays={confirmedStays} />
-			<SalesChart bookings={bookings} numDays={numDays} />
+			<DurationChart confirmedStays={confirmedStays || []} />
+			<SalesChart bookings={bookings || []} numDays={numDays} />
 		</StyledDashboardLayout>
 	);
 }
