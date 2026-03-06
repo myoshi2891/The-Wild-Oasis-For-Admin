@@ -72,6 +72,7 @@ export function getTagType(status: BookingStatus): "blue" | "green" | "silver" {
  * @returns A valid, positive integer.
  */
 export function parsePositiveDaysParam(value: string | null, fallback = 7): number {
-	const parsed = value ? Number(value) : fallback;
-	return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed >= 1 ? parsed : fallback;
+	const safeFallback = Number.isFinite(fallback) && Number.isInteger(fallback) && fallback >= 1 ? fallback : 7;
+	const parsed = value ? Number(value) : safeFallback;
+	return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed >= 1 ? parsed : safeFallback;
 }

@@ -153,6 +153,7 @@ function createWrapper({ queryClient, routerProps }: WrapperOptions = {}) {
 	const client = queryClient ?? createTestQueryClient();
 
 	return function TestWrapper({ children }: { children: ReactNode }) {
+		localStorage.clear();
 		return (
 			<QueryClientProvider client={client}>
 				<DarkModeProvider>

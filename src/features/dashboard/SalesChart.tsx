@@ -48,21 +48,22 @@ function SalesChart({ bookings, numDays }: SalesChartProps) {
 	});
 
 	const salesMap = bookings.reduce((acc, booking) => {
-		const label = format(new Date(booking.created_at), "MMM dd");
-		if (!acc[label]) {
-			acc[label] = { totalSales: 0, extrasSales: 0 };
+		const key = format(new Date(booking.created_at), "yyyy-MM-dd");
+		if (!acc[key]) {
+			acc[key] = { totalSales: 0, extrasSales: 0 };
 		}
-		acc[label].totalSales += booking.totalPrice;
-		acc[label].extrasSales += booking.extrasPrice;
+		acc[key].totalSales += booking.totalPrice;
+		acc[key].extrasSales += booking.extrasPrice;
 		return acc;
 	}, {} as Record<string, { totalSales: number; extrasSales: number }>);
 
 	const data = allDates.map((date) => {
+		const key = format(date, "yyyy-MM-dd");
 		const label = format(date, "MMM dd");
 		return {
 			label,
-			totalSales: salesMap[label]?.totalSales ?? 0,
-			extrasSales: salesMap[label]?.extrasSales ?? 0,
+			totalSales: salesMap[key]?.totalSales ?? 0,
+			extrasSales: salesMap[key]?.extrasSales ?? 0,
 		};
 	});
 

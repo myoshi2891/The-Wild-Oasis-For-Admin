@@ -16,7 +16,7 @@ interface UpdatePasswordFormValues {
  * Renders a password update form with client-side validation and submission handling.
  *
  * The form validates a new password (minimum 8 characters) and a matching confirmation field,
- * submits the updated password via the user-update hook, and resets the form on successful update.
+ * submits the updated password via the user-update hook, and resets the form on settlement.
  *
  * @returns The rendered form component for updating a user's password.
  */
@@ -34,7 +34,7 @@ function UpdatePasswordForm() {
 		<Form onSubmit={handleSubmit(onSubmit)}>
 			<FormRow
 				label="New Password (min 8 chars)"
-				error={errors?.password?.message as string}
+				error={errors?.password?.message}
 			>
 				<Input
 					type="password"
@@ -53,7 +53,7 @@ function UpdatePasswordForm() {
 
 			<FormRow
 				label="Confirm password"
-				error={errors?.passwordConfirm?.message as string}
+				error={errors?.passwordConfirm?.message}
 			>
 				<Input
 					type="password"
