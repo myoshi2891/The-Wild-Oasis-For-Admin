@@ -6,14 +6,14 @@ The Wild Oasis は、ホテルスタッフが**キャビン（客室）・予約
 
 各サブシステムの詳細については以下を参照してください。
 
-- 完全なアーキテクチャ詳細 → [Architecture]
-- 技術スタックとプロジェクト構造 → [Architecture] / [Project Structure]
-- ドメインエンティティと関係 → [Domain Model]
-- データレイヤーパターン → [Data Layer]
-- 各フィーチャーの実装 → [Features]
-- UI コンポーネントライブラリ → [UI Component Library]
-- テストインフラ → [Testing]
-- 開発セットアップとワークフロー → [Development Guide]
+- 完全なアーキテクチャ詳細 → [Architecture](#システムアーキテクチャの概要)
+- 技術スタックとプロジェクト構造 → [Architecture](#システムアーキテクチャの概要) / [Project Structure](#プロジェクトのディレクトリ構成)
+- ドメインエンティティと関係 → [Domain Model](#ドメインモデル)
+- データレイヤーパターン → [Data Layer](#データフローアーキテクチャ)
+- 各フィーチャーの実装 → [Features](#フィーチャーモジュール)
+- UI コンポーネントライブラリ → [UI Component Library](#プロジェクトのディレクトリ構成)
+- テストインフラ → [Testing](#開発テストインフラ)
+- 開発セットアップとワークフロー → [Development Guide](#開発テストインフラ)
 
 ---
 
@@ -22,16 +22,16 @@ The Wild Oasis は、ホテルスタッフが**キャビン（客室）・予約
 ```mermaid
 graph TD
     subgraph CLIENT["🖥️ クライアント（SPA）"]
-        REACT["React 18\nコンポーネントベース UI"]
-        VITE["Vite 7.2.4\nビルドツール / HMR"]
+        REACT["React 19\nコンポーネントベース UI"]
+        VITE["Vite 7.3.5\nビルドツール / HMR"]
         RQ["@tanstack/react-query\nstaleTime: 0\nサーバーステート管理"]
         RHF["react-hook-form\nフォーム管理"]
         SC["styled-components\nCSS-in-JS テーマ"]
-        ZUSTAND["DarkModeContext\nlocalStorage 永続化"]
+        CONTEXT["DarkModeContext\nlocalStorage 永続化"]
     end
 
     subgraph ROUTING["🔀 ルーティング"]
-        RRD["React Router DOM v6\nクライアントサイドルーティング"]
+        RRD["React Router DOM v7\nクライアントサイドルーティング"]
         PR["ProtectedRoute\n未認証 → /login にリダイレクト"]
     end
 
@@ -61,7 +61,8 @@ graph TD
     PR --> AUTH
 ```
 
-このアプリケーションは、**React 18 によるクライアントサイドレンダリングの SPA アーキテクチャ**を採用しています。フロントエンドは Vite で構築され、認証・データベース操作・ファイルストレージのために Supabase（Backend-as-a-Service）と通信します。React Query は積極的なキャッシュ無効化戦略（`staleTime: 0`）でプライマリな状態管理ソリューションとして機能します。
+このアプリケーションは、**React 19 によるクライアントサイドレンダリングの SPA アーキテクチャ**を採用しています。フロントエンドは Vite で構築され、
+認証・データベース操作・ファイルストレージのために Supabase（Backend-as-a-Service）と通信します。React Query は積極的なキャッシュ無効化戦略（`staleTime: 0`）でプライマリな状態管理ソリューションとして機能します。
 
 ---
 
@@ -69,22 +70,22 @@ graph TD
 
 | レイヤー | 技術 | バージョン | 用途 |
 |---------|------|-----------|------|
-| **言語** | TypeScript | 5.9 | 静的型チェック（strict モード） |
-| **UI フレームワーク** | React | 18.2.0 | コンポーネントベース UI レンダリング |
-| **ビルドツール** | Vite | 7.2.4 | 高速開発サーバーと最適化ビルド |
+| **言語** | TypeScript | ^5.9.3 | 静的型チェック（strict モード） |
+| **UI フレームワーク** | React | ^19 | コンポーネントベース UI レンダリング |
+| **ビルドツール** | Vite | ^7.3.5 | 高速開発サーバーと最適化ビルド |
 | **パッケージマネージャー** | Bun | >=1.0.0 | パッケージ管理とスクリプト実行 |
-| **ルーティング** | React Router DOM | 6.30.3 | 保護ルート付きクライアントサイドルーティング |
-| **状態管理** | @tanstack/react-query | 4.36.1 | サーバーステートの同期とキャッシュ |
-| **フォーム管理** | react-hook-form | 7.52.1 | パフォーマンスの高いフォームバリデーション |
-| **スタイリング** | styled-components | 6.1.12 | テーマサポート付き CSS-in-JS |
-| **バックエンド** | Supabase | 2.81.1 | 認証・PostgreSQL・ストレージ |
-| **チャート** | recharts | 2.12.7 | ダッシュボードのデータ可視化 |
-| **日付ユーティリティ** | date-fns | 3.6.0 | 日付フォーマットと操作 |
-| **通知** | react-hot-toast | 2.4.1 | ユーザーフィードバックメッセージ |
-| **エラーハンドリング** | react-error-boundary | 4.0.13 | エラーバウンダリコンポーネント |
-| **ユニットテスト** | Vitest | 4.0.18 | ユニット / コンポーネントテストランナー |
-| **コンポーネントテスト** | @testing-library/react | 16.3.2 | コンポーネントテストユーティリティ |
-| **E2E テスト** | Playwright | 1.58.2 | エンドツーエンドブラウザ自動化 |
+| **ルーティング** | React Router DOM | ^7 | 保護ルート付きクライアントサイドルーティング |
+| **状態管理** | @tanstack/react-query | ^5 | サーバーステートの同期とキャッシュ |
+| **フォーム管理** | react-hook-form | ^7.77.0 | パフォーマンスの高いフォームバリデーション |
+| **スタイリング** | styled-components | ^6.4.2 | テーマサポート付き CSS-in-JS |
+| **バックエンド** | Supabase | ^2.106.2 | 認証・PostgreSQL・ストレージ |
+| **チャート** | recharts | ^3 | ダッシュボードのデータ可視化 |
+| **日付ユーティリティ** | date-fns | ^4 | 日付フォーマットと操作 |
+| **通知** | react-hot-toast | ^2.6.0 | ユーザーフィードバックメッセージ |
+| **エラーハンドリング** | react-error-boundary | ^6 | エラーバウンダリコンポーネント |
+| **ユニットテスト** | Vitest | ^4.1.8 | ユニット / コンポーネントテストランナー |
+| **コンポーネントテスト** | @testing-library/react | ^16.3.2 | コンポーネントテストユーティリティ |
+| **E2E テスト** | Playwright | ^1.60.0 | エンドツーエンドブラウザ自動化 |
 
 ---
 
@@ -146,8 +147,6 @@ Supabase PostgreSQL に格納された **4 つの主要エンティティ**で�
 - **`bookings`（予約）**: キャビンとゲストをつなぐ中心エンティティ。ライフサイクルステータス（`unconfirmed` → `checked-in` → `checked-out`）・日付・料金計算・朝食オプションを追跡
 - **`settings`（設定）**: アプリ全体のビジネスルールを格納するシングルトンテーブル（常に `id=1`）
 - **`users`（ユーザー）**: Supabase Authentication で管理されるスタッフアカウント（PostgreSQL テーブルには直接存在しない）
-
-`bookings` の `status` フィールドが、UI で利用可能な操作を制御する**予約ライフサイクルのステートマシン**を駆動します。
 
 ---
 
@@ -297,7 +296,7 @@ flowchart TD
         TOASTER["Toaster\n通知"]
     end
 
-    BROWSER["BrowserRouter\nReact Router DOM v6"]
+    BROWSER["BrowserRouter\nReact Router DOM v7"]
 
     subgraph ROUTES["ルート設定"]
         ROOT["/ → /dashboard にリダイレクト"]
@@ -335,7 +334,7 @@ flowchart TD
    - 開発用 `ReactQueryDevtools`
    - CSS リセットとテーマ変数用の `GlobalStyles`
    - 通知用の `Toaster`
-5. **BrowserRouter**: React Router DOM v6 でクライアントサイドルーティングを設定
+5. **BrowserRouter**: React Router DOM v7 でクライアントサイドルーティングを設定
 
 保護ルートは `ProtectedRoute` コンポーネントによる認証が必要で、未認証ユーザーは `/login` にリダイレクトされます。ルートルート `/` は `/dashboard` にリダイレクトします。
 

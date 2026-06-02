@@ -112,18 +112,18 @@ export function createMockStay(overrides: Partial<StayAfterDate>): StayAfterDate
 /**
  * Create a QueryClient preconfigured for tests.
  *
- * - queries: retry=false, cacheTime=Infinity, staleTime=0
+ * - queries: retry=false, gcTime=Infinity, staleTime=0
  * - mutations: retry=false
- * - logger: no-op（コンソール出力を抑制）
  *
- * @returns A QueryClient configured for tests: query and mutation retries disabled, query `cacheTime` set to `Infinity`, `staleTime` set to `0`, and a no-op logger.
+ * @returns A QueryClient configured for tests: query and mutation retries disabled, query `gcTime` set to `Infinity`, and `staleTime` set to `0`.
  */
 export function createTestQueryClient(): QueryClient {
 	return new QueryClient({
 		defaultOptions: {
 			queries: {
 				retry: false,
-				cacheTime: Infinity,
+				// React Query v5 で cacheTime は gcTime にリネームされた
+				gcTime: Infinity,
 				// staleTime はリポジトリルールにより 0 をデフォルトとする。
 				// 個別テストで非 0 が必要な場合は useQuery の staleTime で上書きすること。
 				staleTime: 0,
@@ -131,11 +131,6 @@ export function createTestQueryClient(): QueryClient {
 			mutations: {
 				retry: false,
 			},
-		},
-		logger: {
-			log: () => {},
-			warn: () => {},
-			error: () => {},
 		},
 	});
 }

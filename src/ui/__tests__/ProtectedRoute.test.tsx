@@ -23,7 +23,6 @@ vi.mock("react-router-dom", async (importOriginal) => {
 function renderProtectedRoute() {
 	const queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false } },
-		logger: { log: () => {}, warn: () => {}, error: () => {} },
 	});
 
 	return render(

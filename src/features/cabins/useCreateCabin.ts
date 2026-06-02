@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createEditCabin } from "../../services/apiCabins";
+import { createEditCabin, type CreateEditCabinData } from "../../services/apiCabins";
 import toast from "react-hot-toast";
 
 /**
@@ -12,8 +12,11 @@ import toast from "react-hot-toast";
 export function useCreateCabin() {
 	const queryClient = useQueryClient();
 
-	const { mutate: createCabin, isLoading: isCreating } = useMutation({
-		mutationFn: createEditCabin,
+	const { mutate: createCabin, isPending: isCreating } = useMutation({
+		// React Query v5 では mutationFn が第2引数に context を渡すため、
+		// createEditCabin(newCabin, id?) の id に context が混入しないよう明示的にラップする
+		// （直接渡すと新規作成が編集として実行されるバグになる）
+		mutationFn: (newCabin: CreateEditCabinData) => createEditCabin(newCabin),
 		onSuccess: () => {
 			toast.success("New cabin successfully created.");
 			queryClient.invalidateQueries({ queryKey: ["cabins"] });

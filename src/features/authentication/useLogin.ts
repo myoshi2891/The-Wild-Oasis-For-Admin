@@ -15,7 +15,8 @@ import toast from "react-hot-toast";
 export function useLogin() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const { mutate: login, isLoading } = useMutation({
+	// React Query v5: mutation の isLoading は isPending にリネーム。公開戻り値名は isLoading を維持
+	const { mutate: login, isPending: isLoading } = useMutation({
 		mutationFn: loginApi,
 		onSuccess: (user) => {
 			queryClient.setQueryData(["user"], user.user);

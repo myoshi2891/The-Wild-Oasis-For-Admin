@@ -63,14 +63,14 @@
 
 | ライブラリ | 用途 |
 | ----------- | ------ |
-| React 18 | UI フレームワーク |
-| React Router DOM v6 | クライアントサイドルーティング |
-| @tanstack/react-query v4 | サーバー状態管理・キャッシュ |
+| React 19 | UI フレームワーク |
+| React Router DOM v7 | クライアントサイドルーティング |
+| @tanstack/react-query v5 | サーバー状態管理・キャッシュ |
 | @supabase/supabase-js | BaaS（認証 + DB + ストレージ） |
 | styled-components v6 | CSS-in-JS スタイリング |
 | react-hook-form v7 | フォーム管理 |
-| recharts v2 | データ可視化（チャート） |
-| date-fns v3 | 日付操作 |
+| recharts v3 | データ可視化（チャート） |
+| date-fns v4 | 日付操作 |
 | react-hot-toast | トースト通知 |
 | react-icons | アイコン |
 | react-error-boundary | エラーバウンダリ |
