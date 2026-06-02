@@ -18,11 +18,14 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // ResizeObserver polyfill for jsdom (Recharts ResponsiveContainer)
-global.ResizeObserver = class {
-	observe() {}
-	unobserve() {}
-	disconnect() {}
-};
+Object.defineProperty(window, "ResizeObserver", {
+	writable: true,
+	value: class {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	},
+});
 
 // Clear localStorage between test scopes
 afterEach(() => {
