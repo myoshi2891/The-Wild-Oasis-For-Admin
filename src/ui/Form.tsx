@@ -4,7 +4,11 @@ interface FormProps {
 	$type?: "regular" | "modal";
 }
 
-const Form = styled.form<FormProps>`
+const Form = styled.form.attrs<FormProps>((props) => ({
+	// React 19 では関数コンポーネントの defaultProps が無効化されるため、
+	// 既定値は .attrs() で注入する（$type 未指定時は "regular"）。
+	$type: props.$type ?? "regular",
+}))`
 	${(props) =>
 		props.$type === "regular" &&
 		css`
@@ -25,9 +29,5 @@ const Form = styled.form<FormProps>`
   overflow: hidden;
 	font-size: 1.4rem;
 `;
-
-Form.defaultProps = {
-	$type: "regular",
-};
 
 export default Form;

@@ -12,7 +12,8 @@ import toast from "react-hot-toast";
  * - `isLoading`: `true` while the signup request is in progress, `false` otherwise
  */
 export function useSignup() {
-	const { mutate: signup, isLoading } = useMutation({
+	// React Query v5: mutation の isLoading は isPending にリネーム。公開戻り値名は isLoading を維持
+	const { mutate: signup, isPending: isLoading } = useMutation({
 		mutationFn: signupApi,
 		onSuccess: () => {
 			toast.success(

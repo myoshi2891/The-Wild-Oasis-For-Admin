@@ -20,7 +20,7 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 ## 📐 Code Style
 
 - ES Modules (`"type": "module"`)
-- React 18 + TypeScript（`.tsx` / `.ts` 拡張子を使用）
+- React 19 + TypeScript（`.tsx` / `.ts` 拡張子を使用）
 - styled-components による CSS-in-JS スタイリング
 - コンポーネントは1ファイル1コンポーネント
 - カスタムフックは `use` プレフィックス必須
@@ -30,7 +30,7 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 ## 🏗 Architecture
 
 - エントリーポイント: `src/main.tsx`
-- ルーティング: `src/App.tsx` (React Router DOM v6)
+- ルーティング: `src/App.tsx` (React Router DOM v7)
 - 機能モジュール: `src/features/` (bookings, cabins, check-in-out, dashboard, authentication, settings)
 - UIコンポーネント: `src/ui/`
 - ページ: `src/pages/`
@@ -39,7 +39,7 @@ React + Vite + Supabase (BaaS) によるシングルページアプリケーシ�
 - ユーティリティ: `src/utils/`
 - 型定義: `src/types/` (domain, supabase, common)
 - テスト基盤: `src/test/` (Vitest セットアップ)
-- 状態管理: React Query (@tanstack/react-query v4)
+- 状態管理: React Query (@tanstack/react-query v5)
 - コンテキスト: `src/context/` (DarkModeContext)
 
 ## 🔗 Imports

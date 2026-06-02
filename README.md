@@ -71,17 +71,17 @@ graph TB
 
 | 技術 | 目的 | バージョン |
 | ------ | ------ | ------------ |
-| React | フロントエンドフレームワーク | ^18.2.0 |
+| React | フロントエンドフレームワーク | ^19 |
 | TypeScript | 静的型検査 | ^5.9.3 |
-| React Router DOM | クライアントサイドルーティング | ^6.30.3 |
-| @tanstack/react-query | 状態管理とキャッシング | ^4.36.1 |
-| @supabase/supabase-js | Backend-as-a-Service | ^2.81.1 |
-| styled-components | CSS-in-JSスタイリング | ^6.1.12 |
-| react-hook-form | フォーム管理 | ^7.52.1 |
-| recharts | データ可視化 | ^2.12.7 |
-| Vite | ビルドツール & 開発サーバー | ^7.2.4 |
-| Vitest | ユニットテスト | ^4.0.18 |
-| Playwright | E2Eテスト自動化 | ^1.46.0 |
+| React Router DOM | クライアントサイドルーティング | ^7 |
+| @tanstack/react-query | 状態管理とキャッシング | ^5 |
+| @supabase/supabase-js | Backend-as-a-Service | ^2.106.2 |
+| styled-components | CSS-in-JSスタイリング | ^6.4.2 |
+| react-hook-form | フォーム管理 | ^7.77.0 |
+| recharts | データ可視化 | ^3 |
+| Vite | ビルドツール & 開発サーバー | ^7.3.5 |
+| Vitest | ユニットテスト | ^4.1.8 |
+| Playwright | E2Eテスト自動化 | ^1.60.0 |
 
 出典: __package.json:16-29__ __package.json:31-49__
 

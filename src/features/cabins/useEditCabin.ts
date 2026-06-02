@@ -19,7 +19,7 @@ interface EditCabinParams {
  */
 export function useEditCabin() {
 	const queryClient = useQueryClient();
-	const { mutate: editCabin, isLoading: isEditing } = useMutation({
+	const { mutate: editCabin, isPending: isEditing } = useMutation({
 		mutationFn: ({ newCabinData, id }: EditCabinParams) =>
 			createEditCabin(newCabinData, id),
 		onSuccess: () => {

@@ -28,7 +28,6 @@ function createWrapper() {
 		defaultOptions: {
 			queries: { retry: false },
 		},
-		logger: { log: () => {}, warn: () => {}, error: () => {} },
 	});
 	return function Wrapper({ children }: { children: ReactNode }) {
 		return (

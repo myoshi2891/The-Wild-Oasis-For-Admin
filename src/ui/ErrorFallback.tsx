@@ -34,25 +34,28 @@ const Box = styled.div`
 `;
 
 interface ErrorFallbackProps {
-	error: Error;
+	// react-error-boundary v6 では error が unknown 型（throw される値は Error とは限らない）
+	error: unknown;
 	resetErrorBoundary: () => void;
 }
 
 /**
  * Render a full-viewport error UI that displays the provided error message and a retry button.
  *
- * @param error - The error whose `message` will be shown to the user.
+ * @param error - The thrown value (unknown). Its message is extracted safely via a type guard.
  * @param resetErrorBoundary - Callback invoked when the user clicks "Try again" to attempt recovery.
  * @returns The error fallback UI as a JSX element.
  */
 function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
+	// 型ガードで Error を絞り込み、それ以外は文字列化して表示する
+	const message = error instanceof Error ? error.message : String(error);
 	return (
 		<>
 			<GlobalStyles />
 			<StyledErrorFallback>
 				<Box>
 					<Heading as="h1">Something went wrong...😭</Heading>
-					<p>{error.message}</p>
+					<p>{message}</p>
 					<Button size="large" onClick={resetErrorBoundary}>
 						Try again
 					</Button>
