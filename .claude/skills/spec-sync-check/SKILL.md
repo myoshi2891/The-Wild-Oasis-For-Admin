@@ -31,7 +31,7 @@ git log --oneline -5
 
 ### Step 2｜関連する仕様書・規約ドキュメントを読み込む
 
-仕様や設計に関わるファイル変更がある場合、[spec.md](/MasterModernReact/docs/spec.md) および [design.md](/MasterModernReact/docs/design.md) を読み込みます。
+仕様や設計に関わるファイル変更がある場合、[spec.md](docs/spec.md) および [design.md](docs/design.md) を読み込みます。
 
 ---
 

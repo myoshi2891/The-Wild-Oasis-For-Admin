@@ -18,7 +18,7 @@
 - Write meaningful commit messages following the Conventional Commits format.
 
 ### NEVER
-- Commit broken or failing tests (unless explicitly marked with `vi.spyOn` or expected exceptions).
+- Commit broken or failing tests only when they are explicitly marked as intentional expected failures (e.g., `test.fails` or a clearly documented expected-exception marker).
 - Skip running typecheck (`bun run typecheck`) and linter (`bun run lint`) before committing.
 - Commit debugging helper code such as `console.log` or temporary test files.
 - Bundle implementation code, tests, and documentation changes together into one massive commit. Keep them separated or grouped logically by module.

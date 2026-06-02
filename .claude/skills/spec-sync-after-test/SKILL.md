@@ -46,12 +46,12 @@ bun run test
 以下のコマンドを実行して TypeScript のコンパイルエラーがないことを確認します。
 
 ```bash
-npx tsc --noEmit
+bunx tsc --noEmit
 ```
 
 ### Step 3｜`docs/spec.md` または `docs/design.md` を更新する
 
-テスト追加やバグ修正によって、設計上の前提、新規コンポーネント、または機能仕様に変更があった場合は、該当するドキュメント（[spec.md](file:///Users/mitsuruyoshizumi/Workspace/React/MasterModernReact/docs/spec.md) または [design.md](file:///Users/mitsuruyoshizumi/Workspace/React/MasterModernReact/docs/design.md)）を速やかに更新します。
+テスト追加やバグ修正によって、設計上の前提、新規コンポーネント、または機能仕様に変更があった場合は、該当するドキュメント（[spec.md](docs/spec.md) または [design.md](docs/design.md)）を速やかに更新します。
 
 更新内容の要約を Git コミットメッセージに記載できる状態に整理します。
 

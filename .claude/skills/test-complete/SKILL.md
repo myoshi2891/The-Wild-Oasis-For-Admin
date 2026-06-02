@@ -118,4 +118,4 @@ bunx playwright test
 - デバッグ用 `console.log` をコミットに残すこと。
 
 ### ✅ 必須
-- コミット前には必ず `npx tsc --noEmit` および `bun run lint` を実行し、クリーンな状態を維持する。
+- コミット前には必ず `bunx tsc --noEmit` および `bun run lint` を実行し、クリーンな状態を維持する。

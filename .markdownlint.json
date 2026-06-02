@@ -8,7 +8,7 @@
     "MD009": { "br_spaces": 2 },
     "MD012": true,
     "MD013": {
-        "line_length": 1000,
+        "line_length": 320,
         "code_blocks": false,
         "tables": false,
         "headings": false,
