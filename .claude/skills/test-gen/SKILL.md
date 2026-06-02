@@ -45,6 +45,7 @@ allowed-tools: [Read, Grep, Glob, Bash, Edit, Write]
 **配置先**: テスト対象と同階層の `__tests__/` ディレクトリ内。
 
 **Vitest を使ったモックの構成例**:
+
 ```typescript
 import { describe, it, expect, vi, beforeEach } from "vitest";
 

@@ -48,7 +48,7 @@ bun run test -- <pattern>
 ### Step 3｜型チェックを実行する
 
 ```bash
-npx tsc --noEmit
+bunx tsc --noEmit
 ```
 
 エラーが検出された場合はファイル名、行番号、エラーメッセージを抽出します。

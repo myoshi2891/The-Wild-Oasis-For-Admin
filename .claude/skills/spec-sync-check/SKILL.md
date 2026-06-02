@@ -31,7 +31,7 @@ git log --oneline -5
 
 ### Step 2｜関連する仕様書・規約ドキュメントを読み込む
 
-仕様や設計に関わるファイル変更がある場合、[spec.md](file:///Users/mitsuruyoshizumi/Workspace/React/MasterModernReact/docs/spec.md) および [design.md](file:///Users/mitsuruyoshizumi/Workspace/React/MasterModernReact/docs/design.md) を読み込みます。
+仕様や設計に関わるファイル変更がある場合、[spec.md](/MasterModernReact/docs/spec.md) および [design.md](/MasterModernReact/docs/design.md) を読み込みます。
 
 ---
 
@@ -104,5 +104,5 @@ grep -rn ": any" src/ --include="*.ts" --include="*.tsx" | grep -v "\.test\."
 ## 重要ルール
 
 ### ❌ 絶対禁止
-- 仕様書や設計書、および実装コードの自動修正・自動更新。
-- 乖離を発見したにもかかわらず、報告せず放置すること。
+* 仕様書や設計書、および実装コードの自動修正・自動更新。
+* 乖離を発見したにもかかわらず、報告せず放置すること。

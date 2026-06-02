@@ -102,6 +102,7 @@ gh run view <RUN_ID> --log
 
 #### A: 非同期処理の timeout
 `findBy*` や `waitFor` の timeout を明示的に拡大する。
+
 ```ts
 expect(
   await screen.findByTestId("xxx", {}, { timeout: 5000 })
