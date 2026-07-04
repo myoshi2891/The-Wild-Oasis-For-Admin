@@ -1,0 +1,139 @@
+# Plan 010: tech-debt 小掃除 — Uploader の撤去、Supabase 型の自動生成化、env 型の補完
+
+> **Executor instructions**: このプランをステップ順に実行すること。各ステップの
+> 検証コマンドを実行し、期待結果を確認してから次に進む。「STOP conditions」に
+> 該当したら中断して報告する。完了したら `plans/README.md` のステータス行を更新する。
+>
+> **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts`
+> in-scope ファイルに差分がある場合、「Current state」の抜粋と実コードを照合し、
+> 不一致なら STOP。
+
+## Status
+
+- **Priority**: P3
+- **Effort**: M（Step 3 の型生成が M。Step 1-2 は S）
+- **Risk**: MED（生成型が手書き型と食い違うと型エラーが広範囲に出る）
+- **Depends on**: none
+- **Category**: tech-debt
+- **Planned at**: commit `d267f0c`, 2026-07-04
+
+## Why this matters
+
+3つの独立した負債を一括処理する。(1) `src/data/Uploader.tsx` は **guests/cabins/bookings を全削除して再投入する開発用ツール**で、現在どこからも import されていないデッドコード（執筆時点で grep 確認済み）だが、`src/` に居る限り import 1行で本番バンドルに「データ全消しボタン」が混入しうる。`eslint-disable no-explicit-any` 付きでプロジェクトの any 禁止規約にも違反している。(2) `src/types/supabase.ts` は「ER 図に基づく手動定義」であり、実際の Supabase スキーマとの整合を保証する仕組みがない — ダッシュボード側でスキーマが変わると全サービス層の型が静かに嘘になる。(3) `vite-env.d.ts` は `VITE_SUPABASE_KEY` しか型定義しておらず、`VITE_SUPABASE_URL` は `as string` キャストで誤魔化されている。
+
+## Current state
+
+- `src/data/` の内容: `Uploader.tsx`（全テーブル削除+再投入 UI、`insert(... as any)` キャスト、`console.log` エラー処理）、`data-bookings.ts` / `data-cabins.ts` / `data-guests.ts`（シード用フィクスチャ）。
+  未参照の確認コマンド（執筆時に exit 1 = ノーヒットを確認済み）:
+
+```bash
+grep -rn "data/Uploader\|data-cabins\|data-guests\|data-bookings" src e2e \
+  --include="*.ts" --include="*.tsx" | grep -v "^src/data/"
+```
+
+- `src/types/supabase.ts:1-4` — 手動定義の宣言:
+
+```ts
+// design.md の ER 図に基づく手動定義
+```
+
+`src/types/domain.ts` がここから全ドメイン型を導出し、`src/services/supabase.ts` が `createClient<Database>` でクライアントに適用している。
+
+- `vite-env.d.ts`（全9行、執筆時点で確認済み）:
+
+```ts
+interface ImportMetaEnv {
+    readonly VITE_SUPABASE_KEY: string;
+}
+```
+
+- `src/services/supabase.ts:4` 付近 — `import.meta.env.VITE_SUPABASE_URL as string` のキャスト。
+- E2E シードは `e2e/seed.ts` が担っており（Plan 001 参照）、Uploader の機能はそちらで代替済み。
+
+## Commands you will need
+
+| 目的 | コマンド | 成功時の期待結果 |
+|------|---------|-----------------|
+| 型 / Lint / テスト | `bun run typecheck && bun run lint && bun run test` | exit 0 / 全パス |
+| ビルド | `bun run build` | exit 0 |
+| 型生成（Step 3） | `bunx supabase gen types typescript --project-id <ref> --schema public` | 型定義が標準出力される |
+
+## Scope
+
+**In scope**:
+
+- `src/data/`（ディレクトリごと削除）
+- `src/types/supabase.ts`（生成型への置換）
+- `vite-env.d.ts`
+- `src/services/supabase.ts`（キャスト除去）
+- `package.json`（`gen:types` スクリプト追加）
+- `CLAUDE.md` / `docs/design.md`（型再生成手順の1行追記）
+
+**Out of scope**（触らない）:
+
+- `e2e/seed.ts`（シードの正はこちら。変更しない）
+- `src/types/domain.ts` / `common.ts` — 生成型への置換で**コンパイルエラーが出た場合の最小修正のみ**許可
+- Supabase スキーマ自体の変更（プロジェクト制約で禁止）
+
+## Git workflow
+
+- ブランチ: `advisor/010-tech-debt`
+- コミット分割: ① Uploader 削除、② env 型補完、③ 型自動生成化（それぞれ独立して green）
+- 形式例: `chore(data): 未参照の Uploader と seed フィクスチャを削除`
+
+## Steps
+
+### Step 1: Uploader とフィクスチャを削除する
+
+1. 「Current state」の grep を再実行し、未参照が**現在も**真であることを確認する（動的 import `import("./data/` も grep する）。
+2. `src/data/` ディレクトリを削除する。
+
+**Verify**: `bun run typecheck && bun run lint && bun run test && bun run build` → すべて exit 0
+
+### Step 2: env 型を補完しキャストを除去する
+
+1. `vite-env.d.ts` に `readonly VITE_SUPABASE_URL: string;` を追加。
+2. `src/services/supabase.ts` の `as string` キャストを除去。
+3. ついでに env 変数が空のときの起動時ガード（`if (!supabaseUrl) throw new Error(...)`）が無ければ追加を検討 — 既存実装を読んで、既にあれば何もしない。
+
+**Verify**: `grep -n "as string" src/services/supabase.ts` → ノーヒット。`bun run typecheck` → exit 0
+
+### Step 3: Supabase 型を自動生成に切り替える
+
+1. オペレーターに Supabase プロジェクト ref（または `supabase login` 済み CLI 環境）を依頼する。**ref やトークンをファイルに書き残さないこと。**
+2. `bunx supabase gen types typescript --project-id <ref> --schema public > /tmp/supabase-generated.ts` で生成し、手書きの `src/types/supabase.ts` と diff を取る。
+3. 差分を分類する:
+   - nullability やカラムの過不足 → 生成側が正。`src/types/supabase.ts` を生成結果で**置換**する
+   - 生成結果に手書きにない補助型がある → そのまま採用
+4. `package.json` に再生成スクリプトを追加: `"gen:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_REF --schema public > src/types/supabase.ts"`（ref は環境変数で渡し、ハードコードしない）。`.env.example` に `SUPABASE_PROJECT_REF=` を追記。
+5. `bun run typecheck` を実行し、生成型の差分がサービス層・feature 層に出したエラーを修正する（`as` キャストで封じず、型に従って直す。10ファイルを超えたら STOP）。
+6. `CLAUDE.md` の Build & Test Commands に `gen:types` を、`docs/design.md` に「スキーマ変更時は `bun run gen:types` で型を再生成する」を追記。
+
+**Verify**: `bun run typecheck && bun run test && bun run lint` → すべて exit 0。`head -5 src/types/supabase.ts` に自動生成ヘッダーがあり「手動定義」コメントが消えている
+
+## Test plan
+
+- 挙動変更はないため新規テストなし。既存 70+ テストファイルの全パスが回帰ゲート。
+- Step 3 で `src/types/__tests__/domain.test.ts`（型テスト）が生成型との整合を検証してくれる — これが落ちたら型の食い違いの具体的証拠として扱う。
+
+## Done criteria
+
+- [ ] `src/data/` が存在しない（`ls src/data` がエラー）
+- [ ] `vite-env.d.ts` に URL/KEY 両方の型がある
+- [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` に `gen:types` がある
+- [ ] プロジェクト ref・トークンがどのコミットにも含まれない（`git diff` で確認）
+- [ ] `bun run typecheck` / `bun run lint` / `bun run test` / `bun run build` がすべて exit 0
+- [ ] `plans/README.md` のステータス更新
+
+## STOP conditions
+
+- Step 1 の grep で Uploader への参照が**見つかった**場合（このプラン執筆後に誰かが使い始めた — 削除せず報告）
+- Supabase CLI へのアクセス・プロジェクト ref が得られない場合（Step 3 をスキップし、Step 1-2 のみ完了として部分報告する）
+- 生成型と手書き型の diff が想定外に大きい（テーブルが増えている等）場合 — スキーマが ER 図から乖離している証拠なので、置換前に diff を報告
+- Step 3-5 の型エラー修正が10ファイルを超える場合
+
+## Maintenance notes
+
+- 以後、Supabase ダッシュボードでスキーマを変えたら `bun run gen:types` → typecheck → コミットの手順を踏むこと（Plan 002 の RLS 記録同期と同じ運用リズム）。
+- `docs/design.md` の ER 図は手書きのまま残る。生成型と ER 図の二重管理になるため、ER 図には「概念図であり、型の正は生成ファイル」と注記するとよい。
+- レビュー観点: 生成型置換で `as unknown as` キャストが増えていないか（増えていたら型の食い違いを隠している）。
