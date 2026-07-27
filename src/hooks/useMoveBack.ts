@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 /**
  * Creates a callback that navigates back one entry in the router history.

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 
 import App from "../App";
 

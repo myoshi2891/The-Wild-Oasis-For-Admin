@@ -4,7 +4,7 @@ import CabinRow from "./CabinRow";
 import { useCabins } from "./useCabins";
 import Table from "../../ui/Table";
 import Menus from "../../ui/Menus";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import Empty from "../../ui/Empty";
 
 /**

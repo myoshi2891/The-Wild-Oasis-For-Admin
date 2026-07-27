@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import styled, { css } from "styled-components";
 import type { SelectOption } from "./Select";
 
