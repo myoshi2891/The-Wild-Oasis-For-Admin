@@ -53,7 +53,7 @@ if (storageError) {
     }
 ```
 
-- `imageName` / `imagePath` の生成は同関数の 48-59 行（`crypto.randomUUID()` + supabaseUrl ベースの公開 URL。この形式は**維持する**）。
+- `imageName` / `imagePath` は現在同関数の 48-59 行でクライアント生成されている。公開 URL の既存形式は維持するが、object path の生成は Edge Function 内へ移し、クライアント入力を使用しない。
 - `src/features/cabins/CreateCabinForm.tsx:180-183` — フォーム側の画像入力は `accept="image/*"` のみでバイトサイズ検証なし:
 
 ```tsx
@@ -107,7 +107,7 @@ if (storageError) {
 
 `supabase/functions/cabin-image/` に認証必須の関数を追加する:
 
-1. Authorization header のユーザーを検証し、未認証は 401。クライアントから `id`（編集時のみ）、客室フィールド、`File` を multipart/form-data で受け取る。
+1. Authorization header のユーザーを検証し、未認証は 401。クライアントから受け取る multipart/form-data は `id`（編集時のみ）、客室フィールド、`File` に限定し、`imageName`、object path、公開 URL は受け付けず使用しない。
 2. `file.size` が `1..5 * 1024 * 1024` の範囲であることをサーバー側で確認する。
 3. `File.type` だけを信用せず先頭バイトから JPEG（`ff d8 ff`）、PNG、WebP（RIFF + WEBP）、GIF87a/GIF89a を判定する。検出結果が許可リスト外、または申告 MIME と不一致なら upload 前に 400。
 4. DB payload は既知フィールドだけを組み立て、クライアント入力の任意キーをそのまま spread しない。
@@ -120,19 +120,20 @@ if (storageError) {
 
 検証後の Edge Function を次の順で実装する:
 
-1. 検出済み MIME を `contentType` に指定し、サーバー側 Storage client で `cabin-images` に upload。
-2. 生成された既存互換 URL を使い、ユーザー JWT を引き継いだ client で cabin を insert/updateして RLS を維持。
-3. DB が失敗したら同じリクエスト内で、サーバー側 client により直ちに `remove([imageName])` を await してからエラーを返す。
-4. cleanup も失敗した場合は成功扱いにせず、object path と両エラー種別を `console.error` に残し、`CABIN_WRITE_AND_CLEANUP_FAILED` を返す。秘密値やJWTは記録しない。Functions Logs でこのコードを監視対象にする。
+1. Edge Function 内で `crypto.randomUUID()` 相当を使って衝突しない object 名を生成する。bucket は定数 `cabin-images` に固定し、完全な Storage object path が常に `cabin-images/<server-generated-name>` の配下になるようにする。クライアント由来のファイル名は拡張子を含め path 生成に使用しない。
+2. 検出済み MIME を `contentType` に指定し、service-role の Storage client で生成済み path に upload。
+3. 生成された既存互換 URL を使い、ユーザー JWT を引き継いだ client で cabin を insert/updateして RLS を維持。新規画像を伴う作成・編集の両方で同じサーバー生成 path だけを使う。
+4. DB が失敗したら同じリクエスト内で、同じ service-role Storage client により直ちに生成済み path を `remove` してからエラーを返す。
+5. cleanup も失敗した場合は成功扱いにせず、object path と両エラー種別を `console.error` に残し、`CABIN_WRITE_AND_CLEANUP_FAILED` を返す。秘密値やJWTは記録しない。Functions Logs でこのコードを監視対象にする。
 
 コード内に「画像upload後のDB失敗は同一リクエストで即時削除し、cleanup失敗も成功扱いにしない」という日本語コメントを置く。定期GCへ先送りしない。
 
-**Verify**: upload失敗ではDB未実行、DB失敗ではremoveが同じpathで1回、remove失敗では明示エラーとログ、成功時だけCabinを返すテストがパス。
+**Verify**: 作成・編集とも path が Edge Function 内でのみ生成され `cabin-images/` 配下に制約されること、クライアントが送った `imageName` / path 値が受理・使用されないこと、upload失敗ではDB未実行、DB失敗ではservice-role clientのremoveが同じ生成済みpathで1回、remove失敗では明示エラーとログ、成功時だけCabinを返すテストがパス。
 
 ### Step 3: クライアントを Edge Function 呼び出しへ切り替える
 
 - `hasImagePath` の既存URL再利用は従来どおりDBだけ更新する。
-- 新規 `File` の作成/編集は direct Storage uploadを廃止し、`cabin-image` 関数を呼ぶ。戻り値と `createEditCabin` の公開シグネチャは維持する。
+- 新規 `File` の作成/編集は direct Storage uploadを廃止し、`cabin-image` 関数を呼ぶ。クライアントは `imageName` / path を生成・送信しない。戻り値と `createEditCabin` の公開シグネチャは維持する。
 - `services.test.ts` で作成/編集の直接呼び出しも関数を通り、ブラウザ側の `storage.upload` が呼ばれないことを固定する。
 
 **Verify**: `bunx vitest run src/services` → 全パス。
@@ -167,6 +168,7 @@ authenticated client の direct INSERT ポリシーを削除し、Edge Function 
 ## Done criteria
 
 - [ ] 新規Fileの作成/編集でブラウザから `storage.upload` を直接呼ばない
+- [ ] 作成・編集のobject pathはEdge Function内でのみ生成され、常に`cabin-images/`配下であり、クライアント由来の`imageName` / pathをupload・removeに使用しない
 - [ ] Edge Function が5MB上限、許可4形式のmagic bytes、申告MIME一致をupload前に強制する
 - [ ] DB失敗時に同じobject pathを即時removeし、cleanup失敗も明示エラーとして記録・返却する
 - [ ] bucketの5MB/MIME制限とdirect authenticated INSERT拒否がlive確認され、設定記録がリポジトリと一致する

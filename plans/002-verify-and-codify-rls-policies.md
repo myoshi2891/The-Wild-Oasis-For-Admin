@@ -118,15 +118,16 @@ where schemaname = 'storage'
 
 `supabase/README.md` には「public 4テーブル」と「Storage bucket / storage.objects」を別表で記録する。
 
-**Verify**: 4テーブルの RLS、`cabin-images` の公開読み取り設定、`storage.objects` ポリシーの3区分が個別に揃っている。bucket 行または Storage ポリシーが取得できない場合は STOP。
+**Verify**: 4テーブルの RLS、`cabin-images` の公開読み取り設定、`storage.objects` ポリシーの3区分が個別に揃っている。bucket 行または Storage ポリシーのクエリ結果自体を取得できない場合は STOP。クエリ成功かつ0件は「ポリシーなし」として Step 2 で記録する。
 
 ### Step 2: 結果を `supabase/policies/` に SQL として記録する
 
 - `supabase/policies/README.md` — 「これはダッシュボード管理ポリシーの**記録（写し）**であり、適用スクリプトではない。変更はダッシュボードで行い、変更したらこのファイルを更新する」と冒頭に明記。
 - テーブルごとに `supabase/policies/<table>.sql` を作成し、`create policy ...` 形式で現行ポリシーを書き起こす。RLS が無効のテーブルがあれば、その事実を**セキュリティ所見**として README に太字で記録する。
+- `supabase/policies/storage.objects.sql` を必ず作成し、`cabin-images` 用の現行ポリシーを `create policy ... on storage.objects` 形式で記録する。該当ポリシーが0件の場合もファイルを省略せず、「棚卸し時点で該当ポリシーなし」と明記する。
 - **秘密値（キー・トークン）は一切書かない**。ポリシー式とロール名のみ。
 
-**Verify**: `ls supabase/policies/*.sql | wc -l` → 4（+ storage 用があれば5）
+**Verify**: `ls supabase/policies/*.sql | wc -l` → 5（public 4テーブル + `storage.objects.sql`）。`storage.objects.sql` には取得した全ポリシー、または該当ポリシーが0件だった事実のどちらかが記録されている。
 
 ### Step 3: 期待ポリシーとのギャップ分析を書く
 
@@ -158,9 +159,10 @@ where schemaname = 'storage'
 ## Done criteria
 
 - [ ] `supabase/policies/` に4テーブルぶんの SQL 記録が存在する
+- [ ] `supabase/policies/storage.objects.sql` が常に存在し、`cabin-images` 用ポリシーまたは該当ポリシーが0件だった事実が記録されている
 - [ ] `supabase/README.md` にギャップ分析表と判定が存在する
 - [ ] `cabin-images` の `public` / `file_size_limit` / `allowed_mime_types` が public 4テーブルとは別表に記録されている
-- [ ] `storage.objects` の `cabin-images` 用ポリシーが操作・ロール・USING/WITH CHECK 式付きで別表に記録されている
+- [ ] `storage.objects` の `cabin-images` 用ポリシーが操作・ロール・USING/WITH CHECK 式付きで別表に記録されているか、0件の場合はその事実が同じ別表に明記されている
 - [ ] RLS 無効のテーブルがあれば太字の所見として記録されている
 - [ ] 秘密値がどのファイルにも含まれない（`grep -rE "eyJ|service_role" supabase/` がヒットしない）
 - [ ] `git status` で in-scope 外の変更がない

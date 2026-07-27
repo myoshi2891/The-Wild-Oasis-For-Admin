@@ -137,7 +137,7 @@ interface ImportMetaEnv {
 - [ ] URL/KEYいずれか欠落時はclient生成前に明確なエラーとなり、両方設定時だけ `createClient` が呼ばれるテストがパス
 - [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が `bunx supabase` を使う
 - [ ] `.env.example` に秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーがある
-- [ ] プロジェクト ref・トークンがどのコミットにも含まれない（`git diff` で確認）
+- [ ] Supabaseプロジェクトrefとaccess token / service-role tokenを検出対象に含めた承認済みsecret scannerで、全refの全コミット履歴、staged差分、未追跡ファイルを個別に検査し、いずれも検出0件である。作業ツリーだけの`git diff`確認では完了扱いにしない
 - [ ] `bun run typecheck` / `bun run lint` / `bun run test` / `bun run build` がすべて exit 0
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 

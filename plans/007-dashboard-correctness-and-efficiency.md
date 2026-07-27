@@ -131,9 +131,9 @@ export const toUtcDateKey = (iso: string | Date): string =>
 
 ### Step 2: TZ 回帰テストを追加する
 
-`SalesChart.test.tsx` に「`created_at` が UTC 深夜帯（例: `2026-07-03T23:30:00.000Z`）の予約が、ローカル TZ に関係なく 7/3 のバケットに入る」ことを検証するケースを追加。`vi.stubEnv` で TZ を固定できない場合は、`process.env.TZ = "Asia/Tokyo"` を vitest 設定またはテスト先頭で設定して検証する。
+`SalesChart.test.tsx` に、同一の UTC 深夜帯データ（例: `created_at: "2026-07-03T23:30:00.000Z"`）を使う回帰ケースを追加する。このケースをプロセス起動時の `TZ=UTC` と `TZ=Asia/Tokyo` の両方で実行し、どちらも `toUtcDateKey` により 7/3 の同じバケットへ入ることを検証する。テスト内での環境変数変更に依存せず、別プロセスで同じケースを実行する。
 
-**Verify**: `bunx vitest run src/features/dashboard` → 新ケース含め全パス
+**Verify**: `TZ=UTC bunx vitest run src/features/dashboard/__tests__/SalesChart.test.tsx && TZ=Asia/Tokyo bunx vitest run src/features/dashboard/__tests__/SalesChart.test.tsx` → 両実行で同じ境界ケースが7/3に集計され、全パス
 
 ### Step 3: 期間と交差する滞在だけを取得する
 
@@ -182,7 +182,7 @@ export const toUtcDateKey = (iso: string | Date): string =>
 
 ## Test plan
 
-- Step 2: TZ 回帰テスト1ケース（このプランの核心）
+- Step 2: 同一データをUTC / Asia/Tokyoの2プロセスで実行するTZ回帰テスト（このプランの核心）
 - Step 3: API期間交差filter（期間前開始、期間後終了、完全包含、境界非重複）
 - Step 4: 同じ4境界の交差泊数と、算出値100%超過時の緊急表示上限
 - Step 5: サービステストの select 文字列アサーション更新（Plan 004 のテストを新文字列に）

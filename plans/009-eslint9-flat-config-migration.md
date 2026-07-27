@@ -146,7 +146,7 @@ react-hooks v5 の新ルール（React 19 対応の exhaustive-deps 強化等）
 
 - 妥当な指摘 → コードを修正（最小差分）
 - 誤検知・意図的なパターン → `// eslint-disable-next-line <rule> -- 理由` を付ける（理由必須）
-- 判断がつかない違反が5件を超えたら STOP して一覧を報告
+- 判断がつかない違反が5件を超えたら即時 STOP して一覧を報告（新規違反数の停止基準はこの1つだけとする）
 
 **Verify**: `bun run lint` → exit 0（`--max-warnings 0` で警告ゼロ）
 
@@ -154,9 +154,36 @@ react-hooks v5 の新ルール（React 19 対応の exhaustive-deps 強化等）
 
 ```bash
 bun run typecheck && bun run test && bun run build
+
+DEV_LOG="$(mktemp)"
+bun run dev -- --host 127.0.0.1 >"$DEV_LOG" 2>&1 &
+DEV_PID=$!
+cleanup_dev() {
+    kill "$DEV_PID" 2>/dev/null || true
+    wait "$DEV_PID" 2>/dev/null || true
+    rm -f "$DEV_LOG"
+}
+trap cleanup_dev EXIT INT TERM
+
+DEV_READY=0
+for _ in {1..30}; do
+    if grep -q "ready in" "$DEV_LOG"; then
+        DEV_READY=1
+        break
+    fi
+    if ! kill -0 "$DEV_PID" 2>/dev/null; then
+        break
+    fi
+    sleep 1
+done
+
+if [ "$DEV_READY" -ne 1 ]; then
+    cat "$DEV_LOG"
+    exit 1
+fi
 ```
 
-`vite-plugin-eslint2` が flat config を解決できることを `bun run dev` の起動ログで確認（エラーが出る場合はプラグインのオプションで flat config を明示するか、バージョンを更新）。
+`bun run dev` はバックグラウンドで起動し、最大30秒以内に Vite の `ready in` ログが出ることを成功条件とする。異常終了・タイムアウト時はログを表示して失敗し、成功・失敗のどちらでも `trap` でプロセスを停止して一時ログを削除する。これにより `vite-plugin-eslint2` が flat config を解決できることも起動ログで確認する（エラーが出る場合はプラグインのオプションで flat config を明示するか、バージョンを更新）。
 
 **Verify**: すべて exit 0 / 全パス
 
@@ -177,7 +204,7 @@ bun run typecheck && bun run test && bun run build
 ## STOP conditions
 
 - `vite-plugin-eslint2` が ESLint 9 / flat config に対応していない場合 — プラグインの更新 or 削除（lint を CLI/CI のみに寄せる）の判断はオペレーターに委ねる。報告して待つ
-- Step 4 の新規違反が 30 件を超える場合 — 一覧を報告し、燃やし尽くすか段階導入かの判断を仰ぐ
+- Step 4 で判断がつかない新規違反が5件を超える場合 — 即時STOPし、一覧を報告して判断を仰ぐ
 - eslint-plugin-react-refresh が flat config で動作しない場合
 
 ## Maintenance notes
