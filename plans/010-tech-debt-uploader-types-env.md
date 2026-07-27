@@ -116,13 +116,21 @@ interface ImportMetaEnv {
 1. オペレーターに Supabase プロジェクト ref（または `supabase login` 済み CLI 環境）を依頼する。**ref やトークンをファイルに書き残さないこと。**
 2. Supabase 型の生成と置換は **次のいずれか一方** で行う:
    - **方法 A（初回移行推奨）**: `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `src/types/` 内に一時ファイルを生成し、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
-   - **方法 B（手動確認が必要な場合）**: `tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX)` で `src/types/` 内に一時ファイルを作成し、`bunx supabase gen types typescript --project-id <ref> --schema public > "$tmp_file"` で生成する。その後 `diff src/types/supabase.ts "$tmp_file"` で差分を確認してから `mv "$tmp_file" src/types/supabase.ts` で置換する。
+   - **方法 B（手動確認が必要な場合）**: 下記の手順を `&&` で連結し、CLI が失敗した場合に空または不完全な一時ファイルで `src/types/supabase.ts` を置換しないよう保護する:
+     ```bash
+     tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) \
+       && bunx supabase@2.109.1 gen types typescript --project-id <ref> --schema public > "$tmp_file" \
+       && diff src/types/supabase.ts "$tmp_file" \
+       && mv "$tmp_file" src/types/supabase.ts
+     ```
+     `bunx supabase@2.109.1 gen types ...` が失敗した場合、後続の `diff` と `mv` は実行されず、既存の `src/types/supabase.ts` は変更されない。差分確認後に置換不要と判断した場合は `rm -f "$tmp_file"` で一時ファイルを削除する。
    > **重要**: 生成ファイルを `/tmp` に書き出した後で `cp` や `mv` でターゲットに移動する手順は **禁止**。生成先は必ず `src/types/` 配下にすること。
 3. 差分を分類する:
    - nullability やカラムの過不足 → 生成側が正。`src/types/supabase.ts` を生成結果で**置換**する
    - 生成結果に手書きにない補助型がある → そのまま採用
 4. `package.json` に再生成スクリプトを追加:
-   `"gen:types": "if [ -z \"${SUPABASE_PROJECT_REF:-}\" ]; then echo \"Error: SUPABASE_PROJECT_REF must be set and non-empty\" >&2; exit 1; fi; tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) && trap 'rm -f \"$tmp_file\"' EXIT && bunx supabase gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" --schema public > \"$tmp_file\" && mv \"$tmp_file\" src/types/supabase.ts && trap - EXIT"`。
+   `"gen:types": "if [ -z \"${SUPABASE_PROJECT_REF:-}\" ]; then echo \"Error: SUPABASE_PROJECT_REF must be set and non-empty\" >&2; exit 1; fi; tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) && trap 'rm -f \"$tmp_file\"' EXIT && bunx supabase@2.109.1 gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" --schema public > \"$tmp_file\" && mv \"$tmp_file\" src/types/supabase.ts && trap - EXIT"`。
+   Supabase CLI は `bunx supabase@2.109.1`（バージョン 2.109.1 固定）を使用する。CLI を更新する際はこのバージョン番号をスクリプトと本プランの検証手順の両方で同時に変更すること。
    ref は `SUPABASE_PROJECT_REF` 環境変数で渡し、ハードコードしない。未設定または空文字なら
    Supabase CLI の起動前に明確なエラーで終了する。生成先は `src/types/supabase.ts` と同じ
    ディレクトリの一時ファイルにし、Supabase CLI が成功した後だけ同一ファイルシステム上の
@@ -133,7 +141,7 @@ interface ImportMetaEnv {
 5. `bun run typecheck` を実行し、生成型の差分がサービス層・feature 層に出したエラーを修正する（`as` キャストで封じず、型に従って直す。10ファイルを超えたら STOP）。
 6. `CLAUDE.md` の Build & Test Commands に `gen:types` を、`docs/design.md` に「スキーマ変更時は `bun run gen:types` で型を再生成する」を追記。
 
-**Verify**: `bun run typecheck && bun run test && bun run lint` → すべて exit 0。`head -5 src/types/supabase.ts` に自動生成ヘッダーがあり「手動定義」コメントが消えている
+**Verify**: `bun run typecheck && bun run test && bun run lint` → すべて exit 0。`head -5 src/types/supabase.ts` に自動生成ヘッダーがあり「手動定義」コメントが消えている。型生成に使用した Supabase CLI バージョンが `bunx supabase@2.109.1` であることを確認し、バージョンを変更した場合は `package.json` の `gen:types` スクリプトおよびこの検証手順の両方を同時に更新する。
 
 ## Test plan
 
