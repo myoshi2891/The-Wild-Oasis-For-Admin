@@ -1,14 +1,14 @@
-# Plan 005: 客室画像フローを修正する — アップロード成功後に DB 書き込み + アップロード検証を追加
+# Plan 005: 客室画像フローを信頼境界へ移し、DB 失敗時の孤児画像を即時削除する
 
 > **Executor instructions**: このプランをステップ順に実行すること。各ステップの
 > 検証コマンドを実行し、期待結果を確認してから次に進む。「STOP conditions」に
 > 該当したら中断して報告する。`plans/README.md` は変更せず、実行結果を reviewer に
 > 報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
-> **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- src/services/apiCabins.ts src/features/cabins/`
-> 続けて `git diff --stat -- src/services/apiCabins.ts src/features/cabins/`、
-> `git diff --cached --stat -- src/services/apiCabins.ts src/features/cabins/`、
-> `git ls-files --others --exclude-standard -- src/services/apiCabins.ts src/features/cabins/`
+> **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- src/services/apiCabins.ts src/features/cabins/ supabase/ docs/design.md`
+> 続けて `git diff --stat -- src/services/apiCabins.ts src/features/cabins/ supabase/ docs/design.md`、
+> `git diff --cached --stat -- src/services/apiCabins.ts src/features/cabins/ supabase/ docs/design.md`、
+> `git ls-files --others --exclude-standard -- src/services/apiCabins.ts src/features/cabins/ supabase/ docs/design.md`
 > で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > in-scope ファイルに差分がある場合、「Current state」の抜粋と実コードを照合し、
 > 不一致なら STOP。
@@ -16,15 +16,15 @@
 ## Status
 
 - **Priority**: P2
-- **Effort**: M
-- **Risk**: MED（作成/編集の両フローに影響。Plan 004 の特性テストを先に着地させること）
-- **Depends on**: plans/004-service-layer-test-gaps.md
-- **Category**: bug / perf
+- **Effort**: L
+- **Risk**: HIGH（作成/編集フロー、Storage RLS、Edge Function のデプロイに影響）
+- **Depends on**: plans/002-verify-and-codify-rls-policies.md, plans/004-service-layer-test-gaps.md
+- **Category**: bug / security
 - **Planned at**: commit `d267f0c`, 2026-07-04
 
 ## Why this matters
 
-`createEditCabin` は現在「DB 行を書く → 画像をアップロードする」の順で処理する。**編集**時に新しい画像のアップロードが失敗すると、意図的にロールバックしない設計（既存客室を消さないため）により、客室行は**存在しない画像 URL** を永久に参照し、一覧に壊れた画像が表示され続ける。自己修復手段はない。処理順を「アップロード成功 → DB 書き込み」に反転すれば、ロールバック自体が不要になり作成/編集の両方が安全になる。あわせて、現在サイズ・MIME 検証ゼロの画像アップロードに上限を設ける。
+`createEditCabin` は現在「DB 行を書く → 画像をアップロードする」の順で処理する。**編集**時にアップロードが失敗すると、客室行は存在しない画像 URL を参照し続ける。一方、単に順序を反転すると「upload 成功 → DB 失敗」で Storage に孤児画像が残る。また、この SPA のフォームや `src/services/` はブラウザ上で動くため、サイズ・MIME 検証の信頼境界にはならず、直接 Storage API を呼ぶクライアントや偽装 `File.type` を防げない。新規画像を扱う作成/編集を認証済み Supabase Edge Function に集約し、サーバー側の実バイト検証、upload、DB 書き込み、失敗時 cleanup を1リクエスト内で完結させる。
 
 ## Current state
 
@@ -63,13 +63,15 @@ if (storageError) {
 ```
 
 - エラーハンドリング規約: 境界で `console.error` + ユーザー向けメッセージを throw（既存コードのパターンを踏襲）。
-- Plan 004 が固定した特性テストのうち「更新+アップロード失敗で delete が呼ばれない」は、本プラン後は「**そもそも DB 書き込みが起きない**」に期待値が変わる。これは意図的な仕様変更としてテストを更新する。
+- `src/services/supabase.ts` のクライアントから Edge Function は `supabase.functions.invoke(...)` で呼べる。Edge Function はユーザー JWT を検証し、DB 書き込みはユーザー権限、Storage upload/remove だけをサーバー秘密鍵のクライアントで行う。秘密鍵をクライアントやログへ出さない。
+- Plan 002 で棚卸しした `cabin-images` の authenticated INSERT ポリシーは、Edge Function 経由を強制するため無効化が必要。ポリシー適用はオペレーター承認を得て行い、記録を `supabase/policies/` と同期する。
 
 ## Commands you will need
 
 | 目的 | コマンド | 成功時の期待結果 |
 |------|---------|-----------------|
 | 対象テスト | `bunx vitest run src/services src/features/cabins` | 全パス |
+| Edge Function テスト | `bunx supabase functions serve cabin-image` と関数テスト | 認証・検証・cleanup ケースが全パス |
 | 全テスト | `bun run test` | 全パス |
 | Lint / 型 | `bun run lint && bun run typecheck` | exit 0 |
 | E2E（任意・環境がある場合のみ） | `bun run test:e2e` | cabins 系 spec がパス |
@@ -82,43 +84,69 @@ if (storageError) {
 - `src/features/cabins/CreateCabinForm.tsx`（画像バリデーション追加）
 - `src/services/__tests__/services.test.ts`（期待値の更新）
 - `src/features/cabins/__tests__/CreateCabinForm.test.tsx`（バリデーションのテスト追加）
+- `src/utils/constants.ts`（画像制約のクライアント表示用定数）
+- `supabase/functions/cabin-image/`（認証、実バイト検証、upload、DB 書き込み、cleanup と関数テスト）
+- `supabase/policies/` / `supabase/README.md`（Storage の期待設定と承認済み変更の記録）
+- `docs/design.md`（画像書き込みの信頼境界とcleanup契約）
 
 **Out of scope**（触らない）:
 
 - 画像 URL の形式（`{supabaseUrl}/storage/v1/object/public/cabin-images/{imageName}`）— 既存データとの互換のため変更禁止
-- Supabase 側の Storage ポリシー・画像変換設定
-- `src/features/cabins/useCreateCabin.ts` / `useEditCabin.ts`（呼び出しシグネチャは不変のはず）
+- Supabase の画像変換・リサイズ設定
+- 既存画像 URL を再利用する編集フロー
 
 ## Git workflow
 
 - ブランチ: `advisor/005-cabin-image-flow`
-- コミット分割: ① 処理順の反転 + テスト更新、② フォームバリデーション + テスト
-- 形式例: `fix(cabins): 画像アップロード成功後に DB を書き込み、編集時の孤児 URL を防止`
+- コミット分割: ① Edge Function の検証とテスト、② upload/DB/cleanup とクライアント接続、③ bucket/RLS 設定記録、④ フォームUX検証
+- 形式例: `fix(cabins): 画像書き込みを検証済み Edge Function に集約`
 
 ## Steps
 
-### Step 1: アップロードを DB 書き込みの前に移動する
+### Step 1: Edge Function に実効的な画像検証を実装する
 
-`createEditCabin` を次の順に再構成する:
+`supabase/functions/cabin-image/` に認証必須の関数を追加する:
 
-1. `hasImagePath`（既存 URL 再利用）の場合は従来どおり即 DB 書き込みへ。
-2. 新規 `File` の場合、**先に** `supabase.storage.from("cabin-images").upload(imageName, ...)` を実行。失敗したら `console.error` + `"Cabin image could not be uploaded"` を throw（DB は未変更なのでロールバック不要）。
-3. アップロード成功後に insert/update を実行。DB 側が失敗した場合、アップロード済み画像が孤児になるが、行が壊れた URL を指すより無害（ストレージの孤児ファイル掃除は Maintenance notes 参照）。この判断をコード内コメント（日本語）で残す。
-4. ロールバック用の `delete()` 呼び出しと `if (!id)` 分岐を削除する。
+1. Authorization header のユーザーを検証し、未認証は 401。クライアントから `id`（編集時のみ）、客室フィールド、`File` を multipart/form-data で受け取る。
+2. `file.size` が `1..5 * 1024 * 1024` の範囲であることをサーバー側で確認する。
+3. `File.type` だけを信用せず先頭バイトから JPEG（`ff d8 ff`）、PNG、WebP（RIFF + WEBP）、GIF87a/GIF89a を判定する。検出結果が許可リスト外、または申告 MIME と不一致なら upload 前に 400。
+4. DB payload は既知フィールドだけを組み立て、クライアント入力の任意キーをそのまま spread しない。
 
-**Verify**: `bunx vitest run src/services` → Plan 004 の「更新+失敗で delete されない」「作成+失敗でロールバック」テストが**失敗する**（Red。仕様変更のため）
+検証関数を副作用から分離し、5MBちょうど、5MB+1、許可4形式、`text/plain`、PNGを `image/jpeg` と申告した偽装、未知シグネチャをテストする。
 
-### Step 2: 特性テストを新仕様に更新する
+**Verify**: 関数テスト → upload/DB mock が不正入力では呼ばれず、全境界ケースがパス。
 
-`services.test.ts` の createEditCabin 系を更新:
+### Step 2: upload・DB 書き込み・即時cleanupを1リクエストにする
 
-- 作成/編集 × アップロード失敗 → `from("cabins")` の `insert`/`update` が**呼ばれない**こと、`delete` も呼ばれないこと
-- 作成/編集 × アップロード成功 → upload の後に insert/update が呼ばれること
-- 既存 URL 再利用（`hasImagePath`）→ upload が呼ばれないこと（既存テストを維持）
+検証後の Edge Function を次の順で実装する:
 
-**Verify**: `bunx vitest run src/services` → 全パス（Green）
+1. 検出済み MIME を `contentType` に指定し、サーバー側 Storage client で `cabin-images` に upload。
+2. 生成された既存互換 URL を使い、ユーザー JWT を引き継いだ client で cabin を insert/updateして RLS を維持。
+3. DB が失敗したら同じリクエスト内で、サーバー側 client により直ちに `remove([imageName])` を await してからエラーを返す。
+4. cleanup も失敗した場合は成功扱いにせず、object path と両エラー種別を `console.error` に残し、`CABIN_WRITE_AND_CLEANUP_FAILED` を返す。秘密値やJWTは記録しない。Functions Logs でこのコードを監視対象にする。
 
-### Step 3: フォームに画像バリデーションを追加する
+コード内に「画像upload後のDB失敗は同一リクエストで即時削除し、cleanup失敗も成功扱いにしない」という日本語コメントを置く。定期GCへ先送りしない。
+
+**Verify**: upload失敗ではDB未実行、DB失敗ではremoveが同じpathで1回、remove失敗では明示エラーとログ、成功時だけCabinを返すテストがパス。
+
+### Step 3: クライアントを Edge Function 呼び出しへ切り替える
+
+- `hasImagePath` の既存URL再利用は従来どおりDBだけ更新する。
+- 新規 `File` の作成/編集は direct Storage uploadを廃止し、`cabin-image` 関数を呼ぶ。戻り値と `createEditCabin` の公開シグネチャは維持する。
+- `services.test.ts` で作成/編集の直接呼び出しも関数を通り、ブラウザ側の `storage.upload` が呼ばれないことを固定する。
+
+**Verify**: `bunx vitest run src/services` → 全パス。
+
+### Step 4: Storage 側の迂回経路を閉じる
+
+オペレーター承認のもと、`cabin-images` bucket に `file_size_limit = 5242880` と
+`allowed_mime_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']` を設定する。
+authenticated client の direct INSERT ポリシーを削除し、Edge Function のサーバー側 client
+だけが upload/remove できる構成にする。適用内容を Plan 002 の形式で記録する。
+
+**Verify**: 認証済みブラウザclientからの直接uploadは拒否、Edge Function経由の有効画像は成功、5MB超過と許可外MIMEはStorage側でも拒否。承認・適用・live確認ができなければ STOP。
+
+### Step 5: フォームにUX用画像バリデーションを追加する
 
 `CreateCabinForm.tsx` の image フィールドに react-hook-form の `validate` を追加する（既存フィールドの `register` パターンを踏襲）:
 
@@ -126,41 +154,36 @@ if (storageError) {
 - MIME allowlist: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
 - 編集時に画像未選択（既存 URL 維持）の場合は検証をスキップ（既存の required 制御に合わせる）
 
-**Verify**: `bunx vitest run src/features/cabins` → 既存フォームテストがパス
+この検証は早いフィードバックのための補助であり、セキュリティ境界は Step 1/4 とコメントする。
 
-### Step 4: バリデーションのテストを追加する
-
-`CreateCabinForm.test.tsx` に追加（既存テストの userEvent + モックパターンを踏襲）:
-
-- 6MB のモック File を選択して submit → エラーメッセージ表示、mutation が呼ばれない
-- `text/plain` の File → 同上
-- 4MB の `image/png` → mutation が呼ばれる
-
-**Verify**: `bun run test && bun run lint && bun run typecheck` → すべて exit 0
+**Verify**: `CreateCabinForm.test.tsx` で6MBと `text/plain` はmutation不発、4MB PNGはmutation発火。`bun run test && bun run lint && bun run typecheck` → すべて exit 0。
 
 ## Test plan
 
-- Step 2（サービス層の新仕様固定）と Step 4（フォームバリデーション3ケース）が本体。
-- 構造パターン: サービスは `services.test.ts` の既存 createEditCabin describe、フォームは `CreateCabinForm.test.tsx` の既存ケース。
-- 環境があれば `bun run test:e2e` で `e2e/cabins.spec.ts` の作成フローが通ることを確認。
+- Edge Function: 未認証、5MB境界、4形式のmagic bytes、申告MIME偽装、未知形式、upload失敗、DB失敗+cleanup成功、DB失敗+cleanup失敗。
+- サービス: 作成/編集の直接呼び出しが必ずEdge Functionを経由し、direct Storage uploadを使わない。既存URL再利用は関数を呼ばない。
+- フォーム: 6MB、`text/plain`、4MB PNG。UX検証を迂回してもEdge Functionが拒否することを関数テストで証明する。
 
 ## Done criteria
 
-- [ ] `grep -n "delete().eq" src/services/apiCabins.ts` で `createEditCabin` 内のロールバック delete が存在しない（`deleteCabin` 関数内の delete は残る）
-- [ ] upload 呼び出しが insert/update より**前**にある（コードレビューで確認）
+- [ ] 新規Fileの作成/編集でブラウザから `storage.upload` を直接呼ばない
+- [ ] Edge Function が5MB上限、許可4形式のmagic bytes、申告MIME一致をupload前に強制する
+- [ ] DB失敗時に同じobject pathを即時removeし、cleanup失敗も明示エラーとして記録・返却する
+- [ ] bucketの5MB/MIME制限とdirect authenticated INSERT拒否がlive確認され、設定記録がリポジトリと一致する
 - [ ] `bun run test` / `bun run lint` / `bun run typecheck` がすべて exit 0
-- [ ] 新規バリデーションテスト3ケースがパス
+- [ ] Edge Function、サービス、フォームの全境界テストがパス
 - [ ] `git status` で in-scope 外の変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 
-- Plan 004 が未着地（特性テストが存在しない）場合 — 先に 004 を実行するよう報告
-- `useCreateCabin` / `useEditCabin` のシグネチャ変更が必要になった場合（呼び出し側への波及はこのプランの想定外）
+- Plan 002/004 が未着地の場合 — Storage現状とサービス特性を先に固定する
+- Storage RLS変更、bucket制限、Edge Functionデプロイのオペレーター承認が得られない場合
+- ユーザーJWTを引き継いだDB書き込みで既存RLSを維持できない場合（service roleでDB認可を迂回しない）
 - E2E の cabins spec が画像アップロードのタイミングに依存して壊れる場合
 
 ## Maintenance notes
 
-- 新仕様では「アップロード成功 → DB 失敗」時にストレージへ孤児ファイルが残る。頻度は低いが、Supabase 側で定期掃除（cabins.image に参照されないオブジェクトの削除）を将来検討する。
-- 画像サイズ上限 5MB は暫定値。運用実態に合わせて `constants.ts` で調整する。
+- cleanup失敗ログは孤児画像が残ったことを示す運用アラートとして扱い、object pathから手動復旧できるようにする。
+- 画像サイズ上限を変更するときはフォーム定数、Edge Function、bucket設定、テストを同じ変更で同期する。
 - Supabase の画像変換（リサイズ済み URL の配信）は別改善として見送った（Plan 007 の select 絞り込みと合わせて再検討可）。

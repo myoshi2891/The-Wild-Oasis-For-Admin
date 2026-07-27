@@ -108,19 +108,21 @@ function handleUpdate(e: FocusEvent<HTMLInputElement>, field: keyof SettingsUpda
 
 ## Steps
 
-### Step 1: updateSetting から id ハードコードを外す
+### Step 1: 取得した設定 ID だけを更新する
 
-単一行テーブルなので、`getSettings` と同じ「フィルタなし」戦略に揃える:
+`updateSetting` の先頭で既存の `getSettings()` を呼び、単一行取得契約を通過した設定の `id` を使う:
 
 ```ts
+const currentSettings = await getSettings();
 const { data, error } = await supabase
     .from("settings")
     .update(newSetting)
+    .eq("id", currentSettings.id)
     .select("*")
     .single();
 ```
 
-Supabase の update はフィルタなしでも全行（=1行）に適用され、`.single()` が1行であることを保証する。`services.test.ts` の updateSetting テストで `eq` が呼ばれない期待に更新する。
+フィルタなし update は禁止する。`getSettings()` が0件または複数行で失敗した場合は update を呼ばず、そのエラーを返す。`services.test.ts` はIDを1以外（例: 7）にして `.eq("id", 7)` を検証し、単一行取得失敗時に `.update()` が呼ばれないケースも追加する。
 
 **Verify**: `bunx vitest run src/services` → 全パス
 
@@ -138,7 +140,8 @@ Supabase の update はフィルタなしでも全行（=1行）に適用され�
 
 - 全フィールド: `num <= 0` を拒否（`breakfastPrice` のみ `num < 0` を拒否し 0 は許可）
 - `minBookingLength` / `maxBookingLength` / `maxGuestsPerBooking`: 整数チェック（`Number.isInteger`）
-- クロスフィールド: `minBookingLength > maxBookingLength` になる更新を拒否（現在値は `useSettings` の `settings` から取得できる — フォームは既に分割代入で保持している）
+- `minBookingLength` と `maxBookingLength` はフォーム内の最新draft値をlocal stateまたはinput refで保持する。`useSettings` のサーバー値をクロスフィールド比較に使わない。
+- どちらのフィールドをblurした場合も、更新対象の `num` ともう一方の最新draft値から同じ `draftMin <= draftMax` 条件を評価する。片方のmutationがサーバーへ未反映でも、画面に入力済みの値で判定する。
 
 **Verify**: `bunx vitest run src/features/settings` → 全パス
 
@@ -147,31 +150,34 @@ Supabase の update はフィルタなしでも全行（=1行）に適用され�
 `UpdateSettingsForm.test.tsx` に追加（既存の onBlur 発火パターンを踏襲）:
 
 1. 負の朝食価格 → mutation 不発 + エラートースト
-2. `minBookingLength` に max より大きい値 → mutation 不発
-3. 正常値 → mutation 発火（既存ケースがあれば流用）
+2. maxを小さく編集してサーバー再取得前にminを編集 → 最新draft同士で `min > max` を拒否
+3. minを大きく編集してサーバー再取得前にmaxを編集 → 同じ比較で `min > max` を拒否
+4. 両方向の正常な組み合わせ → mutation発火（既存ケースがあれば流用）
 
 **Verify**: `bun run test && bun run lint && bun run typecheck` → すべて exit 0
 
 ## Test plan
 
-- Step 2 の queryKey 一致テスト（回帰防止の要）、Step 4 の3ケース。
+- Step 1 の取得ID条件と単一行取得失敗時の更新停止、Step 2 のqueryKey一致、Step 4 のdraft値を使う双方向ケース。
 - 構造パターン: `useUpdateSetting.test.ts` / `UpdateSettingsForm.test.tsx` の既存ケース。
 
 ## Done criteria
 
 - [ ] `grep -n 'eq("id", 1)' src/services/apiSettings.ts` がヒットしない
+- [ ] `updateSetting` が `getSettings()` で取得したIDを `.eq("id", resolvedId)` に渡し、フィルタなしupdateが存在しない
+- [ ] 設定行が0件/複数行で単一取得に失敗した場合、updateが呼ばれないテストがパス
 - [ ] `grep -rn 'queryKey' src/features/settings/*.ts` の設定系キーが単一の定数参照に統一されている
-- [ ] 負値・min>max が保存できないことをテストが証明している
+- [ ] 負値と、片側がサーバー未反映のmin>maxを両編集方向で保存できないことをテストが証明している
 - [ ] `bun run test` / `bun run lint` / `bun run typecheck` がすべて exit 0
 - [ ] `git status` で in-scope 外の変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 
-- Supabase の update がフィルタなしを拒否する設定（RLS 等）でテスト・実環境が失敗する場合 — `getSettings` で id を取得して渡す代替案に切り替える前に報告
+- `getSettings()` の戻り値に安定した `id` が存在しない、または読み取りと更新の間で対象行が置き換わる仕様が判明した場合
 - queryKey 変更が settings 以外のテストを壊す場合（キーが他所で参照されている兆候）
 
 ## Maintenance notes
 
 - Plan 012（予約作成スパイク）が実装されると、これらの設定値（min/max 宿泊日数、最大ゲスト数）が予約フォームの検証に使われる。ここで導入するバリデーションが上流の防波堤になる。
-- レビュー観点: onBlur 更新という UX（フィールド単位保存）は維持されているか。クロスフィールド検証が「現在の DB 値」ではなく「フォームの表示値」と比較していないか。
+- レビュー観点: onBlur 更新という UX（フィールド単位保存）は維持されているか。クロスフィールド検証が `useSettings` の古い値ではなく、フォームの最新draft値同士を比較しているか。
