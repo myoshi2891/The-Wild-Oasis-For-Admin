@@ -130,7 +130,7 @@ if (storageError) {
 
 **Verify**: `bunx vitest run src/services` → 新規ケース含め全パス
 
-### Step 3: createEditCabin の更新系3ケースを追加する
+### Step 3: createEditCabin の更新系2ケースと getCabins のエラーパスを追加する
 
 1. `id` あり + 新規 `File` + アップロード成功 → `update` が呼ばれ、`storage.upload` が実行され、`delete` は**呼ばれない**
 2. `id` あり + 新規 `File` + アップロード失敗 → throw するが、対象 `id` に対する `update` が実行され、`from("cabins").delete()` は**呼ばれない**ことを検証する。現行実装は DB update 後に upload するため、失敗時には新規生成された未存在画像 URL が保存され、既存画像 URL は保持されない。この URL を有効値として扱わず、Plan 005 で解消する既知バグとしてテスト名・コメント・実行結果に明記する
