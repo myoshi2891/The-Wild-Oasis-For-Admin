@@ -118,7 +118,12 @@ interface ImportMetaEnv {
 3. 差分を分類する:
    - nullability やカラムの過不足 → 生成側が正。`src/types/supabase.ts` を生成結果で**置換**する
    - 生成結果に手書きにない補助型がある → そのまま採用
-4. `package.json` に再生成スクリプトを追加: `"gen:types": "bunx supabase gen types typescript --project-id $SUPABASE_PROJECT_REF --schema public > src/types/supabase.ts"`（ref は環境変数で渡し、ハードコードしない）。`.env.example` に `SUPABASE_PROJECT_REF=` を追記。
+4. `package.json` に再生成スクリプトを追加:
+   `"gen:types": "tmp_file=$(mktemp) && trap 'rm -f \"$tmp_file\"' EXIT && bunx supabase gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" --schema public > \"$tmp_file\" && mv \"$tmp_file\" src/types/supabase.ts && trap - EXIT"`。
+   ref は `SUPABASE_PROJECT_REF` 環境変数で渡し、ハードコードしない。生成先を一時ファイルにして
+   Supabase CLI が成功した後だけ `mv` するため、生成失敗時は既存の
+   `src/types/supabase.ts` を変更せず、一時ファイルだけを `trap` で削除する。
+   `.env.example` に `SUPABASE_PROJECT_REF=` を追記。
 5. `bun run typecheck` を実行し、生成型の差分がサービス層・feature 層に出したエラーを修正する（`as` キャストで封じず、型に従って直す。10ファイルを超えたら STOP）。
 6. `CLAUDE.md` の Build & Test Commands に `gen:types` を、`docs/design.md` に「スキーマ変更時は `bun run gen:types` で型を再生成する」を追記。
 
@@ -135,7 +140,7 @@ interface ImportMetaEnv {
 - [ ] `src/data/` が存在しない（`ls src/data` がエラー）
 - [ ] `vite-env.d.ts` に URL/KEY 両方の型がある
 - [ ] URL/KEYいずれか欠落時はclient生成前に明確なエラーとなり、両方設定時だけ `createClient` が呼ばれるテストがパス
-- [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が `bunx supabase` を使う
+- [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が `SUPABASE_PROJECT_REF` と `bunx supabase` を使って一時ファイルへ生成し、CLI 成功時だけ `mv` する（失敗時は既存ファイルが不変）
 - [ ] `.env.example` に秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーがある
 - [ ] Supabaseプロジェクトrefとaccess token / service-role tokenを検出対象に含めた承認済みsecret scannerで、全refの全コミット履歴、staged差分、未追跡ファイルを個別に検査し、いずれも検出0件である。作業ツリーだけの`git diff`確認では完了扱いにしない
 - [ ] `bun run typecheck` / `bun run lint` / `bun run test` / `bun run build` がすべて exit 0
