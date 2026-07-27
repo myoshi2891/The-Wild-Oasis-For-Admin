@@ -125,8 +125,8 @@ interface ImportMetaEnv {
    ディレクトリの一時ファイルにし、Supabase CLI が成功した後だけ同一ファイルシステム上の
    atomic rename となる `mv` を実行する。生成失敗時は既存の `src/types/supabase.ts` を
    変更せず、一時ファイルだけを `trap` で削除する。
-   `.env.example` に `SUPABASE_PROJECT_REF=` と、実行前に値を export するか非追跡の環境ファイルから
-   安全にロードする必要があり、`.env.example` は自動ロードされない旨のコメントを追記する。
+   `.env.example` に `SUPABASE_PROJECT_REF=` と、実行前に `export SUPABASE_PROJECT_REF=<ref>` で
+    値を設定する必要があり、`.env.example` は自動ロードされない旨のコメントを追記する。
 5. `bun run typecheck` を実行し、生成型の差分がサービス層・feature 層に出したエラーを修正する（`as` キャストで封じず、型に従って直す。10ファイルを超えたら STOP）。
 6. `CLAUDE.md` の Build & Test Commands に `gen:types` を、`docs/design.md` に「スキーマ変更時は `bun run gen:types` で型を再生成する」を追記。
 
@@ -144,7 +144,7 @@ interface ImportMetaEnv {
 - [ ] `vite-env.d.ts` に URL/KEY 両方の型がある
 - [ ] URL/KEYいずれか欠落時はclient生成前に明確なエラーとなり、両方設定時だけ `createClient` が呼ばれるテストがパス
 - [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が空でない `SUPABASE_PROJECT_REF` を CLI 起動前に検証し、`bunx supabase` の出力を `src/types/` 内の一時ファイルへ生成して、成功時だけ同一ファイルシステム上の atomic rename で `mv` する（失敗時は既存ファイルが不変）
-- [ ] `.env.example` に秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーと、値の export または非追跡の環境ファイルからの安全なロードが必要であり、`.env.example` は自動ロードされない旨の案内がある
+- [ ] `.env.example` に秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーと、実行前に `export SUPABASE_PROJECT_REF=<ref>` で値を設定する必要があり、`.env.example` は自動ロードされない旨の案内がある
 - [ ] 承認済みsecret scannerで **access token / service-role token / 秘密鍵 / パスワード等の非公開資格情報のみ**を検出対象とし、① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリをすべて個別に検査してすべて検出0件である。作業ツリーだけの `git diff` 確認や一部カテゴリのみの確認では完了扱いにしない
 - [ ] `SUPABASE_PROJECT_REF` は公開メタデータとして別途確認: `.env.example` に正しくプレースホルダー記載があり、実際の project ref 値が ① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリすべてに含まれないことを確認する（secret scannerの資格情報検出要件とは分離して管理し、検査範囲のみを同一の4カテゴリに揃える）
 - [ ] `bun run typecheck` / `bun run lint` / `bun run test` / `bun run build` がすべて exit 0
