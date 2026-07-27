@@ -5,10 +5,10 @@
 > 該当したら中断して報告する。`plans/README.md` は変更せず、実行結果を reviewer に
 > 報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
-> **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts`
-> 続けて `git diff --stat -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts`、
-> `git diff --cached --stat -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts`、
-> `git ls-files --others --exclude-standard -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts`
+> **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts src/services/__tests__/supabase.test.ts .env.example package.json CLAUDE.md docs/design.md`
+> 続けて `git diff --stat -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts src/services/__tests__/supabase.test.ts .env.example package.json CLAUDE.md docs/design.md`、
+> `git diff --cached --stat -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts src/services/__tests__/supabase.test.ts .env.example package.json CLAUDE.md docs/design.md`、
+> `git ls-files --others --exclude-standard -- src/data/ src/types/supabase.ts vite-env.d.ts src/services/supabase.ts src/services/__tests__/supabase.test.ts .env.example package.json CLAUDE.md docs/design.md`
 > で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > in-scope ファイルに差分がある場合、「Current state」の抜粋と実コードを照合し、
 > 不一致なら STOP。
@@ -52,7 +52,7 @@ interface ImportMetaEnv {
 }
 ```
 
-- `src/services/supabase.ts:4` 付近 — `import.meta.env.VITE_SUPABASE_URL as string` のキャスト。
+- `src/services/supabase.ts:4-17` — URL/KEYの `as string` キャストはあるが、両値の欠落ガードは既に `createClient` より前に存在する。このガードは削除・緩和せずテストで固定する。
 - E2E シードは `e2e/seed.ts` が担っており（Plan 001 参照）、Uploader の機能はそちらで代替済み。
 
 ## Commands you will need
@@ -71,6 +71,8 @@ interface ImportMetaEnv {
 - `src/types/supabase.ts`（生成型への置換）
 - `vite-env.d.ts`
 - `src/services/supabase.ts`（キャスト除去）
+- `src/services/__tests__/supabase.test.ts`（env欠落ガードの回帰テスト、新規）
+- `.env.example`（`SUPABASE_PROJECT_REF` のプレースホルダー）
 - `package.json`（`gen:types` スクリプト追加）
 - `CLAUDE.md` / `docs/design.md`（型再生成手順の1行追記）
 
@@ -99,9 +101,15 @@ interface ImportMetaEnv {
 
 1. `vite-env.d.ts` に `readonly VITE_SUPABASE_URL: string;` を追加。
 2. `src/services/supabase.ts` の `as string` キャストを除去。
-3. ついでに env 変数が空のときの起動時ガード（`if (!supabaseUrl) throw new Error(...)`）が無ければ追加を検討 — 既存実装を読んで、既にあれば何もしない。
+3. 既存の `VITE_SUPABASE_URL` と `VITE_SUPABASE_KEY` の欠落ガードを、必ず
+   `createClient<Database>(...)` より前に維持する。片方だけの検証へ弱めたり、型宣言だけで
+   実行時検証を置き換えたりしない。
+4. `src/services/__tests__/supabase.test.ts` を追加する。`vi.stubEnv` / `vi.resetModules` と
+   `createClient` mockを使い、URL欠落、KEY欠落では明確な既存エラーをthrowして
+   `createClient` が呼ばれないこと、両方がある場合だけ正しい2値で1回呼ばれることを検証する。
 
-**Verify**: `grep -n "as string" src/services/supabase.ts` → ノーヒット。`bun run typecheck` → exit 0
+**Verify**: `grep -n "as string" src/services/supabase.ts` → ノーヒット。
+`bunx vitest run src/services/__tests__/supabase.test.ts && bun run typecheck` → 全パス / exit 0。
 
 ### Step 3: Supabase 型を自動生成に切り替える
 
@@ -110,7 +118,7 @@ interface ImportMetaEnv {
 3. 差分を分類する:
    - nullability やカラムの過不足 → 生成側が正。`src/types/supabase.ts` を生成結果で**置換**する
    - 生成結果に手書きにない補助型がある → そのまま採用
-4. `package.json` に再生成スクリプトを追加: `"gen:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_REF --schema public > src/types/supabase.ts"`（ref は環境変数で渡し、ハードコードしない）。`.env.example` に `SUPABASE_PROJECT_REF=` を追記。
+4. `package.json` に再生成スクリプトを追加: `"gen:types": "bunx supabase gen types typescript --project-id $SUPABASE_PROJECT_REF --schema public > src/types/supabase.ts"`（ref は環境変数で渡し、ハードコードしない）。`.env.example` に `SUPABASE_PROJECT_REF=` を追記。
 5. `bun run typecheck` を実行し、生成型の差分がサービス層・feature 層に出したエラーを修正する（`as` キャストで封じず、型に従って直す。10ファイルを超えたら STOP）。
 6. `CLAUDE.md` の Build & Test Commands に `gen:types` を、`docs/design.md` に「スキーマ変更時は `bun run gen:types` で型を再生成する」を追記。
 
@@ -118,14 +126,17 @@ interface ImportMetaEnv {
 
 ## Test plan
 
-- 挙動変更はないため新規テストなし。既存 70+ テストファイルの全パスが回帰ゲート。
+- `supabase.test.ts`: URL欠落、KEY欠落、両方設定済みの3ケース。型宣言では防げない起動時失敗を固定する。
+- 既存 70+ テストファイルの全パスがUploader削除・生成型置換の回帰ゲート。
 - Step 3 で `src/types/__tests__/domain.test.ts`（型テスト）が生成型との整合を検証してくれる — これが落ちたら型の食い違いの具体的証拠として扱う。
 
 ## Done criteria
 
 - [ ] `src/data/` が存在しない（`ls src/data` がエラー）
 - [ ] `vite-env.d.ts` に URL/KEY 両方の型がある
-- [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` に `gen:types` がある
+- [ ] URL/KEYいずれか欠落時はclient生成前に明確なエラーとなり、両方設定時だけ `createClient` が呼ばれるテストがパス
+- [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が `bunx supabase` を使う
+- [ ] `.env.example` に秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーがある
 - [ ] プロジェクト ref・トークンがどのコミットにも含まれない（`git diff` で確認）
 - [ ] `bun run typecheck` / `bun run lint` / `bun run test` / `bun run build` がすべて exit 0
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない

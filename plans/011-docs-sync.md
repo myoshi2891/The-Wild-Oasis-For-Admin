@@ -51,7 +51,7 @@
 | 目的 | コマンド | 成功時の期待結果 |
 |------|---------|-----------------|
 | Markdown lint | `bunx markdownlint-cli2 "README.md" "docs/**/*.md"`（`.markdownlint.json` がルート設定） | エラーなし |
-| ゲート | `bun run lint && bun run typecheck` | exit 0（コード無変更の確認） |
+| ゲート | `bun run lint && bun run typecheck && bun run test` | exit 0 / 全パス（コード無変更の確認） |
 
 ## Scope
 
@@ -71,7 +71,7 @@
 
 - ブランチ: `advisor/011-docs-sync`
 - コミット形式例: `docs(readme): ゲスト・予約作成の記述を実装スコープに合わせて修正`
-- ドキュメントのみでも各コミットで `bun run lint && bun run typecheck` を通す（プロジェクトルール）
+- ドキュメントのみでも各コミットで `bun run lint && bun run typecheck && bun run test` を通す（indexの検証契約）
 
 ## Steps
 
@@ -101,18 +101,23 @@
 
 `README.md` の開発環境節の近くに以下の内容の節を追加する（コマンドではなく手順の説明でよい）:
 
-1. Supabase プロジェクトを作成し、`docs/design.md` の ER 図に従って4テーブルを作成する
-2. RLS を有効化する（Plan 002 が着地済みなら `supabase/policies/` を参照、と書く。未着地ならダッシュボードで設定と書く）
-3. Storage に `cabin-images` バケット（公開読み取り）を作成する
-4. Authentication でスタッフ用ユーザーを作成する（E2E 用は `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` と一致させる）
-5. `.env.example` を `.env` にコピーして URL / anon キーを設定する（**実際の値は書かない**）
-6. Plan 001 着地済みの場合: `E2E_SUPABASE_URL_ALLOWLIST` の設定にも言及する
+1. Supabase プロジェクトを作成する。リポジトリ内に適用可能な
+   `supabase/migrations/*.sql` または承認済みschema SQLがあれば、それを正規手順として
+   適用する。`docs/design.md` のER図は概念図であり、DDLの代用にしない。
+2. 現状のように正規schema SQL/migrationが存在しない場合は、READMEに「ER図から手動作成せず、
+   オペレーターから対象プロジェクトの承認済みschemaまたはdumpを取得してから続行する」と
+   明記する。推測した型・制約・default値で4テーブルを作らない。
+3. RLS を有効化する（Plan 002 が着地済みなら `supabase/policies/` を参照、と書く。未着地ならダッシュボードで設定と書く）
+4. Storage に `cabin-images` バケット（公開読み取り）を作成する
+5. Authentication でスタッフ用ユーザーを作成する（E2E 用は `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` と一致させる）
+6. `.env.example` を `.env` にコピーして URL / anon キーを設定する（**実際の値は書かない**）
+7. Plan 001 着地済みの場合: `E2E_SUPABASE_URL_ALLOWLIST` の設定にも言及する
 
-**Verify**: 新節に実キー・実 URL・個人情報が含まれない（プレースホルダーのみ）
+**Verify**: 新節に実キー・実 URL・個人情報が含まれず、ER図からの手動DDL作成を指示していない。正規schemaがない場合のオペレーター確認が明記されている。
 
 ### Step 5: Markdown lint と最終確認
 
-**Verify**: `bunx markdownlint-cli2 "README.md" "docs/**/*.md"` → エラーなし。`git diff --stat` が in-scope の3ファイルのみ。`bun run lint && bun run typecheck` → exit 0
+**Verify**: `bunx markdownlint-cli2 "README.md" "docs/**/*.md"` → エラーなし。`git diff --stat` が in-scope の3ファイルのみ。`bun run lint && bun run typecheck && bun run test` → exit 0 / 全パス
 
 ## Test plan
 
@@ -124,7 +129,9 @@
 - [ ] ゲスト・予約作成が「アプリ内で管理される」と読める記述が README / spec に残っていない
 - [ ] 依存表のバージョンが `package.json` と一致
 - [ ] 初回バックエンドセットアップ節が存在し、秘密値を含まない
+- [ ] 初回schemaは適用可能なSQL/migrationを参照し、存在しない場合はER図から手作業せずオペレーター確認を要求する
 - [ ] `bunx markdownlint-cli2` がエラーなし
+- [ ] `bun run lint` / `bun run typecheck` / `bun run test` がすべて成功
 - [ ] `git status` で in-scope 外の変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 

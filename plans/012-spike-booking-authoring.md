@@ -44,7 +44,7 @@
 | 目的 | コマンド | 成功時の期待結果 |
 |------|---------|-----------------|
 | ゲート（成果物がコードを触っていない確認） | `git status` | `plans/` 配下のみ変更 |
-| Lint / 型（変更なしの確認） | `bun run lint && bun run typecheck` | exit 0 |
+| Lint / 型 / テスト（変更なしの確認） | `bun run lint && bun run typecheck && bun run test` | exit 0 / 全パス |
 
 ## Scope
 
@@ -87,10 +87,19 @@
 
 これがスパイクの核心（未知数が最も大きい）。以下を調査して結論を出す:
 
-1. **DB レベル**: PostgreSQL の exclusion constraint（`EXCLUDE USING gist (cabinId WITH =, daterange(startDate, endDate) WITH &&)`）が Supabase で使えるか（`btree_gist` 拡張の有効化可否）。スキーマ変更になるため、SQL 案の文書化まで（適用しない）。
-2. **API レベル**: 挿入前の重複チェッククエリ（`.eq("cabinId", x).lt("startDate", end).gt("endDate", start)` 型のオーバーラップ判定）と、check-then-insert の競合窓の許容可否（スタッフ数名の内部ツールでは実害が小さい、という判断も選択肢）。
-3. キャンセル済み・チェックアウト済み予約を重複判定から除外する条件。
-4. 推奨: DB 制約 + API 事前チェックの二段構え（制約が最後の砦、事前チェックが UX）を検証し、Supabase 側の制約が不可能な場合のフォールバックを明記する。
+1. **DB レベル**: PostgreSQL の exclusion constraint
+   （`EXCLUDE USING gist (cabinId WITH =, daterange(startDate, endDate, '[)') WITH &&) WHERE (status IN ('unconfirmed', 'checked-in'))` 相当）
+   が Supabase で使えるか（`btree_gist` 拡張とpartial exclusion constraintの可否）。
+   現行statusは `unconfirmed` / `checked-in` / `checked-out` のため、active集合を前2つと定義する。
+   将来 `cancelled` を追加してもactive集合に含めない。スキーマ変更になるためSQL案の文書化まで（適用しない）。
+2. **API レベル**: 挿入前の重複チェッククエリ
+   （`.in("status", ["unconfirmed", "checked-in"]).lt("startDate", end).gt("endDate", start)`）
+   と、check-then-insert の競合窓の許容可否。
+3. active予約だけが重複をブロックし、`checked-out` または将来の `cancelled` へ遷移すると
+   constraint対象から外れて同期間の新規予約が可能になることを検証項目にする。
+4. 同日checkout/checkin、部分重複、完全包含、別cabin、active→checked-out、
+   active→cancelled（将来status案）のSQL/APIテストケースを成果物へ記録する。
+5. 推奨: DB 制約 + API 事前チェックの二段構え（制約が最後の砦、事前チェックが UX）を検証し、Supabase 側の制約が不可能な場合のフォールバックを明記する。
 
 ### Step 4: 実装プランの分割案と見積もりを書く
 
@@ -103,7 +112,7 @@
 
 各プランの依存順序と、`docs/spec.md` の主要機能一覧・「完了の定義」への追記案も含める。
 
-**Verify**: `git status` → 変更が `plans/` 配下のみ。`bun run lint && bun run typecheck` → exit 0
+**Verify**: `git status` → 変更が `plans/` 配下のみ。`bun run lint && bun run typecheck && bun run test` → exit 0 / 全パス
 
 ## Test plan
 
@@ -114,13 +123,18 @@
 - [ ] `booking-authoring-design.md` に Step 1〜4 の全セクションが存在する
 - [ ] ゲスト選択方式の推奨が理由付きで1つに決まっている
 - [ ] 重複防止の方式が「Supabase で exclusion constraint が使えるか」の検証結果付きで結論されている
+- [ ] active status限定のDB/API条件と、activeからchecked-out／将来のcancelledへ遷移した際の制約解放が検証されている
 - [ ] 後続実装プランの分割案（3〜4本）と依存順序が書かれている
+- [ ] `bun run lint` / `bun run typecheck` / `bun run test` がすべて成功
+- [ ] Supabase実機検証済みの場合だけDONE候補とし、文献調査だけの場合は成果物先頭に「暫定設計・未検証」と表示してSTOPPED/BLOCKED候補として報告する
 - [ ] `git status` で `plans/` 以外に変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 
-- Supabase の管理画面・SQL エディタへのアクセスが得られず Step 3-1 が検証できない場合 — 文献調査ベースの暫定結論と明記した上で完了させ、検証未了を報告する
+- Supabase の管理画面・SQL エディタへのアクセスが得られず Step 3-1 を実証できない場合 —
+  文献調査結果は成果物として残すが、先頭に「暫定設計・未検証」と表示し、executorは
+  `STOPPED` として報告する。DONE扱いにせず、reviewerが `reconcile` で理由付きBLOCKEDへ更新する。
 - スパイク中に bookings のスキーマが ER 図と食い違っていることを発見した場合（Plan 010 の型生成と関連 — 報告して先に型の正を確定させる）
 
 ## Maintenance notes
