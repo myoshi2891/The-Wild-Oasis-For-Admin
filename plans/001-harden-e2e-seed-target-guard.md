@@ -91,8 +91,9 @@ const { error: errBk } = await supabase.from("bookings").delete().gt("id", 0);
 
 `e2e/seed.ts` の env 読み込み完了後・Supabase クライアント生成前に、接続先検証関数を追加する:
 
-- 新しい環境変数 `E2E_SUPABASE_URL_ALLOWLIST`（カンマ区切りの URL プレフィックス）を導入。
-- 解決済みの `process.env.VITE_SUPABASE_URL` が許可リストのいずれかのプレフィックスで始まらない場合、日本語のエラーメッセージ（既存ガードの文体に合わせる）を表示して `process.exit(1)`。
+- 新しい環境変数 `E2E_SUPABASE_URL_ALLOWLIST`（カンマ区切りの承認済み origin）を導入。
+- 解決済みの `process.env.VITE_SUPABASE_URL` と各許可値を `new URL()` で解析する。不正 URL は一致扱いにせず、日本語のエラーメッセージを表示して `process.exit(1)`。
+- 候補の `origin` が承認済み origin と完全一致し、かつ `protocol` と `host`（明示ポートを含む）が一致する場合だけ通す。pathname、末尾スラッシュ、文字列プレフィックスでは判定せず、`startsWith` は使用しない。
 - `ALLOW_NON_TEST_SEED` が `true`/`1` の場合のみこの検証をスキップ可能とする（既存のオプトイン思想と整合させる）。
 - `.env.example` に `E2E_SUPABASE_URL_ALLOWLIST=` をプレースホルダーとコメント付きで追記。
 
@@ -123,6 +124,13 @@ VITE_SUPABASE_URL="https://example.supabase.co" VITE_SUPABASE_KEY="dummy" \
 
 期待: 接続先ガードは通過し、「シードデータ注入開始」ログの後、ダミー接続先への接続エラーで失敗する（ガード以外の理由での失敗は正常）。
 
+さらに DB 接続前に次の境界を確認する:
+
+- 許可値 `https://example.supabase.co` に対する候補 `https://example.supabase.co/` は通る。
+- 候補 `https://example.supabase.co.attacker.invalid` は、文字列プレフィックスが一致しても exit 1。
+- 候補または許可値が不正 URL の場合は例外を外へ漏らさず、日本語メッセージを表示して exit 1。
+- protocol、hostname、port のいずれかが異なる場合は exit 1。
+
 ### Step 4: ドキュメントを同期する
 
 `docs/spec.md` の「重要E2E環境制約」と `docs/design.md` の「シードデータの保護と仕様」に、接続先許可リスト検証（`E2E_SUPABASE_URL_ALLOWLIST`）の説明を1〜2文で追記する。
@@ -140,6 +148,8 @@ VITE_SUPABASE_URL="https://example.supabase.co" VITE_SUPABASE_KEY="dummy" \
 
 - [ ] `bun run lint` / `bun run typecheck` / `bun run test` がすべて exit 0
 - [ ] Step 3 の1本目が exit 1 かつブロックメッセージ表示
+- [ ] `E2E_SUPABASE_URL_ALLOWLIST` の判定に `startsWith` を使わず、承認済み origin と protocol/host が一致する場合だけ通る
+- [ ] 悪意ある接尾辞、不正 URL、protocol/port 不一致がすべて DB 接続前に exit 1
 - [ ] `.env.example` に `E2E_SUPABASE_URL_ALLOWLIST` が存在（`grep E2E_SUPABASE_URL_ALLOWLIST .env.example` がヒット）
 - [ ] `docs/spec.md` と `docs/design.md` に新ガードの記述がある
 - [ ] `git status` で in-scope 外のファイルに変更がない

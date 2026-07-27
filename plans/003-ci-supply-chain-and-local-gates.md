@@ -5,10 +5,10 @@
 > 該当したら中断して報告する。`plans/README.md` は変更せず、実行結果を reviewer に
 > 報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
-> **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- .github/workflows/ci.yml package.json`
-> 続けて `git diff --stat -- .github/workflows/ci.yml package.json`、
-> `git diff --cached --stat -- .github/workflows/ci.yml package.json`、
-> `git ls-files --others --exclude-standard -- .github/workflows/ci.yml package.json`
+> **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- .github/workflows/ci.yml package.json bun.lock`
+> 続けて `git diff --stat -- .github/workflows/ci.yml package.json bun.lock`、
+> `git diff --cached --stat -- .github/workflows/ci.yml package.json bun.lock`、
+> `git ls-files --others --exclude-standard -- .github/workflows/ci.yml package.json bun.lock`
 > で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > in-scope ファイルに差分がある場合、「Current state」の抜粋と実コードを照合し、
 > 不一致なら STOP。
@@ -69,6 +69,7 @@ on:
 
 - `.github/workflows/ci.yml`
 - `lefthook.yml`（新規）+ `package.json`（`prepare` スクリプトと devDependency 追加）
+- `bun.lock`（lefthook 追加に伴う lockfile 更新）
 - `CLAUDE.md`（pre-commit hook の存在を1行追記）
 
 **Out of scope**（触らない）:
@@ -80,7 +81,7 @@ on:
 ## Git workflow
 
 - ブランチ: `advisor/003-ci-hardening`
-- コミットは論理単位で分割: ① SHA ピン修正、② キャッシュ + concurrency、③ pre-commit hook
+- コミットは論理単位で分割: ① SHA ピン修正、② キャッシュ + concurrency、③ pre-commit hook（`lefthook.yml` / `package.json` / `bun.lock` / `CLAUDE.md`）
 - コミット形式例: `ci: actions/checkout を SHA ピン留めし規約に準拠`
 - push / PR はオペレーターの指示があるまで行わない
 
@@ -129,14 +130,15 @@ pre-commit:
       run: bun run lint
     typecheck:
       run: bun run typecheck
+    test:
+      run: bun run test
 ```
 
-（`bun run test` は全件実行が重いため pre-commit には含めず、CI に委ねる。含めるかはオペレーター判断。）
-
 3. `package.json` の scripts に `"prepare": "lefthook install"` を追加。
-4. `CLAUDE.md` の Build & Test Commands 節に「pre-commit: lefthook が lint + typecheck を自動実行」と1行追記。
+4. `bun.lock` に lefthook の解決結果が記録されていることを確認する。`package.json` だけをコミットしない。
+5. `CLAUDE.md` の Build & Test Commands 節に「pre-commit: lefthook が lint + typecheck + test を自動実行」と1行追記。
 
-**Verify**: `bunx lefthook install && bunx lefthook run pre-commit` → lint と typecheck が実行され exit 0
+**Verify**: `bun install --frozen-lockfile && bunx lefthook install && bunx lefthook run pre-commit` → frozen lockfile install が成功し、lint / typecheck / test がすべて実行され exit 0
 
 ### Step 4: 全ゲートを通す
 
@@ -152,7 +154,8 @@ pre-commit:
 
 - [ ] `ci.yml` 内のすべての `uses:` が `@<40桁SHA> # v...` 形式（`grep -E 'uses: .+@v[0-9]' .github/workflows/ci.yml` がヒットしない）
 - [ ] `concurrency` ブロックと キャッシュステップが存在する
-- [ ] `bunx lefthook run pre-commit` が exit 0
+- [ ] `package.json` と `bun.lock` の両方に lefthook 追加が反映され、`bun install --frozen-lockfile` が exit 0
+- [ ] `bunx lefthook run pre-commit` が lint / typecheck / test をすべて実行して exit 0
 - [ ] `bun run lint && bun run typecheck && bun run test` がすべて exit 0
 - [ ] `git status` で in-scope 外の変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない

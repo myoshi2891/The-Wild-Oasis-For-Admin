@@ -86,12 +86,39 @@ export async function deleteBooking(id: number): Promise<null> {
 
 1. 各テーブル（`cabins`, `bookings`, `guests`, `settings`）の RLS 有効/無効
 2. 各テーブルの全ポリシー（操作種別 SELECT/INSERT/UPDATE/DELETE、対象ロール、USING/WITH CHECK 式）
-3. ストレージバケット `cabin-images` のポリシー（公開読み取り設定を含む）
+3. ストレージバケット `cabin-images` の公開読み取り・サイズ・MIME 設定
+4. `storage.objects` に対する `cabin-images` 用ポリシー（操作種別、対象ロール、USING/WITH CHECK 式）
 
 CLI が使える場合は `bunx supabase db dump --schema public --data-only=false` 相当の出力、あるいは SQL エディタで
-`select * from pg_policies where schemaname = 'public';` の結果を取得する。
+public テーブルを取得する:
 
-**Verify**: 4テーブル + 1バケットぶんの棚卸し結果が揃っている（欠けがあれば STOP）。
+```sql
+select *
+from pg_policies
+where schemaname = 'public'
+  and tablename in ('cabins', 'bookings', 'guests', 'settings');
+```
+
+Storage は public スキーマと混ぜず、次の2クエリで個別に取得する:
+
+```sql
+select id, public, file_size_limit, allowed_mime_types
+from storage.buckets
+where id = 'cabin-images';
+
+select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+from pg_policies
+where schemaname = 'storage'
+  and tablename = 'objects'
+  and (
+    coalesce(qual, '') like '%cabin-images%'
+    or coalesce(with_check, '') like '%cabin-images%'
+  );
+```
+
+`supabase/README.md` には「public 4テーブル」と「Storage bucket / storage.objects」を別表で記録する。
+
+**Verify**: 4テーブルの RLS、`cabin-images` の公開読み取り設定、`storage.objects` ポリシーの3区分が個別に揃っている。bucket 行または Storage ポリシーが取得できない場合は STOP。
 
 ### Step 2: 結果を `supabase/policies/` に SQL として記録する
 
@@ -132,6 +159,8 @@ CLI が使える場合は `bunx supabase db dump --schema public --data-only=fal
 
 - [ ] `supabase/policies/` に4テーブルぶんの SQL 記録が存在する
 - [ ] `supabase/README.md` にギャップ分析表と判定が存在する
+- [ ] `cabin-images` の `public` / `file_size_limit` / `allowed_mime_types` が public 4テーブルとは別表に記録されている
+- [ ] `storage.objects` の `cabin-images` 用ポリシーが操作・ロール・USING/WITH CHECK 式付きで別表に記録されている
 - [ ] RLS 無効のテーブルがあれば太字の所見として記録されている
 - [ ] 秘密値がどのファイルにも含まれない（`grep -rE "eyJ|service_role" supabase/` がヒットしない）
 - [ ] `git status` で in-scope 外の変更がない
@@ -140,6 +169,7 @@ CLI が使える場合は `bunx supabase db dump --schema public --data-only=fal
 ## STOP conditions
 
 - Supabase ダッシュボード/CLI へのアクセスが得られない（オペレーターに依頼して待つ。推測でポリシーを書かない）
+- `cabin-images` の bucket 設定または `storage.objects` ポリシーのどちらかを取得できない
 - RLS が**無効**のテーブルが見つかった場合 — 記録した上で即座に報告する（これは重大所見であり、修正判断は人間が行う）
 - ポリシー式に理解できない関数・参照が含まれる場合 — そのまま写し、README に「未解釈」と注記して報告する
 
