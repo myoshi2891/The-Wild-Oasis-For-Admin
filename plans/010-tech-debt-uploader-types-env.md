@@ -114,7 +114,10 @@ interface ImportMetaEnv {
 ### Step 3: Supabase 型を自動生成に切り替える
 
 1. オペレーターに Supabase プロジェクト ref（または `supabase login` 済み CLI 環境）を依頼する。**ref やトークンをファイルに書き残さないこと。**
-2. `bunx supabase gen types typescript --project-id <ref> --schema public > /tmp/supabase-generated.ts` で生成し、手書きの `src/types/supabase.ts` と diff を取る。
+2. Supabase 型の生成と置換は **次のいずれか一方** で行う:
+   - **方法 A（初回移行推奨）**: `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `src/types/` 内に一時ファイルを生成し、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
+   - **方法 B（手動確認が必要な場合）**: `tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX)` で `src/types/` 内に一時ファイルを作成し、`bunx supabase gen types typescript --project-id <ref> --schema public > "$tmp_file"` で生成する。その後 `diff src/types/supabase.ts "$tmp_file"` で差分を確認してから `mv "$tmp_file" src/types/supabase.ts` で置換する。
+   > **重要**: 生成ファイルを `/tmp` に書き出した後で `cp` や `mv` でターゲットに移動する手順は **禁止**。生成先は必ず `src/types/` 配下にすること。
 3. 差分を分類する:
    - nullability やカラムの過不足 → 生成側が正。`src/types/supabase.ts` を生成結果で**置換**する
    - 生成結果に手書きにない補助型がある → そのまま採用
