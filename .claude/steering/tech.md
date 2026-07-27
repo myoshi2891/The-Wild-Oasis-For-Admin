@@ -3,8 +3,8 @@
 ## 必須技術スタック
 
 - Language: TypeScript 5.9 (strict)
-- Runtime: React 18 + Vite 7
-- Routing: React Router DOM v6
+- Runtime: Node.js 22.22.0+ / React 19.2.7+ / Vite 7
+- Routing: React Router v8.3.0+
 - State: @tanstack/react-query v4
 - Styling: styled-components v6
 - Forms: react-hook-form v7

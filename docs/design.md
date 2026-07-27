@@ -156,8 +156,9 @@ sequenceDiagram
 | レイヤー | 技術 | 選定理由 |
 | ------- | ------ | --------- |
 | Language | TypeScript 5.9 (strict) | 型安全性、リファクタリング支援 |
-| UI | React 19 | コンポーネント指向、Hooks対応 |
-| Routing | React Router v7 | 宣言的ルーティング、ネストルート |
+| Runtime baseline | Node.js 22.22.0 以上 | React Router v8 の互換要件 |
+| UI | React 19.2.7 以上 | コンポーネント指向、Hooks対応 |
+| Routing | React Router v8.3.0 以上 | 宣言的ルーティング、ネストルート |
 | State | React Query v5 | サーバー状態同期、楽観的更新 |
 | Styling | styled-components v6 | CSS-in-JS、テーマ対応 |
 | Forms | react-hook-form v7 | 高パフォーマンスフォーム管理 |
