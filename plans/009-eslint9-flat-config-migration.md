@@ -147,8 +147,11 @@ import globals from "globals";
 
 const before = JSON.parse(readFileSync("/tmp/eslint-rules-before.txt", "utf8"));
 const after = JSON.parse(readFileSync("/tmp/eslint-rules-after.txt", "utf8"));
-const { rules: beforeRules = {}, ...beforeRest } = before;
-const { rules: afterRules = {}, ...afterRest } = after;
+// ignores は eslint.config.js から別途照合するため、非ルール比較対象から除外する。
+// これにより legacy の ignorePatterns と flat config の ignores フィールドが
+// normalizeNonRuleConfig の比較に混入しないことを保証する。
+const { rules: beforeRules = {}, ignores: _beforeIgnores, ...beforeRest } = before;
+const { rules: afterRules = {}, ignores: _afterIgnores, ...afterRest } = after;
 
 const ecmaEnvVersions = {
     es6: 2015,
@@ -160,8 +163,11 @@ const normalizeEcmaVersion = (value) => {
     return value + 2009;
 };
 const normalizeParser = (parser) => {
-    const name = typeof parser === "string" ? parser : parser?.meta?.name;
-    return name
+    const name = (typeof parser === "string" ? parser : parser?.meta?.name)
+        ?.replaceAll("\\", "/");
+    const packageName =
+        name?.match(/(?:^|\/)node_modules\/((?:@[^/]+\/)?[^/]+)/)?.[1] ?? name;
+    return packageName
         ?.replace(/@[\d][^@]*$/, "")
         .replace(/^typescript-eslint\/parser$/, "@typescript-eslint/parser");
 };
@@ -334,13 +340,18 @@ dev_has_rejected_error() {
     grep -Eiq "$DEV_REJECTED_ERROR" "$DEV_LOG"
 }
 
+# 成功条件: (a) プロセスが正常に稼働している (b) "ready in" メッセージが出た
+# (c) 起動前・起動後のログ全体に拒否対象のエラーがない — この3条件すべてが必要。
+# 失敗条件: タイムアウト / 異常終了 / 拒否エラー検出（vite-plugin-eslint2 や
+# flat config 解決失敗を含む）のいずれかでログを表示して exit 1 する。
 for DEV_ATTEMPT in {0..30}; do
+    # ループの先頭でエラーを確認（readiness より前のエラーを即捕捉）
     if dev_has_rejected_error; then
-        DEV_FAILURE="Vite の起動ログに拒否対象のエラーがある"
+        DEV_FAILURE="Vite の起動ログに拒否対象のエラーがある（ready 前）"
         break
     fi
     if ! dev_is_running; then
-        DEV_FAILURE="Vite プロセスが ready 前に終了した"
+        DEV_FAILURE="Vite プロセスが ready 前に異常終了した"
         break
     fi
     if grep -q "ready in" "$DEV_LOG"; then
@@ -353,34 +364,37 @@ for DEV_ATTEMPT in {0..30}; do
 done
 
 if [ -z "$DEV_FAILURE" ] && [ "$DEV_READY" -ne 1 ]; then
-    DEV_FAILURE="Vite が30秒以内に ready にならなかった"
+    DEV_FAILURE="Vite が30秒以内に \"ready in\" メッセージを出さなかった（タイムアウト）"
 fi
 
-# ready 後に遅れて出る plugin / flat-config 解決エラーも検出する。
+# ready 後に遅れて出る vite-plugin-eslint2 / flat-config 解決エラーも検出する。
+# "ready in" が出ても plugin がエラーを出して落ちるケースがあるため、
+# 2秒間ログとプロセス状態を監視して両方正常であることを確認する。
 if [ -z "$DEV_FAILURE" ]; then
     for _ in 1 2; do
         sleep 1
         if dev_has_rejected_error; then
-            DEV_FAILURE="Vite の ready 後ログに拒否対象のエラーがある"
+            DEV_FAILURE="Vite の ready 後ログに拒否対象のエラーがある（vite-plugin-eslint2 / flat-config 解決失敗の可能性）"
             break
         fi
         if ! dev_is_running; then
-            DEV_FAILURE="Vite プロセスが ready 後に終了した"
+            DEV_FAILURE="Vite プロセスが ready 後に異常終了した"
             break
         fi
     done
 fi
 
-# 判定直前の追記も含め、ログとプロセス状態を最後にもう一度確認する。
+# 判定直前の最終ポーリング — ログへの遅延書き込みとプロセス状態を再確認する。
 if [ -z "$DEV_FAILURE" ] && dev_has_rejected_error; then
-    DEV_FAILURE="Vite の起動ログに拒否対象のエラーがある"
+    DEV_FAILURE="Vite の最終確認ログに拒否対象のエラーがある"
 fi
 if [ -z "$DEV_FAILURE" ] && ! dev_is_running; then
-    DEV_FAILURE="Vite プロセスが最終確認前に終了した"
+    DEV_FAILURE="Vite プロセスが最終確認前に異常終了した"
 fi
 
 if [ -n "$DEV_FAILURE" ]; then
-    echo "$DEV_FAILURE"
+    echo "FAIL: $DEV_FAILURE"
+    echo "--- Vite ログ ---"
     cat "$DEV_LOG"
     exit 1
 fi
