@@ -148,7 +148,7 @@ JWT claim やパス条件などの間接条件も追跡し、各ポリシーを�
 - `supabase/policies/storage.objects.sql` を必ず作成し、`cabin-images` 用の現行ポリシーを `create policy ... on storage.objects` 形式で記録する。該当ポリシーが0件の場合もファイルを省略せず、「棚卸し時点で該当ポリシーなし」と明記する。
 - **秘密値（キー・トークン）は一切書かない**。ポリシー式とロール名のみ。
 
-**Verify**: `ls supabase/policies/*.sql | wc -l` → 5（public 4テーブル + `storage.objects.sql`）。`storage.objects.sql` には取得した全ポリシー、または該当ポリシーが0件だった事実のどちらかが記録されている。
+**Verify**: `test -f supabase/policies/cabins.sql && test -f supabase/policies/bookings.sql && test -f supabase/policies/guests.sql && test -f supabase/policies/settings.sql && test -f supabase/policies/storage.objects.sql` → exit 0。`storage.objects.sql` には取得した全ポリシー、または該当ポリシーが0件だった事実のどちらかが記録されている。SQL ファイル数の確認は補助情報にとどめ、上記5ファイルの個別確認を置き換えない。
 
 ### Step 3: 期待ポリシーとのギャップ分析を書く
 
@@ -185,7 +185,7 @@ JWT claim やパス条件などの間接条件も追跡し、各ポリシーを�
 - [ ] `cabin-images` の `public` / `file_size_limit` / `allowed_mime_types` が public 4テーブルとは別表に記録されている
 - [ ] `storage.objects` の `cabin-images` 用ポリシーが操作・ロール・USING/WITH CHECK 式付きで別表に記録されているか、0件の場合はその事実が同じ別表に明記されている
 - [ ] RLS 無効のテーブルがあれば太字の所見として記録されている
-- [ ] リポジトリで承認済みの secret scanner を使い、`supabase/` に限定せず、(1) リポジトリ全体の現行ファイル、(2) 全 ref から到達可能な全 Git 履歴、(3) staged 差分、(4) untracked ファイルを個別に検査する。キー、JWT、access token、service-role token、プロジェクト ref を含む秘密情報の検出がすべて0件で、各検査のコマンド・対象範囲・結果を reviewer に報告する。scanner がいずれかの範囲を検査できない場合は「どのファイルにも含まれない」を完了条件にせず、実際に検査できた ref・コミット・パス・差分種別だけを明記し、未検査範囲が残る限りこの項目は未完了として扱う
+- [ ] リポジトリで承認済みの secret scanner を使い、`supabase/` に限定せず、(1) リポジトリ全体の現行ファイル、(2) 全 ref から到達可能な全 Git 履歴、(3) staged 差分、(4) untracked ファイルを個別に検査する。Supabase project ref および公開用の anon / publishable key は除外し、service-role token、非公開 access token、秘密鍵、パスワードなどの機密資格情報の検出がすべて0件で、各検査のコマンド・対象範囲・結果を reviewer に報告する。scanner がいずれかの範囲を検査できない場合は「どのファイルにも含まれない」を完了条件にせず、実際に検査できた ref・コミット・パス・差分種別だけを明記し、未検査範囲が残る限りこの項目は未完了として扱う
 - [ ] `git status` で in-scope 外の変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
