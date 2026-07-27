@@ -141,6 +141,8 @@ cat /tmp/eslint-rules.diff
 bun -e '
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const before = JSON.parse(readFileSync("/tmp/eslint-rules-before.txt", "utf8"));
 const after = JSON.parse(readFileSync("/tmp/eslint-rules-after.txt", "utf8"));
@@ -150,7 +152,7 @@ const { rules: afterRules = {}, ...afterRest } = after;
 assert.deepStrictEqual(
     afterRest,
     beforeRest,
-    "rules 以外に差分がある"
+    "rules 以外に未許可の差分がある（ignores は eslint.config.js から別途検証する）"
 );
 for (const [name, value] of Object.entries(beforeRules)) {
     assert.ok(Object.hasOwn(afterRules, name), `既存ルールが削除された: ${name}`);
@@ -170,18 +172,38 @@ const customRules = [
 for (const name of customRules) {
     assert.ok(Object.hasOwn(afterRules, name), `カスタムルールがない: ${name}`);
 }
+
+const flatConfig = (
+    await import(pathToFileURL(resolve("eslint.config.js")).href)
+).default.flat(Infinity);
+const actualIgnores = flatConfig.flatMap(({ ignores = [] }) => ignores);
+assert.deepStrictEqual(
+    actualIgnores,
+    [
+        "dist",
+        "dist-ssr",
+        "coverage",
+        "node_modules",
+        "playwright-report",
+        "test-results",
+    ],
+    "ignores が Step 2 の許可リストと一致しない"
+);
 '
 ```
 
 `/tmp/eslint-rules.diff` の全行を確認する（省略・先頭行だけの確認は禁止）。
-差分は after 側に追加された「バージョン起因の新ルール」のみを許容する。上の判定は、
-rules 外の差分、既存ルールの削除・値変更、4カスタムルールの欠落があれば非0で失敗する。
+差分は after 側に追加された「バージョン起因の新ルール」と、Step 2 で明示した ignores
+（既存対象を維持し、`playwright-report` と `test-results` を追加）のみを許容する。
+上の判定は、ignores を `eslint.config.js` から許可リストと照合し、それ以外の rules 外の差分、
+既存ルールの削除・値変更、4カスタムルールの欠落があれば非0で失敗する。
 追加された各ルールが依存更新に由来することも完全な diff 上で確認し、説明できない追加が
 1件でもあれば `exit 1` として STOP する。
 
 **Verify**: 上の機械判定が exit 0 で、4カスタムルール
 （react-refresh, no-unused-vars 系×2, no-mixed-spaces-and-tabs）が after 側に存在し、
-完全な diff の差分がバージョン起因の新ルール追加だけである
+ignores が Step 2 の6対象と一致し、完全な diff のその他の差分がバージョン起因の
+新ルール追加だけである
 
 ### Step 4: 新規違反を燃やし尽くす
 
