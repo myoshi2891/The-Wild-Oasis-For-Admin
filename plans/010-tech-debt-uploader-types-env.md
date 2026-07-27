@@ -116,14 +116,32 @@ interface ImportMetaEnv {
 1. オペレーターに Supabase プロジェクト ref（または `supabase login` 済み CLI 環境）を依頼する。**ref やトークンをファイルに書き残さないこと。**
 2. Supabase 型の生成と置換は **次のいずれか一方** で行う:
    - **方法 A（初回移行推奨）**: `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `src/types/` 内に一時ファイルを生成し、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
-   - **方法 B（手動確認が必要な場合）**: 下記の手順を `&&` で連結し、CLI が失敗した場合に空または不完全な一時ファイルで `src/types/supabase.ts` を置換しないよう保護する:
+   - **方法 B（手動確認が必要な場合）**: 下記の **3 ステップ** を順に実行する。各ステップは独立しており、自動では次のステップに進まない:
+
+     **ステップ B-1: 一時ファイルへ型定義を生成する**
      ```bash
      tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) \
-       && bunx supabase@2.109.1 gen types typescript --project-id <ref> --schema public > "$tmp_file" \
-       && diff src/types/supabase.ts "$tmp_file" \
-       && mv "$tmp_file" src/types/supabase.ts
+       && trap 'rm -f "$tmp_file"' EXIT INT TERM \
+       && bunx supabase@2.109.1 gen types typescript \
+            --project-id <ref> --schema public > "$tmp_file" \
+       && echo "生成成功: $tmp_file"
      ```
-     `bunx supabase@2.109.1 gen types ...` が失敗した場合、後続の `diff` と `mv` は実行されず、既存の `src/types/supabase.ts` は変更されない。差分確認後に置換不要と判断した場合は `rm -f "$tmp_file"` で一時ファイルを削除する。
+     - CLI が失敗した場合は `echo` は実行されず、`trap` が一時ファイルを自動削除する。
+     - `echo "生成成功: ..."` が出力されたことを目視で確認してから次のステップへ進む。
+
+     **ステップ B-2: diff で差分を確認する**
+     ```bash
+     diff src/types/supabase.ts "$tmp_file"; echo "diff exit code: $?"
+     ```
+     - `diff` は差分があると終了コード 1 を返すが、ここでは **確認のみ** に使用する。終了コード 1 は正常（差分あり）であり、処理を中断しない。
+     - 差分内容をレビューし、置換の要否を判断する。
+
+     **ステップ B-3: 問題なければ手動で mv する**
+     ```bash
+     mv "$tmp_file" src/types/supabase.ts && trap - EXIT INT TERM
+     ```
+     - 置換が不要と判断した場合は `mv` を実行せず、`rm -f "$tmp_file"` で一時ファイルを削除する。
+     - シェルを閉じた場合や中断した場合でも `trap` が一時ファイルを削除する。
    > **重要**: 生成ファイルを `/tmp` に書き出した後で `cp` や `mv` でターゲットに移動する手順は **禁止**。生成先は必ず `src/types/` 配下にすること。
 3. 差分を分類する:
    - nullability やカラムの過不足 → 生成側が正。`src/types/supabase.ts` を生成結果で**置換**する
