@@ -74,7 +74,7 @@ const occupation =
 対比: `getBookings`（同ファイル 41-44 行）は既に明示カラムに絞っている。この形を手本にする。
 
 - 消費側が実際に使うフィールド（変更前に必ず自分で grep して確定させること）:
-  - `getStaysAfterDate` → `useRecentStays.ts`（`status` で confirmed を絞る）、`DurationChart.tsx`（`numNights`）、`Stats.tsx`（`numNights`）
+  - `getStaysAfterDate` → `useRecentStays.ts`（`status` で confirmed を絞る）、`DurationChart.tsx`（`numNights`）、`Stats.tsx`（`startDate` / `endDate` で期間交差泊数を算出）
   - `getStaysTodayActivity` → `TodayItem.tsx` / `TodayActivity.tsx`（`id`, `status`, `numNights`, `guests(...)` 等）
 - 型定義: `StayAfterDate` / `BookingWithGuestInfo` は `src/types/domain.ts`。select を絞ったら型も絞る（`Pick<>` ベース推奨）。
 - 関連テスト: `src/features/dashboard/__tests__/`（SalesChart, Stats, DurationChart, useRecentStays）、`src/features/check-in-out/__tests__/`（TodayItem, TodayActivity, useTodayActivity）。
@@ -93,7 +93,8 @@ const occupation =
 
 - `src/features/dashboard/SalesChart.tsx`
 - `src/features/dashboard/Stats.tsx`
-- `src/services/apiBookings.ts`（`getStaysAfterDate` / `getStaysTodayActivity` の select 文字列のみ）
+- `src/features/dashboard/useRecentStays.ts` / `DashboardLayout.tsx`（UTC集計期間をAPIとStatsへ渡す）
+- `src/services/apiBookings.ts`（`getStaysAfterDate` の期間交差filterとselect、`getStaysTodayActivity` のselect）
 - `src/types/domain.ts`（`StayAfterDate` / `BookingWithGuestInfo` の絞り込み）
 - `src/utils/helpers.ts`（UTC 日付キー用ヘルパー追加のみ。`getToday` 本体は変更しない）
 - 上記に対応する `__tests__/` 配下
@@ -107,7 +108,7 @@ const occupation =
 ## Git workflow
 
 - ブランチ: `advisor/007-dashboard-fixes`
-- コミット分割: ① TZ バケット修正、② 稼働率修正、③ select/型絞り込み（各コミット green）
+- コミット分割: ① TZ バケット修正、② 期間交差取得と稼働率修正、③ select/型絞り込み（各コミット green）
 - 形式例: `fix(dashboard): 売上チャートの集計を API と同じ UTC 日付基準に統一`
 
 ## Steps
@@ -134,57 +135,77 @@ export const toUtcDateKey = (iso: string | Date): string =>
 
 **Verify**: `bunx vitest run src/features/dashboard` → 新ケース含め全パス
 
-### Step 3: 稼働率を 100% 上限にクランプする
+### Step 3: 期間と交差する滞在だけを取得する
 
-`Stats.tsx` の計算を最小修正でクランプする:
+集計期間と予約期間は UTC 日付の半開区間として統一する:
+
+- 集計期間: `[periodStart, periodEndExclusive)`。`periodStart` は「UTC今日」から `numDays - 1` 日前の00:00、`periodEndExclusive` はUTC明日の00:00。
+- 予約期間: `[startDate, endDate)`。チェックアウト日は宿泊数に含めない。
+
+`useRecentStays` でこの2境界を作り、`getStaysAfterDate(periodStart, periodEndExclusive)` と
+`Stats` の両方へ渡す。API filter を次の交差条件へ変更し、期間前に開始して期間内に
+滞在中の予約も取得する:
 
 ```ts
-const occupation = Math.min(
-    1,
-    confirmedStays.reduce((acc, cur) => acc + cur.numNights, 0) /
-        (numDays * Math.max(cabinCount, 1))
-);
+.lt("startDate", periodEndExclusive)
+.gt("endDate", periodStart)
 ```
 
-期間交差の厳密計算（滞在と期間の重なり泊数のみ数える）は工数対効果が低いため見送り、近似式であることをコメント（日本語）で明記する。`Stats.test.tsx` に「泊数が期間×客室数を超えても 100% と表示」のケースを追加。
+境界で接するだけの予約（`endDate === periodStart` または
+`startDate === periodEndExclusive`）は取得しない。queryKeyには両境界を含める。
 
-**Verify**: `bunx vitest run src/features/dashboard` → 全パス
+**Verify**: サービステストと `useRecentStays.test.ts` で、期間前開始、期間後終了、完全包含、境界非重複のfilter引数がパス。
 
-### Step 4: select と型を絞り込む
+### Step 4: 交差泊数で稼働率を計算し、表示上限を安全策として残す
+
+`Stats.tsx` または `src/utils/helpers.ts` に、各予約と集計期間の交差泊数を返す純粋関数を追加する。
+`max(startDate, periodStart)` から `min(endDate, periodEndExclusive)` までの UTC calendar days を
+数え、負値は0とする。分子は confirmed stays の交差泊数合計、分母は
+`numDays * Math.max(cabinCount, 1)` とする。
+
+正確な値を計算した後も `Math.min(1, occupation)` は防御的に残す。ただし日本語コメントで
+「重複データや不整合時にUIが100%超表示になるのを防ぐ緊急表示上限であり、集計精度を
+保証する処理ではない」と明記する。
+
+**Verify**: `Stats.test.tsx` で期間前開始、期間後終了、期間完全包含、境界非重複を交差泊数で検証し、重複データ等で算出値が100%を超える場合も表示は `"100%"` になる。
+
+### Step 5: select と型を絞り込む
 
 1. 消費側フィールドを grep で確定する（このプランの「Current state」の一覧を検証する）:
    `grep -rn "stay\.\|activity\.\|item\." src/features/dashboard src/features/check-in-out --include="*.tsx" --include="*.ts"` 等。
-2. `getStaysAfterDate` の select を確定フィールド + `guests(fullName)` の明示列挙に変更（`getBookings` の書式を踏襲）。
+2. `getStaysAfterDate` の select は期間交差計算に必須の `startDate`, `endDate`, `status`, `numNights` と、確定した消費フィールド + `guests(fullName)` を明示列挙する（`getBookings` の書式を踏襲）。
 3. `getStaysTodayActivity` も同様。
 4. `src/types/domain.ts` の対応型を実選択カラムに合わせて絞る（`Pick<Booking, ...> & { guests: ... }` 形式）。
-5. `bun run typecheck` を実行し、**омitted カラムを参照しているコンパイルエラーが出たら、そのカラムを select に戻す**（型を絞るからこそ漏れが機械検出できる）。
+5. `bun run typecheck` を実行し、**omitted カラムを参照しているコンパイルエラーが出たら、そのカラムを select に戻す**（型を絞るからこそ漏れが機械検出できる）。
 
 **Verify**: `bun run typecheck` → exit 0。`bun run test` → 全パス（サービステストの select 文字列期待値は Plan 004 で追加したものを更新）
 
 ## Test plan
 
 - Step 2: TZ 回帰テスト1ケース（このプランの核心）
-- Step 3: 稼働率クランプ1ケース
-- Step 4: サービステストの select 文字列アサーション更新（Plan 004 のテストを新文字列に）
+- Step 3: API期間交差filter（期間前開始、期間後終了、完全包含、境界非重複）
+- Step 4: 同じ4境界の交差泊数と、算出値100%超過時の緊急表示上限
+- Step 5: サービステストの select 文字列アサーション更新（Plan 004 のテストを新文字列に）
 - 構造パターン: `SalesChart.test.tsx` / `Stats.test.tsx` の既存ケース
 
 ## Done criteria
 
 - [ ] `grep -n 'select("\*' src/services/apiBookings.ts` のヒットが `getBooking`（詳細画面、正当な全カラム取得）のみ
 - [ ] SalesChart の日付キー生成に `format(new Date(booking.created_at), "yyyy-MM-dd")`（ローカル TZ）が残っていない
-- [ ] 稼働率が 100% を超えるテストデータで "100%" と表示される
+- [ ] `getStaysAfterDate` が `[periodStart, periodEndExclusive)` と交差する予約を取得し、境界で接するだけの予約を除外する
+- [ ] 稼働率の分子が各予約の期間交差泊数だけを合計し、期間外泊数を含めない
+- [ ] `Math.min` は緊急表示上限と日本語コメントで明記され、算出値が100%を超えるテストでも `"100%"` と表示される
 - [ ] `bun run test` / `bun run lint` / `bun run typecheck` がすべて exit 0
 - [ ] `git status` で in-scope 外の変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 
-- Step 4 の grep で、想定外のコンポーネントが `StayAfterDate` の広いフィールドに依存していると判明した場合（型絞り込みの波及が3ファイルを超える）— 絞り込み対象を報告して指示を仰ぐ
+- Step 5 の grep で、想定外のコンポーネントが `StayAfterDate` の広いフィールドに依存していると判明した場合（型絞り込みの波及が3ファイルを超える）— 絞り込み対象を報告して指示を仰ぐ
 - Step 1 で既存の SalesChart テストが3件以上落ち、期待値更新の判断がつかない場合
 - Plan 004 が未着地の場合（select 文字列の特性テストがない状態での変更は回帰検出が弱い）— 実行順の確認を報告
 
 ## Maintenance notes
 
 - 将来ダッシュボードに「カスタム期間指定」（監査で Direction 提案済み）を追加する場合、Step 1 の UTC キー統一が前提になる。
-- 稼働率の厳密計算（期間交差）は意図的に見送った。経営指標として厳密性が必要になったら再検討。
-- レビュー観点: `toUtcDateKey` が `getToday` と同じ境界定義（UTC 日付）であること。select 絞り込み後の型が `as` キャストでごまかされていないこと。
+- レビュー観点: `toUtcDateKey` と集計期間が `getToday` と同じ UTC 境界であること、予約/期間が半開区間として一貫すること、select 絞り込み後の型が `as` キャストでごまかされていないこと。

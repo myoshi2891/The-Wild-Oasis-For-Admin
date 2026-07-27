@@ -59,8 +59,6 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED（理由1行） | REJECTED（
   使用しており、残る差分は本質的に異なるフィールド/ミューテーション。統合は不要。
 - **check-in/out の blind update（ステータス前提条件なし）**: UI がステータスでアクションを
   ゲートしており、stale タブからの二重送信の実害は小さい。単独の対応は見送り。
-- **稼働率の期間交差の厳密計算**: 近似式のクランプ（Plan 007）で十分。厳密化は工数対効果が
-  低いため見送り。
 
 ## Audit coverage note
 

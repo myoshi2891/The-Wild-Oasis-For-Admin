@@ -24,7 +24,7 @@
 
 ## Why this matters
 
-`src/App.tsx` は全11ページを静的 import しており、`src/` に `lazy` / `Suspense` は一切ない（執筆時点で grep 確認済み）。その結果、ログイン画面を開いただけのユーザーも、Dashboard ルートでしか使われない recharts（本アプリ最重量級の依存）を含む全ルートの JS をダウンロードする。ルート単位の `React.lazy` に切り替えることで、初期ロードをログインに必要な分だけに縮小し、recharts はダッシュボード初訪問時のチャンクに分離される。
+`src/App.tsx` は全10ページを静的 import しており、`src/` に `lazy` / `Suspense` は一切ない（執筆時点で grep 確認済み）。その結果、ログイン画面を開いただけのユーザーも、Dashboard ルートでしか使われない recharts（本アプリ最重量級の依存）を含む全ルートの JS をダウンロードする。ルート単位の `React.lazy` に切り替えることで、初期ロードをログインに必要な分だけに縮小し、recharts はダッシュボード初訪問時のチャンクに分離される。
 
 ## Current state
 
@@ -47,7 +47,8 @@ import Checkin from "./pages/Checkin";
 
 - recharts の import 箇所: `src/features/dashboard/SalesChart.tsx` と `src/features/dashboard/DurationChart.tsx` のみ。Dashboard ページ経由でしか到達しない。
 - ローディング UI の既存コンポーネント: `src/ui/Spinner.tsx`（`ProtectedRoute` などで使用中。Suspense fallback に再利用する）。
-- 各ページは `export default` を持つ（`React.lazy` の要件。全11ページで要確認）。
+- 対象は Dashboard、Bookings、Booking（`bookings/:bookingId`）、Checkin、Cabins、Users、Settings、Account、Login、PageNotFound の10ページ。
+- 各ページは `export default` を持つ（`React.lazy` の要件。全10ページで要確認）。
 - ページテスト: `src/pages/__tests__/` にあり、ページコンポーネントを直接 import しているため lazy 化の影響を受けない。
 
 ## Commands you will need
@@ -90,13 +91,21 @@ bun run build && ls -la dist/assets/
 
 ### Step 2: ページ import を lazy 化する
 
-`src/App.tsx` で全11ページを変換する:
+最初に対象10ファイルすべての `export default` を確認し、1つでも欠ければ STOP。その後
+`src/App.tsx` で全10ページを個別に変換する:
 
 ```tsx
 import { lazy, Suspense } from "react";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Bookings = lazy(() => import("./pages/Bookings"));
-// ...（残り9ページも同様）
+const Booking = lazy(() => import("./pages/Booking"));
+const Checkin = lazy(() => import("./pages/Checkin"));
+const Cabins = lazy(() => import("./pages/Cabins"));
+const Users = lazy(() => import("./pages/Users"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Account = lazy(() => import("./pages/Account"));
+const Login = lazy(() => import("./pages/Login"));
+const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 ```
 
 `<Routes>` 全体を `Suspense` で包む（`BrowserRouter` の内側）:
@@ -138,7 +147,8 @@ bun run preview
 
 ## Done criteria
 
-- [ ] `grep -c "lazy(() => import" src/App.tsx` → `11`
+- [ ] 10ページすべてに `export default` が存在し、`Booking` が `bookings/:bookingId` のlazy要素として維持されている
+- [ ] `grep -c "lazy(() => import" src/App.tsx` → `10`
 - [ ] `bun run build` の dist でエントリーチャンクが縮小し、ページ別チャンクが生成されている
 - [ ] `bun run test` / `bun run lint` / `bun run typecheck` がすべて exit 0
 - [ ] `git diff --name-only` が `src/App.tsx`（+ 必要なら該当テスト）のみ
