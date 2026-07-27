@@ -120,7 +120,9 @@ bunx eslint --print-config src/App.tsx > /tmp/eslint-rules-before.txt
    - `ignores: ["dist", "dist-ssr", "coverage", "node_modules", "playwright-report", "test-results"]`
    - `languageOptions.globals`: `globals.browser` + `globals.node`
    - `files: ["**/*.{js,jsx,ts,tsx}"]`
-3. `package.json` の lint スクリプトから `--ext js,jsx,ts,tsx` を削除（他のフラグは維持）。
+3. `package.json` の lint スクリプトを
+   `eslint . --report-unused-disable-directives --max-warnings 0` に変更する
+   （`--ext js,jsx,ts,tsx` だけを削除し、警告0件のゲートは維持）。
 4. `.eslintrc.json` を削除。
 
 **Verify**: `bunx eslint src/App.tsx` がパースエラーなく実行される（違反の有無は問わない）
@@ -129,12 +131,57 @@ bunx eslint --print-config src/App.tsx > /tmp/eslint-rules-before.txt
 
 ```bash
 bunx eslint --print-config src/App.tsx > /tmp/eslint-rules-after.txt
-diff /tmp/eslint-rules-before.txt /tmp/eslint-rules-after.txt | head -50
+DIFF_STATUS=0
+diff -u /tmp/eslint-rules-before.txt /tmp/eslint-rules-after.txt > /tmp/eslint-rules.diff || DIFF_STATUS=$?
+if [ "$DIFF_STATUS" -gt 1 ]; then
+    exit "$DIFF_STATUS"
+fi
+cat /tmp/eslint-rules.diff
+
+bun -e '
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const before = JSON.parse(readFileSync("/tmp/eslint-rules-before.txt", "utf8"));
+const after = JSON.parse(readFileSync("/tmp/eslint-rules-after.txt", "utf8"));
+const { rules: beforeRules = {}, ...beforeRest } = before;
+const { rules: afterRules = {}, ...afterRest } = after;
+
+assert.deepStrictEqual(
+    afterRest,
+    beforeRest,
+    "rules 以外に差分がある"
+);
+for (const [name, value] of Object.entries(beforeRules)) {
+    assert.ok(Object.hasOwn(afterRules, name), `既存ルールが削除された: ${name}`);
+    assert.deepStrictEqual(
+        afterRules[name],
+        value,
+        `既存ルールの設定が変わった: ${name}`
+    );
+}
+
+const customRules = [
+    "react-refresh/only-export-components",
+    "@typescript-eslint/no-unused-vars",
+    "no-unused-vars",
+    "no-mixed-spaces-and-tabs",
+];
+for (const name of customRules) {
+    assert.ok(Object.hasOwn(afterRules, name), `カスタムルールがない: ${name}`);
+}
+'
 ```
 
-差分は「バージョン起因の新ルール追加」のみが許容。**現行の4カスタムルールが消えていないこと**を確認する。
+`/tmp/eslint-rules.diff` の全行を確認する（省略・先頭行だけの確認は禁止）。
+差分は after 側に追加された「バージョン起因の新ルール」のみを許容する。上の判定は、
+rules 外の差分、既存ルールの削除・値変更、4カスタムルールの欠落があれば非0で失敗する。
+追加された各ルールが依存更新に由来することも完全な diff 上で確認し、説明できない追加が
+1件でもあれば `exit 1` として STOP する。
 
-**Verify**: 4カスタムルール（react-refresh, no-unused-vars 系×2, no-mixed-spaces-and-tabs）が after 側に存在する
+**Verify**: 上の機械判定が exit 0 で、4カスタムルール
+（react-refresh, no-unused-vars 系×2, no-mixed-spaces-and-tabs）が after 側に存在し、
+完全な diff の差分がバージョン起因の新ルール追加だけである
 
 ### Step 4: 新規違反を燃やし尽くす
 
@@ -148,7 +195,8 @@ react-hooks v5 の新ルール（React 19 対応の exhaustive-deps 強化等）
 - 誤検知・意図的なパターン → `// eslint-disable-next-line <rule> -- 理由` を付ける（理由必須）
 - 判断がつかない違反が5件を超えたら即時 STOP して一覧を報告（新規違反数の停止基準はこの1つだけとする）
 
-**Verify**: `bun run lint` → exit 0（`--max-warnings 0` で警告ゼロ）
+**Verify**: `bunx eslint . --report-unused-disable-directives --max-warnings 0`
+→ exit 0、警告ゼロ（`package.json` の `lint` スクリプトも同じフラグを持つこと）
 
 ### Step 5: 全ゲート + vite dev の確認
 
