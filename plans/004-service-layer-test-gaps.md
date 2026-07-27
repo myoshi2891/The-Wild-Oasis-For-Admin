@@ -133,7 +133,7 @@ if (storageError) {
 ### Step 3: createEditCabin の更新系3ケースを追加する
 
 1. `id` あり + 新規 `File` + アップロード成功 → `update` が呼ばれ、`storage.upload` が実行され、`delete` は**呼ばれない**
-2. `id` あり + 新規 `File` + アップロード失敗 → throw するが、対象 `id` に対する `update` が実行され、その引数（またはモックした保存状態）の `image` が既存の公開 URL 生成規約に合う有効な値として保持されることを検証する。同時に `from("cabins").delete()` は**呼ばれない**ことも維持する（更新処理の欠落とデータ損失の両方を検出する）
+2. `id` あり + 新規 `File` + アップロード失敗 → throw するが、対象 `id` に対する `update` が実行され、`from("cabins").delete()` は**呼ばれない**ことを検証する。現行実装は DB update 後に upload するため、失敗時には新規生成された未存在画像 URL が保存され、既存画像 URL は保持されない。この URL を有効値として扱わず、Plan 005 で解消する既知バグとしてテスト名・コメント・実行結果に明記する
 3. `getCabins` のエラーパス → `"Cabins could not be loaded"` を throw
 
 既存の作成系テスト（`services.test.ts` 内の createEditCabin describe、モック File の作り方）を構造パターンとして踏襲する。
@@ -151,7 +151,7 @@ if (storageError) {
 このプラン自体がテスト追加である。網羅目標:
 
 - `getBookings`: フィルタ4分岐、page 正規化3系、sort、エラー、count フォールバック
-- `createEditCabin`: 更新+アップロード成功 / 更新+アップロード失敗（対象IDへのupdate・有効な画像URL保持・delete非実行）
+- `createEditCabin`: 更新+アップロード成功 / 更新+アップロード失敗（対象IDへのupdate・delete非実行、および未存在画像 URL が残る現行順序を Plan 005 の既知バグとして記録）
 - `getCabins` / 日付系フェッチャ3関数: エラーパス
 
 ## Done criteria
