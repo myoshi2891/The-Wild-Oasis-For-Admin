@@ -90,14 +90,32 @@ export async function deleteBooking(id: number): Promise<null> {
 4. `storage.objects` に対する `cabin-images` 用ポリシー（操作種別、対象ロール、USING/WITH CHECK 式）
 
 CLI が使える場合は `bunx supabase db dump --schema public --data-only=false` 相当の出力、あるいは SQL エディタで
-public テーブルを取得する:
+public テーブルの RLS 状態とポリシーをそれぞれ取得する:
 
 ```sql
+select
+  n.nspname as schemaname,
+  c.relname as tablename,
+  c.relrowsecurity,
+  c.relforcerowsecurity
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relkind in ('r', 'p')
+  and c.relname in ('cabins', 'bookings', 'guests', 'settings')
+order by c.relname;
+
 select *
 from pg_policies
 where schemaname = 'public'
-  and tablename in ('cabins', 'bookings', 'guests', 'settings');
+  and tablename in ('cabins', 'bookings', 'guests', 'settings')
+order by tablename, policyname;
 ```
+
+`pg_class.relrowsecurity` を RLS の有効状態、`relforcerowsecurity` をテーブル所有者にも
+RLS を強制するかの補足情報として記録する。`pg_policies` が0件でも、
+`relrowsecurity = false`（RLS 無効）と `relrowsecurity = true`（RLS 有効・ポリシーなし）
+を区別する。
 
 Storage は public スキーマと混ぜず、次の2クエリで個別に取得する:
 
@@ -110,11 +128,14 @@ select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_che
 from pg_policies
 where schemaname = 'storage'
   and tablename = 'objects'
-  and (
-    coalesce(qual, '') like '%cabin-images%'
-    or coalesce(with_check, '') like '%cabin-images%'
-  );
+order by policyname;
 ```
+
+`storage.objects` のポリシーは文字列 `cabin-images` を含むものだけに事前絞り込みせず、
+取得した全件について `cabin-images` への適用可否を後から評価する。`qual` /
+`with_check` の直接比較だけでなく、全 bucket に適用される共有ポリシー、呼び出し先関数、
+JWT claim やパス条件などの間接条件も追跡し、各ポリシーを「適用」「非適用」「未解釈」
+のいずれかとして根拠付きで記録する。
 
 `supabase/README.md` には「public 4テーブル」と「Storage bucket / storage.objects」を別表で記録する。
 
@@ -164,7 +185,7 @@ where schemaname = 'storage'
 - [ ] `cabin-images` の `public` / `file_size_limit` / `allowed_mime_types` が public 4テーブルとは別表に記録されている
 - [ ] `storage.objects` の `cabin-images` 用ポリシーが操作・ロール・USING/WITH CHECK 式付きで別表に記録されているか、0件の場合はその事実が同じ別表に明記されている
 - [ ] RLS 無効のテーブルがあれば太字の所見として記録されている
-- [ ] 秘密値がどのファイルにも含まれない（`grep -rE "eyJ|service_role" supabase/` がヒットしない）
+- [ ] リポジトリで承認済みの secret scanner を使い、`supabase/` に限定せず、(1) リポジトリ全体の現行ファイル、(2) 全 ref から到達可能な全 Git 履歴、(3) staged 差分、(4) untracked ファイルを個別に検査する。キー、JWT、access token、service-role token、プロジェクト ref を含む秘密情報の検出がすべて0件で、各検査のコマンド・対象範囲・結果を reviewer に報告する。scanner がいずれかの範囲を検査できない場合は「どのファイルにも含まれない」を完了条件にせず、実際に検査できた ref・コミット・パス・差分種別だけを明記し、未検査範囲が残る限りこの項目は未完了として扱う
 - [ ] `git status` で in-scope 外の変更がない
 - [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
