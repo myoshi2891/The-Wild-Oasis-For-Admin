@@ -151,12 +151,12 @@ if (storageError) {
 このプラン自体がテスト追加である。網羅目標:
 
 - `getBookings`: フィルタ4分岐、page 正規化3系、sort、エラー、count フォールバック
-- `createEditCabin`: 更新+アップロード成功 / 更新+アップロード失敗（対象IDへのupdate・delete非実行、および未存在画像 URL が残る現行順序を Plan 005 の既知バグとして記録）
+- `createEditCabin`: 更新+アップロード成功 / 更新+アップロード失敗（`update` は実行されるが `delete` は呼ばれない。未存在画像 URL が残る現行順序を Plan 005 の既知バグとして記録）
 - `getCabins` / 日付系フェッチャ3関数: エラーパス
 
 ## Done criteria
 
-- [ ] `bunx vitest run src/services` で新規テストがすべてパス（追加ケース数 ≥ 14）
+- [ ] `bunx vitest run src/services` で新規テストがすべてパス（Step 2〜4 の全列挙ケースを網羅、追加ケース数 ≥ 16）
 - [ ] `bun run test` / `bun run lint` / `bun run typecheck` がすべて exit 0
 - [ ] `git diff --stat` の変更が `src/services/__tests__/` 配下のみ
 - [ ] 各コミットが3ファイル・200行以内（プロジェクトルール）

@@ -249,6 +249,24 @@ for (const [name, value] of Object.entries(beforeRules)) {
     );
 }
 
+// afterRules にのみ存在する（新規追加された）ルールが許可セット内であることを検証する
+// Step 2 で明示したカスタムルールおよびバージョン起因の新ルールのみを許容する
+const permittedNewRules = new Set([
+    "react-refresh/only-export-components",
+    "@typescript-eslint/no-unused-vars",
+    "no-unused-vars",
+    "no-mixed-spaces-and-tabs",
+]);
+const addedRules = Object.keys(afterRules).filter(
+    (name) => !Object.hasOwn(beforeRules, name)
+);
+for (const name of addedRules) {
+    assert.ok(
+        permittedNewRules.has(name),
+        `許可セット外のルールが追加された: ${name} — バージョン起因か確認し、必要なら permittedNewRules に追加して理由をコメントする`
+    );
+}
+
 const customRules = [
     "react-refresh/only-export-components",
     "@typescript-eslint/no-unused-vars",
