@@ -2,9 +2,14 @@
 
 > **Executor instructions**: このプランをステップ順に実行すること。各ステップの
 > 検証コマンドを実行し、期待結果を確認してから次に進む。「STOP conditions」に
-> 該当したら中断して報告する。完了したら `plans/README.md` のステータス行を更新する。
+> 該当したら中断して報告する。`plans/README.md` は変更せず、実行結果を reviewer に
+> 報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
 > **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- src/App.tsx src/pages/`
+> 続けて `git diff --stat -- src/App.tsx src/pages/`、
+> `git diff --cached --stat -- src/App.tsx src/pages/`、
+> `git ls-files --others --exclude-standard -- src/App.tsx src/pages/`
+> で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > in-scope ファイルに差分がある場合、「Current state」の抜粋と実コードを照合し、
 > 不一致なら STOP。
 
@@ -137,7 +142,7 @@ bun run preview
 - [ ] `bun run build` の dist でエントリーチャンクが縮小し、ページ別チャンクが生成されている
 - [ ] `bun run test` / `bun run lint` / `bun run typecheck` がすべて exit 0
 - [ ] `git diff --name-only` が `src/App.tsx`（+ 必要なら該当テスト）のみ
-- [ ] `plans/README.md` のステータス更新
+- [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 

@@ -2,9 +2,14 @@
 
 > **Executor instructions**: このプランをステップ順に実行すること。各ステップの
 > 検証コマンドを実行し、期待結果を確認してから次に進む。「STOP conditions」に
-> 該当したら中断して報告する。完了したら `plans/README.md` のステータス行を更新する。
+> 該当したら中断して報告する。`plans/README.md` は変更せず、実行結果を reviewer に
+> 報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
 > **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- .github/workflows/ci.yml package.json`
+> 続けて `git diff --stat -- .github/workflows/ci.yml package.json`、
+> `git diff --cached --stat -- .github/workflows/ci.yml package.json`、
+> `git ls-files --others --exclude-standard -- .github/workflows/ci.yml package.json`
+> で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > in-scope ファイルに差分がある場合、「Current state」の抜粋と実コードを照合し、
 > 不一致なら STOP。
 
@@ -150,7 +155,7 @@ pre-commit:
 - [ ] `bunx lefthook run pre-commit` が exit 0
 - [ ] `bun run lint && bun run typecheck && bun run test` がすべて exit 0
 - [ ] `git status` で in-scope 外の変更がない
-- [ ] `plans/README.md` のステータス更新
+- [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 

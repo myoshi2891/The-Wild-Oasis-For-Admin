@@ -2,9 +2,14 @@
 
 > **Executor instructions**: このプランをステップ順に実行すること。各ステップの
 > 検証コマンドを実行し、期待結果を確認してから次に進む。「STOP conditions」に
-> 該当したら中断して報告する。完了したら `plans/README.md` のステータス行を更新する。
+> 該当したら中断して報告する。`plans/README.md` は変更せず、実行結果を reviewer に
+> 報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
 > **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- README.md docs/ src/features/`
+> 続けて `git diff --stat -- README.md docs/ src/features/`、
+> `git diff --cached --stat -- README.md docs/ src/features/`、
+> `git ls-files --others --exclude-standard -- README.md docs/ src/features/`
+> で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > `src/features/` に差分がある場合（特に guests/ ディレクトリや booking 作成機能の追加）、
 > 本プランの「過大表記」前提が変わっている可能性がある。実装を確認してから進む。
 
@@ -121,7 +126,7 @@
 - [ ] 初回バックエンドセットアップ節が存在し、秘密値を含まない
 - [ ] `bunx markdownlint-cli2` がエラーなし
 - [ ] `git status` で in-scope 外の変更がない
-- [ ] `plans/README.md` のステータス更新
+- [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 

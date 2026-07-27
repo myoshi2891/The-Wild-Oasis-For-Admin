@@ -2,10 +2,14 @@
 
 > **Executor instructions**: このプランをステップ順に実行すること。各ステップの
 > 検証コマンドを実行し、期待結果を確認してから次に進む。「STOP conditions」に
-> 該当したら中断して報告する（独自判断で回避しない）。完了したら
-> `plans/README.md` の該当ステータス行を更新する。
+> 該当したら中断して報告する（独自判断で回避しない）。`plans/README.md` は変更せず、
+> 実行結果を reviewer に報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
 > **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- e2e/seed.ts .env.example docs/spec.md docs/design.md`
+> 続けて `git diff --stat -- e2e/seed.ts .env.example docs/spec.md docs/design.md`、
+> `git diff --cached --stat -- e2e/seed.ts .env.example docs/spec.md docs/design.md`、
+> `git ls-files --others --exclude-standard -- e2e/seed.ts .env.example docs/spec.md docs/design.md`
+> で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > in-scope ファイルに差分がある場合、「Current state」の抜粋と実コードを照合し、
 > 不一致なら STOP。
 
@@ -139,7 +143,7 @@ VITE_SUPABASE_URL="https://example.supabase.co" VITE_SUPABASE_KEY="dummy" \
 - [ ] `.env.example` に `E2E_SUPABASE_URL_ALLOWLIST` が存在（`grep E2E_SUPABASE_URL_ALLOWLIST .env.example` がヒット）
 - [ ] `docs/spec.md` と `docs/design.md` に新ガードの記述がある
 - [ ] `git status` で in-scope 外のファイルに変更がない
-- [ ] `plans/README.md` のステータス更新
+- [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 

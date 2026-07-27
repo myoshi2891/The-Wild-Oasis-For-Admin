@@ -2,7 +2,9 @@
 
 improve スキルによる監査（standard 深度・全9カテゴリ）に基づき 2026-07-04 に生成。
 基準コミット: `d267f0c`。特記なき限り下表の順に実行すること。各実行者（executor）は
-プランを最後まで読んでから着手し、STOP conditions を厳守し、完了時に自分の行を更新する。
+プランを最後まで読んでから着手し、STOP conditions を厳守して実行結果を reviewer に
+報告する。executor はこの index とステータス行を変更しない。完了・BLOCKED 等の
+ステータス更新は reviewer が `reconcile` で行う。
 
 実行環境の前提: パッケージマネージャーは **bun のみ**（npm/yarn/pnpm 禁止）。
 全コミットは `bun run lint` / `bun run typecheck` / `bun run test` が green であること

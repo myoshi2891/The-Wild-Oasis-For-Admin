@@ -3,10 +3,14 @@
 > **Executor instructions**: これは**設計スパイク**であり、実装プランではない。
 > 成果物は調査レポートと設計ドキュメントであって、プロダクションコードの変更は
 > **行わない**（使い捨ての検証コードは `plans/spike-artifacts/` 配下のみ許可）。
-> 「STOP conditions」に該当したら中断して報告する。完了したら `plans/README.md` の
-> ステータス行を更新する。
+> 「STOP conditions」に該当したら中断して報告する。`plans/README.md` は変更せず、
+> 実行結果を reviewer に報告する。ステータス更新は reviewer が `reconcile` で行う。
 >
 > **Drift check（最初に実行）**: `git diff --stat d267f0c..HEAD -- src/features/bookings/ src/services/apiBookings.ts docs/spec.md`
+> 続けて `git diff --stat -- src/features/bookings/ src/services/apiBookings.ts docs/spec.md`、
+> `git diff --cached --stat -- src/features/bookings/ src/services/apiBookings.ts docs/spec.md`、
+> `git ls-files --others --exclude-standard -- src/features/bookings/ src/services/apiBookings.ts docs/spec.md`
+> で unstaged / staged / untracked を個別に確認する。作業ツリーに既存変更があれば STOP。
 > bookings 機能に作成/編集フックが追加されていたら、このスパイクの前提が
 > 変わっている — 現状を確認して報告する。
 
@@ -112,7 +116,7 @@
 - [ ] 重複防止の方式が「Supabase で exclusion constraint が使えるか」の検証結果付きで結論されている
 - [ ] 後続実装プランの分割案（3〜4本）と依存順序が書かれている
 - [ ] `git status` で `plans/` 以外に変更がない
-- [ ] `plans/README.md` のステータス更新
+- [ ] 実行結果を reviewer に報告し、`plans/README.md` は変更していない
 
 ## STOP conditions
 
