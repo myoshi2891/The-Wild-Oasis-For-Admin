@@ -5,7 +5,7 @@
 - Language: TypeScript 5.9 (strict)
 - Runtime: Node.js 22.22.0+ / React 19.2.7+ / Vite 7
 - Routing: React Router v8.3.0+
-- State: @tanstack/react-query v4
+- State: @tanstack/react-query v5
 - Styling: styled-components v6
 - Forms: react-hook-form v7
 - BaaS: Supabase (PostgreSQL + Auth)
