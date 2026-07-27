@@ -143,15 +143,95 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import globals from "globals";
 
 const before = JSON.parse(readFileSync("/tmp/eslint-rules-before.txt", "utf8"));
 const after = JSON.parse(readFileSync("/tmp/eslint-rules-after.txt", "utf8"));
 const { rules: beforeRules = {}, ...beforeRest } = before;
 const { rules: afterRules = {}, ...afterRest } = after;
 
+const ecmaEnvVersions = {
+    es6: 2015,
+    es2017: 2017,
+    es2020: 2020,
+};
+const normalizeEcmaVersion = (value) => {
+    if (typeof value !== "number" || value <= 5 || value >= 2015) return value;
+    return value + 2009;
+};
+const normalizeParser = (parser) => {
+    const name = typeof parser === "string" ? parser : parser?.meta?.name;
+    return name
+        ?.replace(/@[\d][^@]*$/, "")
+        .replace(/^typescript-eslint\/parser$/, "@typescript-eslint/parser");
+};
+const normalizePlugins = (plugins = []) =>
+    [...new Set(Array.isArray(plugins) ? plugins : Object.keys(plugins))]
+        .filter((name) => name !== "@")
+        .sort();
+const sortObject = (value) =>
+    Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)));
+const normalizeNonRuleConfig = (config) => {
+    const {
+        env = {},
+        globals: legacyGlobals = {},
+        parser: legacyParser,
+        parserOptions: legacyParserOptions = {},
+        languageOptions = {},
+        plugins,
+        ignorePatterns: _ignorePatterns,
+        language,
+        ...rest
+    } = config;
+    const {
+        parser: flatParser,
+        parserOptions: flatParserOptions = {},
+        globals: flatGlobals = {},
+        ecmaVersion: flatEcmaVersion,
+        sourceType: flatSourceType,
+        ...languageOptionsRest
+    } = languageOptions;
+    const normalizedGlobals = { ...legacyGlobals, ...flatGlobals };
+    for (const [name, enabled] of Object.entries(env)) {
+        if (!enabled || Object.hasOwn(ecmaEnvVersions, name)) continue;
+        assert.ok(Object.hasOwn(globals, name), `未対応の legacy env: ${name}`);
+        Object.assign(normalizedGlobals, globals[name]);
+    }
+    const envEcmaVersion = Math.max(
+        0,
+        ...Object.entries(env)
+            .filter(([, enabled]) => enabled)
+            .map(([name]) => ecmaEnvVersions[name] ?? 0)
+    );
+    const parserOptions = {
+        ...legacyParserOptions,
+        ...flatParserOptions,
+    };
+    const ecmaVersion = normalizeEcmaVersion(
+        (flatEcmaVersion ?? parserOptions.ecmaVersion ?? envEcmaVersion) || undefined
+    );
+    const sourceType = flatSourceType ?? parserOptions.sourceType;
+    delete parserOptions.ecmaVersion;
+    delete parserOptions.sourceType;
+
+    return {
+        ...rest,
+        ...(language && language !== "@/js" ? { language } : {}),
+        languageOptions: {
+            ...languageOptionsRest,
+            parser: normalizeParser(legacyParser ?? flatParser),
+            parserOptions,
+            globals: sortObject(normalizedGlobals),
+            ...(ecmaVersion === undefined ? {} : { ecmaVersion }),
+            ...(sourceType === undefined ? {} : { sourceType }),
+        },
+        plugins: normalizePlugins(plugins),
+    };
+};
+
 assert.deepStrictEqual(
-    afterRest,
-    beforeRest,
+    normalizeNonRuleConfig(afterRest),
+    normalizeNonRuleConfig(beforeRest),
     "rules 以外に未許可の差分がある（ignores は eslint.config.js から別途検証する）"
 );
 for (const [name, value] of Object.entries(beforeRules)) {
@@ -195,7 +275,9 @@ assert.deepStrictEqual(
 `/tmp/eslint-rules.diff` の全行を確認する（省略・先頭行だけの確認は禁止）。
 差分は after 側に追加された「バージョン起因の新ルール」と、Step 2 で明示した ignores
 （既存対象を維持し、`playwright-report` と `test-results` を追加）のみを許容する。
-上の判定は、ignores を `eslint.config.js` から許可リストと照合し、それ以外の rules 外の差分、
+上の判定は legacy の `env` / `globals`、`parser` / `parserOptions` と flat config の
+`languageOptions`、および両形式の `plugins` を共通表現に正規化してから rules 外を比較する。
+ignores は `eslint.config.js` から許可リストと別途照合し、それ以外の rules 外の差分、
 既存ルールの削除・値変更、4カスタムルールの欠落があれば非0で失敗する。
 追加された各ルールが依存更新に由来することも完全な diff 上で確認し、説明できない追加が
 1件でもあれば `exit 1` として STOP する。
