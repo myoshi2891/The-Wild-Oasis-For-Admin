@@ -318,24 +318,80 @@ cleanup_dev() {
 trap cleanup_dev EXIT INT TERM
 
 DEV_READY=0
-for _ in {1..30}; do
+DEV_FAILURE=""
+DEV_REJECTED_ERROR='error([[:space:]]|:)|failed to|could not|couldn.t find|cannot|no eslint configuration found|configerror|vite-plugin-eslint2.*(invalid|not found)|flat[- ]config.*(invalid|not found)|eslint\.config.*(invalid|not found)'
+dev_is_running() {
+    if ! kill -0 "$DEV_PID" 2>/dev/null; then
+        return 1
+    fi
+    DEV_STATE="$(ps -o stat= -p "$DEV_PID" 2>/dev/null)" || return 1
+    [ -n "$DEV_STATE" ] || return 1
+    case "$DEV_STATE" in
+        *Z*|*T*|*X*) return 1 ;;
+    esac
+}
+dev_has_rejected_error() {
+    grep -Eiq "$DEV_REJECTED_ERROR" "$DEV_LOG"
+}
+
+for DEV_ATTEMPT in {0..30}; do
+    if dev_has_rejected_error; then
+        DEV_FAILURE="Vite の起動ログに拒否対象のエラーがある"
+        break
+    fi
+    if ! dev_is_running; then
+        DEV_FAILURE="Vite プロセスが ready 前に終了した"
+        break
+    fi
     if grep -q "ready in" "$DEV_LOG"; then
         DEV_READY=1
         break
     fi
-    if ! kill -0 "$DEV_PID" 2>/dev/null; then
-        break
+    if [ "$DEV_ATTEMPT" -lt 30 ]; then
+        sleep 1
     fi
-    sleep 1
 done
 
-if [ "$DEV_READY" -ne 1 ]; then
+if [ -z "$DEV_FAILURE" ] && [ "$DEV_READY" -ne 1 ]; then
+    DEV_FAILURE="Vite が30秒以内に ready にならなかった"
+fi
+
+# ready 後に遅れて出る plugin / flat-config 解決エラーも検出する。
+if [ -z "$DEV_FAILURE" ]; then
+    for _ in 1 2; do
+        sleep 1
+        if dev_has_rejected_error; then
+            DEV_FAILURE="Vite の ready 後ログに拒否対象のエラーがある"
+            break
+        fi
+        if ! dev_is_running; then
+            DEV_FAILURE="Vite プロセスが ready 後に終了した"
+            break
+        fi
+    done
+fi
+
+# 判定直前の追記も含め、ログとプロセス状態を最後にもう一度確認する。
+if [ -z "$DEV_FAILURE" ] && dev_has_rejected_error; then
+    DEV_FAILURE="Vite の起動ログに拒否対象のエラーがある"
+fi
+if [ -z "$DEV_FAILURE" ] && ! dev_is_running; then
+    DEV_FAILURE="Vite プロセスが最終確認前に終了した"
+fi
+
+if [ -n "$DEV_FAILURE" ]; then
+    echo "$DEV_FAILURE"
     cat "$DEV_LOG"
     exit 1
 fi
 ```
 
-`bun run dev` はバックグラウンドで起動し、最大30秒以内に Vite の `ready in` ログが出ることを成功条件とする。異常終了・タイムアウト時はログを表示して失敗し、成功・失敗のどちらでも `trap` でプロセスを停止して一時ログを削除する。これにより `vite-plugin-eslint2` が flat config を解決できることも起動ログで確認する（エラーが出る場合はプラグインのオプションで flat config を明示するか、バージョンを更新）。
+`bun run dev` はバックグラウンドで起動し、最大30秒以内に Vite の `ready in` ログが
+出た後も2秒間正常に稼働し、起動前・起動後のログ全体に拒否対象のエラーがないことを
+成功条件とする。`vite-plugin-eslint2`、flat config / `eslint.config` の解決失敗を含む
+エラー、異常終了、タイムアウト時はログを表示して失敗し、成功・失敗のどちらでも
+`trap` でプロセスを停止して一時ログを削除する。プラグインのエラーが出る場合は
+オプションで flat config を明示するか、バージョンを更新する。
 
 **Verify**: すべて exit 0 / 全パス
 
