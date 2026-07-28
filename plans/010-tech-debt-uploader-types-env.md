@@ -113,10 +113,10 @@ interface ImportMetaEnv {
 
 ### Step 3: Supabase 型を自動生成に切り替える
 
-1. オペレーターに Supabase プロジェクト ref を依頼する。方法 A/B のどちらでも project ref は必須であり、`supabase login` 済みの CLI 環境は認証に利用できるが、project ref の代替にはならない。**ref やトークンをファイルに書き残さないこと。**
+1. オペレーターに Supabase プロジェクト ref を依頼する。方法 A/B のどちらでも project ref は必須であり、`supabase login` 済みの CLI 環境は認証に利用できるが、project ref の代替にはならない。方法 A/B を始める前に、`SUPABASE_PROJECT_REF` が `VITE_SUPABASE_URL`（`https://<ref>.supabase.co`）の `<ref>` と完全に一致することを確認する。一致を確認できない場合や異なる場合は、型生成を実行せず、既に生成した結果も採用しない。**ref やトークンをファイルに書き残さないこと。**
 2. Supabase 型の生成と置換は **次のいずれか一方** で行う:
-   - **方法 A（初回移行推奨）**: 同じシェルで `export SUPABASE_PROJECT_REF=<ref>` を実行してから `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `SUPABASE_PROJECT_REF` を `--project-id` に渡し、`src/types/` 内に一時ファイルを生成して、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
-   - **方法 B（手動確認が必要な場合）**: B-1 の `<ref>` を必須の Supabase プロジェクト ref に置き換え、下記の **3 ステップ** を **同一のシェルセッション（同一ターミナルウィンドウ／タブ）で連続実行** する。B-1 で設定した `tmp_file` 変数と `trap` は、シェルを閉じるか B-3 の `trap -` で解除されるまで有効であるため、B-2・B-3 でも同じ一時ファイルを参照できる。各ステップは独立しており、自動では次のステップに進まない:
+   - **方法 A（初回移行推奨）**: 一致確認済みの値を使い、同じシェルで `export SUPABASE_PROJECT_REF=<ref>` を実行してから `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `SUPABASE_PROJECT_REF` を `--project-id` に渡し、`src/types/` 内に一時ファイルを生成して、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
+   - **方法 B（手動確認が必要な場合）**: B-1 の `<ref>` を一致確認済みの `SUPABASE_PROJECT_REF` に置き換え、下記の **3 ステップ** を **同一のシェルセッション（同一ターミナルウィンドウ／タブ）で連続実行** する。B-1 で設定した `tmp_file` 変数と `trap` は、シェルを閉じるか B-3 の `trap -` で解除されるまで有効であるため、B-2・B-3 でも同じ一時ファイルを参照できる。各ステップは独立しており、自動では次のステップに進まない:
 
      > ⚠️ **必須**: B-1〜B-3 は **同一シェルセッション** で実行すること。シェルを再起動すると `tmp_file` 変数が失われ、一時ファイルが孤立する。
 
@@ -172,8 +172,11 @@ interface ImportMetaEnv {
    ディレクトリの一時ファイルにし、Supabase CLI が成功した後だけ同一ファイルシステム上の
    atomic rename となる `mv` を実行する。生成失敗時は既存の `src/types/supabase.ts` を
    変更せず、一時ファイルだけを `trap` で削除する。
-   `.env.example` に `SUPABASE_PROJECT_REF=` と、実行前に `export SUPABASE_PROJECT_REF=<ref>` で
-    値を設定する必要があり、`.env.example` は自動ロードされない旨のコメントを追記する。
+   `.env.example` に、対象プロジェクトのメタデータとして実値を含まない
+   `SUPABASE_PROJECT_REF=` プレースホルダーを `VITE_SUPABASE_URL` の近くに追加する。併せて、
+   この値は URL（`https://<ref>.supabase.co`）の `<ref>` と一致させること、実行前に
+   `export SUPABASE_PROJECT_REF=<ref>` で値を設定すること、`.env.example` は自動ロード
+   されないことをコメントで案内する。
 5. `bun run typecheck` を実行し、生成型の差分がサービス層・feature 層に出したエラーを修正する（`as` キャストで封じず、型に従って直す。10ファイルを超えたら STOP）。
 6. `CLAUDE.md` の Build & Test Commands に `gen:types` を、`docs/design.md` に「スキーマ変更時は `bun run gen:types` で型を再生成する」を追記。
 
@@ -191,7 +194,8 @@ interface ImportMetaEnv {
 - [ ] `vite-env.d.ts` に URL/KEY 両方の型がある
 - [ ] URL/KEYいずれか欠落時はclient生成前に明確なエラーとなり、両方設定時だけ `createClient` が呼ばれるテストがパス
 - [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が空でない `SUPABASE_PROJECT_REF` を CLI 起動前に検証し、`bunx supabase` の出力を `src/types/` 内の一時ファイルへ生成して、成功時だけ同一ファイルシステム上の atomic rename で `mv` する（失敗時は既存ファイルが不変）
-- [ ] `.env.example` に秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーと、実行前に `export SUPABASE_PROJECT_REF=<ref>` で値を設定する必要があり、`.env.example` は自動ロードされない旨の案内がある
+- [ ] `.env.example` の `VITE_SUPABASE_URL` の近くに、対象プロジェクトのメタデータとして秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーがあり、URL の `<ref>` と一致させること、実行前に `export SUPABASE_PROJECT_REF=<ref>` で値を設定すること、`.env.example` は自動ロードされないことの案内がある
+- [ ] 方法 A/B の実行前に `SUPABASE_PROJECT_REF` と `VITE_SUPABASE_URL` の `<ref>` が一致すると確認済みであり、不一致または確認不能なprojectから生成した型を採用していない
 - [ ] 承認済みsecret scannerで **access token / service-role token / 秘密鍵 / パスワード等の非公開資格情報のみ**を検出対象とし、① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリをすべて個別に検査してすべて検出0件である。作業ツリーだけの `git diff` 確認や一部カテゴリのみの確認では完了扱いにしない
 - [ ] `SUPABASE_PROJECT_REF` は公開メタデータとして別途確認: `.env.example` に正しくプレースホルダー記載があり、実際の project ref 値が ① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリすべてに含まれないことを確認する（secret scannerの資格情報検出要件とは分離して管理し、検査範囲のみを同一の4カテゴリに揃える）
 - [ ] `bun run typecheck` / `bun run lint` / `bun run test` / `bun run build` がすべて exit 0
@@ -201,6 +205,7 @@ interface ImportMetaEnv {
 
 - Step 1 の grep で Uploader への参照が**見つかった**場合（このプラン執筆後に誰かが使い始めた — 削除せず報告）
 - Supabase CLI へのアクセス・プロジェクト ref が得られない場合（Step 3 をスキップし、Step 1-2 のみ完了として部分報告する）
+- `SUPABASE_PROJECT_REF` と `VITE_SUPABASE_URL` の `<ref>` が一致しない、または一致を確認できない場合（型生成・生成結果の採用を行わず報告する）
 - 生成型と手書き型の diff が想定外に大きい（テーブルが増えている等）場合 — スキーマが ER 図から乖離している証拠なので、置換前に diff を報告
 - Step 3-5 の型エラー修正が10ファイルを超える場合
 
