@@ -113,10 +113,10 @@ interface ImportMetaEnv {
 
 ### Step 3: Supabase 型を自動生成に切り替える
 
-1. オペレーターに Supabase プロジェクト ref（または `supabase login` 済み CLI 環境）を依頼する。**ref やトークンをファイルに書き残さないこと。**
+1. オペレーターに Supabase プロジェクト ref を依頼する。方法 A/B のどちらでも project ref は必須であり、`supabase login` 済みの CLI 環境は認証に利用できるが、project ref の代替にはならない。**ref やトークンをファイルに書き残さないこと。**
 2. Supabase 型の生成と置換は **次のいずれか一方** で行う:
-   - **方法 A（初回移行推奨）**: `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `src/types/` 内に一時ファイルを生成し、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
-   - **方法 B（手動確認が必要な場合）**: 下記の **3 ステップ** を **同一のシェルセッション（同一ターミナルウィンドウ／タブ）で連続実行** する。B-1 で設定した `tmp_file` 変数と `trap` は、シェルを閉じるか B-3 の `trap -` で解除されるまで有効であるため、B-2・B-3 でも同じ一時ファイルを参照できる。各ステップは独立しており、自動では次のステップに進まない:
+   - **方法 A（初回移行推奨）**: 同じシェルで `export SUPABASE_PROJECT_REF=<ref>` を実行してから `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `SUPABASE_PROJECT_REF` を `--project-id` に渡し、`src/types/` 内に一時ファイルを生成して、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
+   - **方法 B（手動確認が必要な場合）**: B-1 の `<ref>` を必須の Supabase プロジェクト ref に置き換え、下記の **3 ステップ** を **同一のシェルセッション（同一ターミナルウィンドウ／タブ）で連続実行** する。B-1 で設定した `tmp_file` 変数と `trap` は、シェルを閉じるか B-3 の `trap -` で解除されるまで有効であるため、B-2・B-3 でも同じ一時ファイルを参照できる。各ステップは独立しており、自動では次のステップに進まない:
 
      > ⚠️ **必須**: B-1〜B-3 は **同一シェルセッション** で実行すること。シェルを再起動すると `tmp_file` 変数が失われ、一時ファイルが孤立する。
 
