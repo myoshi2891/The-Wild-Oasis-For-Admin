@@ -115,7 +115,7 @@ interface ImportMetaEnv {
 
 1. オペレーターに Supabase プロジェクト ref を依頼する。方法 A/B のどちらでも project ref は必須であり、`supabase login` 済みの CLI 環境は認証に利用できるが、project ref の代替にはならない。方法 A/B を始める前に、`SUPABASE_PROJECT_REF` が `VITE_SUPABASE_URL`（`https://<ref>.supabase.co`）の `<ref>` と完全に一致することを確認する。一致を確認できない場合や異なる場合は、型生成を実行せず、既に生成した結果も採用しない。**ref やトークンをファイルに書き残さないこと。**
 2. Supabase 型の生成と置換は **次のいずれか一方** で行う:
-   - **方法 A（初回移行推奨）**: 一致確認済みの値を使い、同じシェルで `export SUPABASE_PROJECT_REF=<ref>` を実行してから `bun run gen:types` に委譲する。手順 4 で追加されるスクリプトが `SUPABASE_PROJECT_REF` を `--project-id` に渡し、`src/types/` 内に一時ファイルを生成して、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
+   - **方法 A（初回移行推奨）**: 一致確認済みの値を使い、同じシェルで `export VITE_SUPABASE_URL=<url> SUPABASE_PROJECT_REF=<ref>` を実行してから `bun run gen:types` に委譲する。手順 4 で追加されるスクリプト自身も両値の存在と完全一致を検証してから `SUPABASE_PROJECT_REF` を `--project-id` に渡し、`src/types/` 内に一時ファイルを生成して、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
    - **方法 B（手動確認が必要な場合）**: B-1 の `<ref>` を一致確認済みの `SUPABASE_PROJECT_REF` に置き換え、下記の **3 ステップ** を **同一のシェルセッション（同一ターミナルウィンドウ／タブ）で連続実行** する。B-1 で設定した `tmp_file` 変数と `trap` は、シェルを閉じるか B-3 の `trap -` で解除されるまで有効であるため、B-2・B-3 でも同じ一時ファイルを参照できる。各ステップは独立しており、自動では次のステップに進まない:
 
      > ⚠️ **必須**: B-1〜B-3 は **同一シェルセッション** で実行すること。シェルを再起動すると `tmp_file` 変数が失われ、一時ファイルが孤立する。
@@ -165,18 +165,20 @@ interface ImportMetaEnv {
    - nullability やカラムの過不足 → 生成側が正。`src/types/supabase.ts` を生成結果で**置換**する
    - 生成結果に手書きにない補助型がある → そのまま採用
 4. `package.json` に再生成スクリプトを追加:
-   `"gen:types": "if [ -z \"${SUPABASE_PROJECT_REF:-}\" ]; then echo \"Error: SUPABASE_PROJECT_REF must be set and non-empty\" >&2; exit 1; fi; tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) && trap 'rm -f \"$tmp_file\"' EXIT && bunx supabase@2.109.1 gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" --schema public > \"$tmp_file\" && mv \"$tmp_file\" src/types/supabase.ts && trap - EXIT"`。
+   `"gen:types": "if [ -z \"${SUPABASE_PROJECT_REF:-}\" ]; then echo \"Error: SUPABASE_PROJECT_REF must be set and non-empty\" >&2; exit 1; fi; if [ -z \"${VITE_SUPABASE_URL:-}\" ]; then echo \"Error: VITE_SUPABASE_URL must be set and non-empty\" >&2; exit 1; fi; url_host=${VITE_SUPABASE_URL#https://}; url_host=${url_host%%/*}; url_project_ref=${url_host%.supabase.co}; if [ \"$url_host\" = \"$VITE_SUPABASE_URL\" ] || [ -z \"$url_project_ref\" ] || [ \"$url_host\" != \"${url_project_ref}.supabase.co\" ]; then echo \"Error: VITE_SUPABASE_URL must be a valid Supabase project URL\" >&2; exit 1; fi; if [ \"$SUPABASE_PROJECT_REF\" != \"$url_project_ref\" ]; then echo \"Error: SUPABASE_PROJECT_REF must match VITE_SUPABASE_URL\" >&2; exit 1; fi; tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) && trap 'rm -f \"$tmp_file\"' EXIT && bunx supabase@2.109.1 gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" --schema public > \"$tmp_file\" && mv \"$tmp_file\" src/types/supabase.ts && trap - EXIT"`。
    Supabase CLI は `bunx supabase@2.109.1`（バージョン 2.109.1 固定）を使用する。CLI を更新する際はこのバージョン番号をスクリプトと本プランの検証手順の両方で同時に変更すること。
-   ref は `SUPABASE_PROJECT_REF` 環境変数で渡し、ハードコードしない。未設定または空文字なら
-   Supabase CLI の起動前に明確なエラーで終了する。生成先は `src/types/supabase.ts` と同じ
-   ディレクトリの一時ファイルにし、Supabase CLI が成功した後だけ同一ファイルシステム上の
-   atomic rename となる `mv` を実行する。生成失敗時は既存の `src/types/supabase.ts` を
-   変更せず、一時ファイルだけを `trap` で削除する。
+   ref は `SUPABASE_PROJECT_REF` 環境変数で渡し、ハードコードしない。`SUPABASE_PROJECT_REF`
+   または `VITE_SUPABASE_URL` が未設定・空文字、URL が想定形式でない、または URL から
+   抽出した ref と `SUPABASE_PROJECT_REF` が完全一致しない場合は、一時ファイルの作成前に
+   明確なエラーで終了し、Supabase CLI と `mv` を実行しない。検証成功後の生成先は
+   `src/types/supabase.ts` と同じディレクトリの一時ファイルにし、Supabase CLI が成功した
+   後だけ同一ファイルシステム上の atomic rename となる `mv` を実行する。生成失敗時は
+   既存の `src/types/supabase.ts` を変更せず、一時ファイルだけを `trap` で削除する。
    `.env.example` に、対象プロジェクトのメタデータとして実値を含まない
    `SUPABASE_PROJECT_REF=` プレースホルダーを `VITE_SUPABASE_URL` の近くに追加する。併せて、
    この値は URL（`https://<ref>.supabase.co`）の `<ref>` と一致させること、実行前に
-   `export SUPABASE_PROJECT_REF=<ref>` で値を設定すること、`.env.example` は自動ロード
-   されないことをコメントで案内する。
+   `export VITE_SUPABASE_URL=<url> SUPABASE_PROJECT_REF=<ref>` で両値を設定すること、
+   `.env.example` は自動ロードされないことをコメントで案内する。
 5. `bun run typecheck` を実行し、生成型の差分がサービス層・feature 層に出したエラーを修正する（`as` キャストで封じず、型に従って直す。10ファイルを超えたら STOP）。
 6. `CLAUDE.md` の Build & Test Commands に `gen:types` を、`docs/design.md` に「スキーマ変更時は `bun run gen:types` で型を再生成する」を追記。
 
@@ -193,8 +195,8 @@ interface ImportMetaEnv {
 - [ ] `src/data/` が存在しない（`ls src/data` がエラー）
 - [ ] `vite-env.d.ts` に URL/KEY 両方の型がある
 - [ ] URL/KEYいずれか欠落時はclient生成前に明確なエラーとなり、両方設定時だけ `createClient` が呼ばれるテストがパス
-- [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が空でない `SUPABASE_PROJECT_REF` を CLI 起動前に検証し、`bunx supabase` の出力を `src/types/` 内の一時ファイルへ生成して、成功時だけ同一ファイルシステム上の atomic rename で `mv` する（失敗時は既存ファイルが不変）
-- [ ] `.env.example` の `VITE_SUPABASE_URL` の近くに、対象プロジェクトのメタデータとして秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーがあり、URL の `<ref>` と一致させること、実行前に `export SUPABASE_PROJECT_REF=<ref>` で値を設定すること、`.env.example` は自動ロードされないことの案内がある
+- [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が空でない `SUPABASE_PROJECT_REF` と `VITE_SUPABASE_URL` を検証してURLから抽出したrefとの完全一致をCLI起動前に要求し、検証成功後だけ `bunx supabase` の出力を `src/types/` 内の一時ファイルへ生成して、成功時だけ同一ファイルシステム上の atomic rename で `mv` する（検証・生成失敗時は既存ファイルが不変）
+- [ ] `.env.example` の `VITE_SUPABASE_URL` の近くに、対象プロジェクトのメタデータとして秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーがあり、URL の `<ref>` と一致させること、実行前に `export VITE_SUPABASE_URL=<url> SUPABASE_PROJECT_REF=<ref>` で両値を設定すること、`.env.example` は自動ロードされないことの案内がある
 - [ ] 方法 A/B の実行前に `SUPABASE_PROJECT_REF` と `VITE_SUPABASE_URL` の `<ref>` が一致すると確認済みであり、不一致または確認不能なprojectから生成した型を採用していない
 - [ ] 承認済みsecret scannerで **access token / service-role token / 秘密鍵 / パスワード等の非公開資格情報のみ**を検出対象とし、① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリをすべて個別に検査してすべて検出0件である。作業ツリーだけの `git diff` 確認や一部カテゴリのみの確認では完了扱いにしない
 - [ ] `SUPABASE_PROJECT_REF` は公開メタデータとして別途確認: `.env.example` に正しくプレースホルダー記載があり、実際の project ref 値が ① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリすべてに含まれないことを確認する（secret scannerの資格情報検出要件とは分離して管理し、検査範囲のみを同一の4カテゴリに揃える）
