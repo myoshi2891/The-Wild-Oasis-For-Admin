@@ -121,6 +121,7 @@ interface ImportMetaEnv {
      > ⚠️ **必須**: B-1〜B-3 は **同一シェルセッション** で実行すること。シェルを再起動すると `tmp_file` と `generation_succeeded` が失われ、一時ファイルの生成成功を検証できない。
 
      **ステップ B-1: 一時ファイルへ型定義を生成する**
+
      ```bash
      tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) || exit $?
      generation_succeeded=0
@@ -138,11 +139,13 @@ interface ImportMetaEnv {
        exit "$generation_status"
      fi
      ```
+
      - CLI が失敗した場合は一時ファイルを削除し、`trap` と変数を解除してシェルを終了するため、B-2・B-3 には進めない。
      - `echo "生成成功: ..."` が出力されたことを目視で確認してから **同一シェルで** 次のステップへ進む。
      - 成功時だけ `generation_succeeded=1` となる。`tmp_file`、`generation_succeeded`、`trap` は、このシェルセッションが続く限り有効。
 
      **ステップ B-2: diff で差分を確認する（同一シェルで実行）**
+
      ```bash
      if [ "${generation_succeeded:-0}" -ne 1 ]; then
        echo "型生成の成功を確認できないため aborting" >&2
@@ -162,11 +165,13 @@ interface ImportMetaEnv {
        echo "差分あり（レビュー完了後、置換の要否を判断）"
      fi
      ```
+
      - B-1 と同一シェルで `generation_succeeded=1` を確認してから、`$tmp_file` が指す生成成功済みの一時ファイルだけを比較する。
      - `diff` の終了コード 0（差分なし）と 1（差分あり）はどちらも **確認のみ** の正常結果であり、自動では B-3 に進まない。内容をレビューし、置換の要否を判断する。
      - 終了コード 2 以上では一時ファイルを削除し、`trap` と両変数を解除してシェルを終了する。生成ファイルを検証できていないため、B-3 は実行しない。
 
      **ステップ B-3: 問題なければ手動で mv する（同一シェルで実行）**
+
      ```bash
      if [ "${generation_succeeded:-0}" -ne 1 ]; then
        echo "型生成の成功を確認できないため置換しない" >&2
@@ -176,6 +181,7 @@ interface ImportMetaEnv {
        && trap - EXIT INT TERM \
        && unset tmp_file generation_succeeded
      ```
+
      - B-1 と同一シェルで `generation_succeeded=1` を再確認してから、生成成功済みの `$tmp_file` だけを置換に使う。
      - `trap - EXIT INT TERM` で `trap` を解除して両変数を破棄し、`mv` 後に二重削除や一時ファイルの再利用が起きないようにする。
      - 置換が不要と判断した場合は `mv` を実行せず、`rm -f "$tmp_file" && trap - EXIT INT TERM && unset tmp_file generation_succeeded` で一時ファイル、`trap`、両変数を破棄する。
