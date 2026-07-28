@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, useSearchParams } from "react-router-dom";
+import { MemoryRouter, useSearchParams } from "react-router";
 import Filter from "../Filter";
 
 /** MemoryRouter 内の URL パラメータを可視化するヘルパー */

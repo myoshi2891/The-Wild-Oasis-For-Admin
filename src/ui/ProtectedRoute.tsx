@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import styled from "styled-components";
 import { useUser } from "../features/authentication/useUser";
 import Spinner from "./Spinner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useEffect } from "react";
 
 const FullPage = styled.div`

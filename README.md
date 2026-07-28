@@ -31,7 +31,7 @@ graph TD
     end
 
     subgraph ROUTING["🔀 ルーティング"]
-        RRD["React Router DOM v7\nクライアントサイドルーティング"]
+        RRD["React Router v8\nクライアントサイドルーティング"]
         PR["ProtectedRoute\n未認証 → /login にリダイレクト"]
     end
 
@@ -71,10 +71,10 @@ graph TD
 | レイヤー | 技術 | バージョン | 用途 |
 |---------|------|-----------|------|
 | **言語** | TypeScript | ^5.9.3 | 静的型チェック（strict モード） |
-| **UI フレームワーク** | React | ^19 | コンポーネントベース UI レンダリング |
+| **UI フレームワーク** | React | >=19.2.7 | コンポーネントベース UI レンダリング |
 | **ビルドツール** | Vite | ^7.3.5 | 高速開発サーバーと最適化ビルド |
 | **パッケージマネージャー** | Bun | >=1.0.0 | パッケージ管理とスクリプト実行 |
-| **ルーティング** | React Router DOM | ^7 | 保護ルート付きクライアントサイドルーティング |
+| **ルーティング** | React Router | ^8.3.0 | 保護ルート付きクライアントサイドルーティング |
 | **状態管理** | @tanstack/react-query | ^5 | サーバーステートの同期とキャッシュ |
 | **フォーム管理** | react-hook-form | ^7.77.0 | パフォーマンスの高いフォームバリデーション |
 | **スタイリング** | styled-components | ^6.4.2 | テーマサポート付き CSS-in-JS |
@@ -296,7 +296,7 @@ flowchart TD
         TOASTER["Toaster\n通知"]
     end
 
-    BROWSER["BrowserRouter\nReact Router DOM v7"]
+    BROWSER["BrowserRouter\nReact Router v8"]
 
     subgraph ROUTES["ルート設定"]
         ROOT["/ → /dashboard にリダイレクト"]
@@ -334,7 +334,7 @@ flowchart TD
    - 開発用 `ReactQueryDevtools`
    - CSS リセットとテーマ変数用の `GlobalStyles`
    - 通知用の `Toaster`
-5. **BrowserRouter**: React Router DOM v7 でクライアントサイドルーティングを設定
+5. **BrowserRouter**: React Router v8 でクライアントサイドルーティングを設定
 
 保護ルートは `ProtectedRoute` コンポーネントによる認証が必要で、未認証ユーザーは `/login` にリダイレクトされます。ルートルート `/` は `/dashboard` にリダイレクトします。
 
@@ -344,7 +344,9 @@ flowchart TD
 
 ### 開発スクリプト
 
-`bun` をパッケージマネージャーとして使用します（`package.json:55-57` で必須）。
+`bun` をパッケージマネージャーとして使用します（`package.json` の `engines` で必須）。
+React Router v8 の互換要件として、Node.js で依存監査や補助ツールを実行する場合は
+Node.js 22.22.0 以上、React 19.2.7 以上、Vite 7 以上を使用します。
 
 | コマンド | スクリプト | 用途 |
 |---------|-----------|------|

@@ -54,6 +54,7 @@
 - 認証済みユーザーのみがアクセス可能（ProtectedRoute）
 - TypeScript strict モードによる型安全性の担保
 - Vitest + Testing Library によるユニット / コンポーネントテスト基盤
+- React Router v8 の互換要件として Node.js 22.22.0 以上、React 19.2.7 以上、Vite 7 以上を使用
 - **【重要セキュリティ制約】** `.eslintcache` などのローカル環境の絶対パス（ユーザー名等を含む機密情報・PII）が含まれる成果物ファイルは絶対にコミットしてはならない（必ず `.gitignore` で除外すること）。
 - **【重要Git運用制約】** 万一シークレットや絶対パスが混入した場合でも、ユーザーの事前の明確な許可なく `git filter-branch` や `git filter-repo` 等を用いてリポジトリの全履歴（History）を不可逆的に改変・上書き（Rewrite）する操作を独断で実行してはならない。必ずユーザーに確認し、合意を得た上で対処すること。
 - **【重要開発環境制約】** パッケージマネージャーおよびランタイムには必ず `bun` を使用すること（`npm`, `yarn`, `pnpm` などの使用は禁止）。スクリプト実行にも `npm run` ではなく `bun run` や `bunx` を用いること。
@@ -63,8 +64,8 @@
 
 | ライブラリ | 用途 |
 | ----------- | ------ |
-| React 19 | UI フレームワーク |
-| React Router DOM v7 | クライアントサイドルーティング |
+| React 19.2.7 以上 | UI フレームワーク |
+| React Router v8.3.0 以上 | クライアントサイドルーティング |
 | @tanstack/react-query v5 | サーバー状態管理・キャッシュ |
 | @supabase/supabase-js | BaaS（認証 + DB + ストレージ） |
 | styled-components v6 | CSS-in-JS スタイリング |

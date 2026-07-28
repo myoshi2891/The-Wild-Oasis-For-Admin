@@ -2,13 +2,13 @@ import { type ReactNode } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 
 // useParams のモック — このファイル専用
 let mockBookingId: string | undefined;
 
-vi.mock("react-router-dom", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("react-router-dom")>();
+vi.mock("react-router", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("react-router")>();
 	return {
 		...actual,
 		useParams: () => ({ bookingId: mockBookingId }),

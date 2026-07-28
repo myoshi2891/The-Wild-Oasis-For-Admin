@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import type { BookingWithGuestInfo } from "../../types/domain";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import Tag from "../../ui/Tag";
 import Flag from "../../ui/Flag";
 import Button from "../../ui/Button";

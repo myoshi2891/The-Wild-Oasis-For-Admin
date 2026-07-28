@@ -8,7 +8,7 @@ import React, { type ReactNode } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import type { StayAfterDate } from "../types/domain";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter, type MemoryRouterProps } from "react-router-dom";
+import { MemoryRouter, type MemoryRouterProps } from "react-router";
 import {
 	render,
 	renderHook,
@@ -28,14 +28,12 @@ import { DarkModeProvider } from "../context/DarkModeContext";
 import Table from "../ui/Table";
 import Menus from "../ui/Menus";
 
-// ── Mock: react-router-dom navigate ─────────────────────────
+// ── Mock: react-router navigate ─────────────────────────────
 export const mockNavigate = vi.fn();
 
-vi.mock("react-router-dom", async () => {
+vi.mock("react-router", async () => {
 	const actual =
-		await vi.importActual<typeof import("react-router-dom")>(
-			"react-router-dom"
-		);
+		await vi.importActual<typeof import("react-router")>("react-router");
 	return { ...actual, useNavigate: () => mockNavigate };
 });
 
