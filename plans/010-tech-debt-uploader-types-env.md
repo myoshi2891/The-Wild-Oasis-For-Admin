@@ -116,30 +116,44 @@ interface ImportMetaEnv {
 1. オペレーターに Supabase プロジェクト ref を依頼する。方法 A/B のどちらでも project ref は必須であり、`supabase login` 済みの CLI 環境は認証に利用できるが、project ref の代替にはならない。方法 A/B を始める前に、`SUPABASE_PROJECT_REF` が `VITE_SUPABASE_URL`（`https://<ref>.supabase.co`）の `<ref>` と完全に一致することを確認する。一致を確認できない場合や異なる場合は、型生成を実行せず、既に生成した結果も採用しない。**ref やトークンをファイルに書き残さないこと。**
 2. Supabase 型の生成と置換は **次のいずれか一方** で行う:
    - **方法 A（初回移行推奨）**: 一致確認済みの値を使い、同じシェルで `export VITE_SUPABASE_URL=<url> SUPABASE_PROJECT_REF=<ref>` を実行してから `bun run gen:types` に委譲する。手順 4 で追加されるスクリプト自身も両値の存在と完全一致を検証してから `SUPABASE_PROJECT_REF` を `--project-id` に渡し、`src/types/` 内に一時ファイルを生成して、成功時だけ atomic rename で `src/types/supabase.ts` へ書き込む。レビューが必要な場合は `git diff src/types/supabase.ts` で確認する。
-   - **方法 B（手動確認が必要な場合）**: B-1 の `<ref>` を一致確認済みの `SUPABASE_PROJECT_REF` に置き換え、下記の **3 ステップ** を **同一のシェルセッション（同一ターミナルウィンドウ／タブ）で連続実行** する。B-1 で設定した `tmp_file` 変数と `trap` は、シェルを閉じるか B-3 の `trap -` で解除されるまで有効であるため、B-2・B-3 でも同じ一時ファイルを参照できる。各ステップは独立しており、自動では次のステップに進まない:
+   - **方法 B（手動確認が必要な場合）**: B-1 の `<ref>` を一致確認済みの `SUPABASE_PROJECT_REF` に置き換え、下記の **3 ステップ** を **同一のシェルセッション（同一ターミナルウィンドウ／タブ）で連続実行** する。B-1 で設定した `tmp_file`、`generation_succeeded`、`trap` は、シェルを閉じるか B-3 で解除されるまで有効であるため、B-2・B-3 でも同じ生成成功状態と一時ファイルを参照できる。各ステップは独立しており、自動では次のステップに進まない:
 
-     > ⚠️ **必須**: B-1〜B-3 は **同一シェルセッション** で実行すること。シェルを再起動すると `tmp_file` 変数が失われ、一時ファイルが孤立する。
+     > ⚠️ **必須**: B-1〜B-3 は **同一シェルセッション** で実行すること。シェルを再起動すると `tmp_file` と `generation_succeeded` が失われ、一時ファイルの生成成功を検証できない。
 
      **ステップ B-1: 一時ファイルへ型定義を生成する**
      ```bash
-     tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) \
-       && trap 'rm -f "$tmp_file"' EXIT INT TERM \
-       && bunx supabase@2.109.1 gen types typescript \
-            --project-id <ref> --schema public > "$tmp_file" \
-       && echo "生成成功: $tmp_file"
+     tmp_file=$(mktemp src/types/.supabase.ts.XXXXXX) || exit $?
+     generation_succeeded=0
+     trap 'rm -f "$tmp_file"' EXIT INT TERM
+     if bunx supabase@2.109.1 gen types typescript \
+          --project-id <ref> --schema public > "$tmp_file"; then
+       generation_succeeded=1
+       echo "生成成功: $tmp_file"
+     else
+       generation_status=$?
+       rm -f "$tmp_file"
+       trap - EXIT INT TERM
+       unset tmp_file generation_succeeded
+       echo "型生成失敗 (exit $generation_status); aborting" >&2
+       exit "$generation_status"
+     fi
      ```
-     - CLI が失敗した場合は `echo` は実行されず、`trap` が一時ファイルを自動削除する。
+     - CLI が失敗した場合は一時ファイルを削除し、`trap` と変数を解除してシェルを終了するため、B-2・B-3 には進めない。
      - `echo "生成成功: ..."` が出力されたことを目視で確認してから **同一シェルで** 次のステップへ進む。
-     - `tmp_file` 変数と `trap` は、このシェルセッションが続く限り有効。
+     - 成功時だけ `generation_succeeded=1` となる。`tmp_file`、`generation_succeeded`、`trap` は、このシェルセッションが続く限り有効。
 
      **ステップ B-2: diff で差分を確認する（同一シェルで実行）**
      ```bash
+     if [ "${generation_succeeded:-0}" -ne 1 ]; then
+       echo "型生成の成功を確認できないため aborting" >&2
+       exit 1
+     fi
      diff_status=0
      diff src/types/supabase.ts "$tmp_file" || diff_status=$?
      if [ "$diff_status" -ge 2 ]; then
        rm -f "$tmp_file"
        trap - EXIT INT TERM
-       unset tmp_file
+       unset tmp_file generation_succeeded
        echo "diff failed (exit $diff_status); aborting" >&2
        exit "$diff_status"
      elif [ "$diff_status" -eq 0 ]; then
@@ -148,17 +162,23 @@ interface ImportMetaEnv {
        echo "差分あり（レビュー完了後、置換の要否を判断）"
      fi
      ```
-     - B-1 と同一シェルで実行することで `$tmp_file` が同じ一時ファイルを指す。
+     - B-1 と同一シェルで `generation_succeeded=1` を確認してから、`$tmp_file` が指す生成成功済みの一時ファイルだけを比較する。
      - `diff` の終了コード 0（差分なし）と 1（差分あり）はどちらも **確認のみ** の正常結果であり、自動では B-3 に進まない。内容をレビューし、置換の要否を判断する。
-     - 終了コード 2 以上では一時ファイルを削除し、`trap` と `tmp_file` を解除してシェルを終了する。生成ファイルを検証できていないため、B-3 は実行しない。
+     - 終了コード 2 以上では一時ファイルを削除し、`trap` と両変数を解除してシェルを終了する。生成ファイルを検証できていないため、B-3 は実行しない。
 
      **ステップ B-3: 問題なければ手動で mv する（同一シェルで実行）**
      ```bash
-     mv "$tmp_file" src/types/supabase.ts && trap - EXIT INT TERM
+     if [ "${generation_succeeded:-0}" -ne 1 ]; then
+       echo "型生成の成功を確認できないため置換しない" >&2
+       exit 1
+     fi
+     mv "$tmp_file" src/types/supabase.ts \
+       && trap - EXIT INT TERM \
+       && unset tmp_file generation_succeeded
      ```
-     - B-1 と同一シェルで実行することで `$tmp_file` が同じ一時ファイルを指す。
-     - `trap - EXIT INT TERM` で `trap` を解除し、`mv` 後に二重削除が起きないようにする。
-     - 置換が不要と判断した場合は `mv` を実行せず、`rm -f "$tmp_file"` で一時ファイルを削除する。
+     - B-1 と同一シェルで `generation_succeeded=1` を再確認してから、生成成功済みの `$tmp_file` だけを置換に使う。
+     - `trap - EXIT INT TERM` で `trap` を解除して両変数を破棄し、`mv` 後に二重削除や一時ファイルの再利用が起きないようにする。
+     - 置換が不要と判断した場合は `mv` を実行せず、`rm -f "$tmp_file" && trap - EXIT INT TERM && unset tmp_file generation_succeeded` で一時ファイル、`trap`、両変数を破棄する。
      - シェルを閉じた場合や中断した場合でも（`trap -` 前であれば）`trap` が一時ファイルを削除する。
    > **重要**: 生成ファイルを `/tmp` に書き出した後で `cp` や `mv` でターゲットに移動する手順は **禁止**。生成先は必ず `src/types/` 配下にすること。
 3. 差分を分類する:
@@ -198,6 +218,7 @@ interface ImportMetaEnv {
 - [ ] `src/types/supabase.ts` が生成物であるヘッダーを持ち、`package.json` の `gen:types` が空でない `SUPABASE_PROJECT_REF` と `VITE_SUPABASE_URL` を検証してURLから抽出したrefとの完全一致をCLI起動前に要求し、検証成功後だけ `bunx supabase` の出力を `src/types/` 内の一時ファイルへ生成して、成功時だけ同一ファイルシステム上の atomic rename で `mv` する（検証・生成失敗時は既存ファイルが不変）
 - [ ] `.env.example` の `VITE_SUPABASE_URL` の近くに、対象プロジェクトのメタデータとして秘密値を含まない `SUPABASE_PROJECT_REF` プレースホルダーがあり、URL の `<ref>` と一致させること、実行前に `export VITE_SUPABASE_URL=<url> SUPABASE_PROJECT_REF=<ref>` で両値を設定すること、`.env.example` は自動ロードされないことの案内がある
 - [ ] 方法 A/B の実行前に `SUPABASE_PROJECT_REF` と `VITE_SUPABASE_URL` の `<ref>` が一致すると確認済みであり、不一致または確認不能なprojectから生成した型を採用していない
+- [ ] 方法 B は B-1 の生成成功時だけ `generation_succeeded=1` を設定し、B-2/B-3 がその値を必須検証する。生成失敗時は一時ファイルを削除して終了し、B-3 の `mv` は実行されない
 - [ ] 承認済みsecret scannerで **access token / service-role token / 秘密鍵 / パスワード等の非公開資格情報のみ**を検出対象とし、① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリをすべて個別に検査してすべて検出0件である。作業ツリーだけの `git diff` 確認や一部カテゴリのみの確認では完了扱いにしない
 - [ ] `SUPABASE_PROJECT_REF` は公開メタデータとして別途確認: `.env.example` に正しくプレースホルダー記載があり、実際の project ref 値が ① 全コミット履歴、② staged差分、③ 未stagedの追跡対象ファイル変更（`git diff` 対象）、④ 未追跡ファイル の4カテゴリすべてに含まれないことを確認する（secret scannerの資格情報検出要件とは分離して管理し、検査範囲のみを同一の4カテゴリに揃える）
 - [ ] `bun run typecheck` / `bun run lint` / `bun run test` / `bun run build` がすべて exit 0
