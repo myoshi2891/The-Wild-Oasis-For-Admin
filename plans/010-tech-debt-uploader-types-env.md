@@ -134,11 +134,23 @@ interface ImportMetaEnv {
 
      **ステップ B-2: diff で差分を確認する（同一シェルで実行）**
      ```bash
-     diff src/types/supabase.ts "$tmp_file"; echo "diff exit code: $?"
+     diff_status=0
+     diff src/types/supabase.ts "$tmp_file" || diff_status=$?
+     if [ "$diff_status" -ge 2 ]; then
+       rm -f "$tmp_file"
+       trap - EXIT INT TERM
+       unset tmp_file
+       echo "diff failed (exit $diff_status); aborting" >&2
+       exit "$diff_status"
+     elif [ "$diff_status" -eq 0 ]; then
+       echo "差分なし（レビュー完了後、置換の要否を判断）"
+     else
+       echo "差分あり（レビュー完了後、置換の要否を判断）"
+     fi
      ```
      - B-1 と同一シェルで実行することで `$tmp_file` が同じ一時ファイルを指す。
-     - `diff` は差分があると終了コード 1 を返すが、ここでは **確認のみ** に使用する。終了コード 1 は正常（差分あり）であり、処理を中断しない。
-     - 差分内容をレビューし、置換の要否を判断する。
+     - `diff` の終了コード 0（差分なし）と 1（差分あり）はどちらも **確認のみ** の正常結果であり、自動では B-3 に進まない。内容をレビューし、置換の要否を判断する。
+     - 終了コード 2 以上では一時ファイルを削除し、`trap` と `tmp_file` を解除してシェルを終了する。生成ファイルを検証できていないため、B-3 は実行しない。
 
      **ステップ B-3: 問題なければ手動で mv する（同一シェルで実行）**
      ```bash
