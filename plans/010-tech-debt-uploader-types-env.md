@@ -61,7 +61,7 @@ interface ImportMetaEnv {
 |------|---------|-----------------|
 | 型 / Lint / テスト | `bun run typecheck && bun run lint && bun run test` | exit 0 / 全パス |
 | ビルド | `bun run build` | exit 0 |
-| 型生成（Step 3） | `bunx supabase gen types typescript --project-id <ref> --schema public` | 型定義が標準出力される |
+| 型生成（Step 3） | `bunx supabase@2.109.1 gen types typescript --project-id <ref> --schema public` | 型定義が標準出力される |
 
 ## Scope
 
